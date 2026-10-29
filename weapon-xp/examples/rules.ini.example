@@ -1,0 +1,12 @@
+; Weapon Experience rules v1. Omitted keys/weapons use shipped defaults.
+; Reload with API v3 or restart. Bad files are rejected atomically.
+; Keys: thresholds (10 integers), damage/ammo (10 multipliers), xp_multiplier (0..16).
+; Weapon IDs: 9,10,11,13,15,16,17,18,19,20,23,24.
+format=1
+
+; Example: Blaster. Remove leading semicolons to override.
+;[weapon.15]
+;thresholds=0,400,1400,3200,6000,10000,15500,23000,33000,46000
+;damage=1,1.15,1.30,1.50,1.75,2,2.25,2.5,2.75,3
+;ammo=1,1.125,1.25,1.375,1.5,1.625,1.75,1.875,2,2.125
+;xp_multiplier=1

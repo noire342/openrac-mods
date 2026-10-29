@@ -1,0 +1,110 @@
+{
+  "format": 2,
+  "id": "weapon-xp",
+  "name": "Weapon Experience",
+  "version": "0.6.1",
+  "author": "Community mod",
+  "description": "Ten persistent weapon levels with native localized vN names, acquisition presentations and integrated weapon HUD. Original weapon behavior and visuals by default. Optional damage and ammo-capacity scaling are independently disabled by default. XP follows native enemy bolt payouts and depletion.",
+  "license": "GPL-3.0-or-later",
+  "api": "1.1",
+  "games": {
+    "rac1": [
+      "pal",
+      "ntsc"
+    ]
+  },
+  "hooks": [
+    "rac1.moby.bolt.update",
+    "rac1.combat.get_hit",
+    "rac1.moby.record_death",
+    "rac1.level.load_gameplay",
+    "rac1.pad.process_report",
+    "rac1.moby.morphoray.update"
+  ],
+  "settings": [
+    {
+      "key": "profile",
+      "type": "string",
+      "default": "campaign-1",
+      "name": "XP campaign profile",
+      "description": "Separate XP profile for each campaign. Independent of the game's save slots."
+    },
+    {
+      "key": "xp_rate",
+      "type": "float",
+      "default": 1.0,
+      "min": 0.25,
+      "max": 4.0,
+      "step": 0.25,
+      "name": "Experience rate"
+    },
+    {
+      "key": "scale_damage",
+      "type": "bool",
+      "default": false,
+      "name": "Increase damage with weapon level",
+      "description": "Optional damage scaling, up to 3x at level 10. Restart the game after changing this setting."
+    },
+    {
+      "key": "scale_capacity",
+      "type": "bool",
+      "default": false,
+      "name": "Increase ammo capacity with weapon level",
+      "description": "Optional maximum ammo scaling, up to 2.125x at level 10. Does not refill ammo. Restart the game after changing this setting."
+    },
+    {
+      "key": "hud",
+      "type": "bool",
+      "default": true,
+      "name": "Show XP inside the original weapon HUD"
+    },
+    {
+      "key": "reduced_motion",
+      "type": "bool",
+      "default": false,
+      "name": "Reduce interface motion"
+    },
+    {
+      "key": "max_kill_xp",
+      "type": "float",
+      "default": 500,
+      "min": 0,
+      "max": 100000,
+      "step": 1,
+      "name": "Maximum XP per kill before multipliers"
+    },
+    {
+      "key": "level_up_animation",
+      "type": "bool",
+      "default": true,
+      "name": "Play native level-up presentation"
+    },
+    {
+      "key": "versioned_names",
+      "type": "bool",
+      "default": true,
+      "name": "Show weapon version in native names"
+    },
+    {
+      "key": "rules_file",
+      "type": "string",
+      "default": "rules.ini",
+      "name": "Advanced weapon rules filename",
+      "description": "Editable INI in the XP profile directory. Independent thresholds, damage/ammo curves and XP weights per weapon."
+    },
+    {
+      "key": "flip_morph_model",
+      "type": "bool",
+      "default": false,
+      "name": "Flip Morph-o-Ray upside down",
+      "description": "Roll the held model upside down around its firing axis. The barrel and native beam still point toward the target."
+    }
+  ],
+  "plugin": {
+    "windows-x86_64": "lib/windows-x86_64/weapon_xp.dll",
+    "linux-x86_64": "lib/linux-x86_64/weapon_xp.so",
+    "linux-aarch64": "lib/linux-aarch64/weapon_xp.so",
+    "macos-arm64": "lib/macos-arm64/weapon_xp.dylib",
+    "macos-x86_64": "lib/macos-x86_64/weapon_xp.dylib"
+  }
+}

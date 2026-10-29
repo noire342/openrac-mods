@@ -1,0 +1,23 @@
+# Observed contracts in installed OpenRAC binaries.
+# pal SHA256 528d2cb3dbd2a3e9b90a8046d90bd40ad0db299146fc17317f6f88315f2cf780
+pal	Moby_Class482_Update	void(u32)
+pal	Moby_Bolt_Update	void(u32)
+pal	Moby_GetHitMessage	u32(u32,i32,i32)
+pal	Moby_RecordDeath	void(u32,i32,i32)
+pal	Level_LoadGameplay	u32(i32)
+pal	Weapon_TakeAmmo	i32(i32,i32)
+# ntsc SHA256 b5237bce419639b6d0910660681301ca8236bb88cd0d1eb3e83be9ffdcc46794
+ntsc	Moby_Class482_Update	void()
+ntsc	Moby_Bolt_Update	void(u32)
+ntsc	Moby_GetHitMessage	u32(u32,i32,i32)
+ntsc	Moby_RecordDeath	void(u32,i32,i32)
+ntsc	Level_LoadGameplay	u32(i32)
+ntsc	Weapon_TakeAmmo	i32(i32,i32)
+pal	Moby_Class121_Update	void(u32)
+pal	Moby_Class305_Update	void(u32)
+ntsc	Moby_Class121_Update	void(u32)
+ntsc	Moby_Class305_Update	void(u32)
+
+# Morph-o-Ray contracts from the current port maps; native NTSC checked in 0.6.1 QA.
+pal	Moby_Morphoray_Update	void(u32)
+ntsc	Moby_Morphoray_Update	void(u32)

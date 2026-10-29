@@ -1,0 +1,51 @@
+{
+  "version": "0.6.1",
+  "providerReportedVersion": "0.6.1",
+  "dllSha256": "bb98d0af780e9b948d306776363eb3a0fff3c21d662718470ec90f742192e80c",
+  "automaticTestGroups": 12,
+  "publicAbis": [
+    1,
+    2,
+    3
+  ],
+  "defaultBonusesDisabled": true,
+  "morphModelFlipDefault": false,
+  "evidenceScope": "Final release DLL: live Morph pose toggles, native transformations, v3 rules/settings/rollback, weighted earned XP, V9-to-V10 kill and native scene, vertical LV10 HUD. Seeded XP is a fixture; final level boundary is a real kill.",
+  "limitations": [
+    "Native NTSC; PAL host coverage only.",
+    "No full campaign playthrough.",
+    "Original concept-art attribution unverified.",
+    "API changes are session-only. Native API, no Luau bridge."
+  ],
+  "nativeSessions": [
+    {
+      "name": "v061-final-morph",
+      "dllSha256": "bb98d0af780e9b948d306776363eb3a0fff3c21d662718470ec90f742192e80c",
+      "summary": "QA shutdown ticks=2130 kills=0 hits=0 item9=0/LV1 item10=0/LV1 item11=0/LV1 item13=0/LV1 item15=0/LV1 item16=0/LV1 item17=0/LV1 item18=0/LV1 item19=0/LV1 item20=0/LV1 item23=0/LV1 item24=0/LV1 selected=21 damage-mult=0 capacity-mult=0 native-cap=0"
+    },
+    {
+      "name": "v061-final-extension",
+      "dllSha256": "bb98d0af780e9b948d306776363eb3a0fff3c21d662718470ec90f742192e80c",
+      "summary": "QA shutdown ticks=1230 kills=0 hits=49 item9=0/LV1 item10=0/LV1 item11=0/LV1 item13=0/LV1 item15=585/LV2 item16=0/LV1 item17=0/LV1 item18=0/LV1 item19=0/LV1 item20=0/LV1 item23=0/LV1 item24=0/LV1 selected=15 damage-mult=1 capacity-mult=1 native-cap=200"
+    },
+    {
+      "name": "v061-final-earned",
+      "dllSha256": "bb98d0af780e9b948d306776363eb3a0fff3c21d662718470ec90f742192e80c",
+      "summary": "QA shutdown ticks=1027 kills=0 hits=46 item9=0/LV1 item10=0/LV1 item11=0/LV1 item13=0/LV1 item15=46000/LV10 item16=0/LV1 item17=0/LV1 item18=0/LV1 item19=0/LV1 item20=0/LV1 item23=0/LV1 item24=0/LV1 selected=15 damage-mult=1 capacity-mult=1 native-cap=200"
+    },
+    {
+      "name": "v061-final-ui",
+      "dllSha256": "bb98d0af780e9b948d306776363eb3a0fff3c21d662718470ec90f742192e80c",
+      "summary": "QA shutdown ticks=1110 kills=0 hits=0 item9=46000/LV10 item10=0/LV1 item11=0/LV1 item13=0/LV1 item15=0/LV1 item16=0/LV1 item17=0/LV1 item18=0/LV1 item19=0/LV1 item20=0/LV1 item23=0/LV1 item24=0/LV1 selected=9 damage-mult=1 capacity-mult=1 native-cap=0"
+    }
+  ],
+  "sourceArchiveCleanRebuild": {
+    "result": "12/12 tests passed",
+    "compilerWarnings": 0,
+    "sdk": "1.3.0"
+  },
+  "archives": {
+    "weapon-xp-0.6.1-windows-x86_64.zip": "e0b783ca6d12172b7bea2df43f08cf729db307d48ff548fcb1d445da909ea4bb",
+    "weapon-xp-0.6.1-source.zip": "98b1b7ccba9fb6ba5229de773d0cd67c5b756110e7f0b5612cefef9beb0211e4"
+  }
+}
