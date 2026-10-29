@@ -177,22 +177,6 @@ bool Runtime::valid(std::uint32_t address, std::uint32_t size) {
     return address >= 0x10000 && address <= kRam && size <= kRam - address;
 }
 
-template <class T>
-T Runtime::read(std::uint32_t address) {
-    T result{};
-    if (valid(address, sizeof(T))) {
-        std::memcpy(&result, m_api->memory + address, sizeof(T));
-    }
-    return result;
-}
-
-template <class T>
-void Runtime::write(std::uint32_t address, T value) {
-    if (valid(address, sizeof(T))) {
-        std::memcpy(m_api->memory + address, &value, sizeof(T));
-    }
-}
-
 std::uint32_t Runtime::resident(std::uint32_t address) {
     return m_api->relocate_data(address);
 }

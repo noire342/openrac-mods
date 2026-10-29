@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased source changes
+
+- Make the native memory helper templates available to every translation unit,
+  fixing GNU linker errors in the Linux source build. The published Windows
+  0.6.1 artifact and its source ZIP remain unchanged.
+- Build/test on Windows and Ubuntu 24.04 using current GitHub Actions runtimes.
+
 ## Weapon Experience 0.6.1
 
 - Ten persistent levels for twelve weapons, with progression-only defaults.

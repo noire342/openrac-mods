@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 #include <array>
+#include <cstring>
 #include <memory>
 #include <string>
 
@@ -117,9 +118,19 @@ private:
 
     bool valid(std::uint32_t address, std::uint32_t size);
     template <class T>
-    T read(std::uint32_t address);
+    T read(std::uint32_t address) {
+        T result{};
+        if (valid(address, sizeof(T))) {
+            std::memcpy(&result, m_api->memory + address, sizeof(T));
+        }
+        return result;
+    }
     template <class T>
-    void write(std::uint32_t address, T value);
+    void write(std::uint32_t address, T value) {
+        if (valid(address, sizeof(T))) {
+            std::memcpy(m_api->memory + address, &value, sizeof(T));
+        }
+    }
     std::uint32_t resident(std::uint32_t address);
     std::uint32_t overlay(std::uint32_t address);
     std::uint32_t hero();
