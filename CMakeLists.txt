@@ -1,4 +1,5 @@
-# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 noire342
 cmake_minimum_required(VERSION 3.20)
 project(NoireOpenRACMods LANGUAGES C CXX)
 

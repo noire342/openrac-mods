@@ -4,7 +4,7 @@
   "name": "Revolverator",
   "version": "0.1.0",
   "author": "noire342",
-  "license": "GPL-3.0-or-later",
+  "license": "MIT",
   "api": "1.1",
   "description": "Restores the cut drill weapon through the native Walloper slot. Hold Circle to catch and spin a regular enemy; release to throw. Original Hoven drill model is supplied by the companion graphics pack.",
   "games": {

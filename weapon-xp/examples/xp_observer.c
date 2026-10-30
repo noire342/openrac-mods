@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT
+ * Copyright (c) 2026 noire342
  * A small independent consumer mod. Windows discovery example; it never loads a second provider.
  * Other platforms can resolve WEAPON_XP_QUERY_SYMBOL on their loader's existing module handle.
  */

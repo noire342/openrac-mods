@@ -1,4 +1,5 @@
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 noire342
 #include "native_vendor.hpp"
 #include "native_ammunition.hpp"
 #include <algorithm>

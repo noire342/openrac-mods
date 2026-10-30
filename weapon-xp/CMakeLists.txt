@@ -1,4 +1,5 @@
-# SPDX-License-Identifier: GPL-3.0-or-later
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 noire342
 set(weapon_xp_core src/progression.cpp src/combat.cpp src/store.cpp src/ui.cpp src/events.cpp src/rules.cpp src/rules_file.cpp)
 openrac_add_mod(weapon_xp MANIFEST openrac-mod.json
   SOURCES src/weapon_xp.cpp src/runtime.cpp src/hud_bridge.cpp src/native_hud.cpp src/native_upgrades.cpp src/api.cpp src/configuration_api.cpp ${weapon_xp_core})

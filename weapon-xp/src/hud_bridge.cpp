@@ -1,4 +1,5 @@
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 noire342
 #include "hud_bridge.hpp"
 
 #include <cstring>

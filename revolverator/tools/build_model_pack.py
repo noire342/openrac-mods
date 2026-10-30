@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 noire342
 """Build the private graphics companion from the player's extracted R&C1 assets.
 
 Preserves the authentic drill geometry/UV/material. Its rigid housing binds to

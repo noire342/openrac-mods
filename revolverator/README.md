@@ -93,3 +93,11 @@ la memoria del gioco. Munizioni, venditore, alias di classe, rotore e HUD hanno
 responsabilità distinte e ripristinano soltanto le modifiche ancora possedute.
 L'API pubblica scambia valori copiati sul thread del gioco, senza esporre puntatori
 alla memoria ospite.
+
+## Licenza
+
+Il codice della mod scritto per questo progetto è distribuito con licenza
+[MIT](LICENSE), Copyright (c) 2026 noire342. I notice di terze parti restano
+validi. La licenza del codice non copre modelli, texture, icone o altri asset
+derivati dal gioco; il runtime OpenRAC e la relativa patch mantengono le loro
+licenze GPL e gli altri notice upstream.

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 noire342
 """Create an audited PRIVATE source snapshot; this tool never publishes it."""
 from __future__ import annotations
 import argparse

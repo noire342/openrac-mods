@@ -51,5 +51,8 @@ and Sony Interactive Entertainment. Game assets and game files are not included.
 
 ## License
 
-Project code is GPL-3.0-or-later unless a file says otherwise. The public Weapon
-Experience API header is MIT-licensed. Retain the notices in copied source files.
+Project code authored here is [MIT-licensed](LICENSE), Copyright (c) 2026
+noire342. The upstream `tools/fetch_sdk.py` retains its GPL-3.0-or-later license
+and OpenRAC copyright; its license text is in [LICENSES](LICENSES/GPL-3.0-or-later.txt).
+Retain file-specific notices. The OpenRAC runtime/engine and game assets are
+not relicensed by this repository. See [licensing scope](docs/LICENSING.md).

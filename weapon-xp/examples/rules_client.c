@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT
+ * Copyright (c) 2026 noire342
  * Copy into an independent native mod after resolving query(WEAPON_XP_ABI_V3).
  * Requires no C++ types, SDK headers, link library or access to game memory.
  * The override lasts for this session. Save the original and restore on unload

@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: MIT
+ * Copyright (c) 2026 noire342
  * Public C ABI. Copy this header into another mod; no link-time dependency on weapon-xp.
  * All calls and callbacks run on OpenRAC's game thread. Query does not load a mod.
  */

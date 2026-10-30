@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 noire342
 """Extract the selected native glyph and upscale it with Real-ESRGAN ncnn Vulkan.
 
 The source is the exact 59901:13 frame in a private native RAM fixture, not a crop

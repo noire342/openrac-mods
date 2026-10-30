@@ -101,3 +101,10 @@ Progression, combat, persistence, events, UI, native adapters and service integr
 remain separate modules. The removed effect planners/renderers are absent from this
 source release. QA helpers and test save files are never included in the game ZIP.
 Install the ZIP through the launcher's Mods page and restart the game.
+
+## License
+
+The mod code authored for this project is [MIT-licensed](LICENSE),
+Copyright (c) 2026 noire342. Existing third-party notices remain applicable.
+The OpenRAC SDK keeps its MIT notice; the OpenRAC runtime and any engine patch
+retain their upstream GPL licenses. Game code and assets are not relicensed.

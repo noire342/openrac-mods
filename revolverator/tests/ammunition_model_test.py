@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 noire342
 """Verify a single energy-cell asset and matching world/vendor visual aliases."""
 import argparse
 import hashlib

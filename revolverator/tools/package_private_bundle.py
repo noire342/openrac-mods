@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 noire342
 """Create one PRIVATE test ZIP. It never installs, launches or publishes it.
 
 The outer ZIP is an extract-and-run private helper, not an invented standard

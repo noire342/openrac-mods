@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 noire342
 param(
     [string]$Runtime = '',
     [string]$InstalledData = '',

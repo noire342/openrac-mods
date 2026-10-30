@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 noire342
 """Blender background preview of the generated GLB (not a concept mockup)."""
 import math
 from pathlib import Path

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 noire342
 """Validate head-only binding while preserving authentic source art and importer compatibility."""
 import argparse
 import hashlib

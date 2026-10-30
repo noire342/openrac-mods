@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 noire342
 """Build original Revolverator ammunition art and an isolated native-level extension.
 
 The installed levels and other mods are never modified. Standard model packs
