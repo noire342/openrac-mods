@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include <array>
+#include <cstdint>
 #include <string>
 #include <vector>
 
