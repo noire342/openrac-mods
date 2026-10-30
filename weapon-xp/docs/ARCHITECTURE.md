@@ -29,8 +29,9 @@ flowchart LR
   details stay in `native_hud`, callback ownership in `hud_bridge`.
 - `native_upgrades` owns localized text bindings and acquisition lifecycle. `native_damage`
   handles the Blaster's native damage-table replacement only when its bonus is enabled.
-- `native_morph_model` owns only the optional post-update held-model pose and guarded
-  restoration. Native beam/targeting runs with the original basis before this adapter.
+- `native_morph_model` owns the optional pre-update held-model roll and guarded
+  restoration. The native update samples its muzzle joint from that pose, keeping
+  the rendered barrel, native beam origin, light and sparks aligned.
 - `runtime` coordinates session/SDK lifetime. `api` implements progression/co-op contracts;
   `configuration_api` validates and commits extensions before emitting one config event.
 - `store` owns locking, checksums, backups and atomic XP replacement.

@@ -2,11 +2,31 @@
   "format": 2,
   "id": "revolverator",
   "name": "Revolverator",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": "noire342",
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "api": "1.1",
-  "description": "Restores the cut drill weapon through the native Walloper slot. Hold Circle to catch and spin a regular enemy; release to throw. Original Hoven drill model is supplied by the companion graphics pack.",
+  "description": "Restores the cut Revolverator as an additional weapon while preserving the original Walloper. Integrated native inventory, quick select, twenty rounds, Hoven vendor stock and independent save data. Requires the additive-arsenal OpenRAC bridge and companion graphics pack; supports optional Weapon XP API v4.",
+  "extensions": {
+    "noire342.arsenal": {
+      "version": 1,
+      "runtimeQuery": "openrac_revolverator_query",
+      "runtimeApiVersion": 2,
+      "stateCodec": "openrac.arsenal.v1",
+      "stateSuffix": ".arsenal",
+      "items": [
+        {
+          "key": 65554,
+          "stableId": "noire342.revolverator",
+          "name": "Revolverator",
+          "kind": "weapon",
+          "capacity": 20,
+          "weaponIcon": {"bank": 60037, "frame": 0},
+          "ammunitionIcon": {"bank": 60037, "frame": 3}
+        }
+      ]
+    }
+  },
   "games": {
     "rac1": [
       "ntsc"
@@ -35,7 +55,38 @@
     "rac1.moby.sharkigator_35.update",
     "rac1.moby.sharkigator_1059.update",
     "rac1.moby.ammo_pickup.update",
-    "rac1.vendor.build_item_list"
+    "rac1.vendor.build_item_list",
+    "rac1.item.give",
+    "rac1.menu.item_grid.update",
+    "rac1.menu.item_grid.draw",
+    "rac1.menu.item_slots.update",
+    "rac1.menu.quick_select.draw",
+    "rac1.menu.quick_select.load",
+    "rac1.menu.quick_select.store",
+    "rac1.menu.item_text.draw",
+    "rac1.menu.item_ammo.draw",
+    "rac1.menu.preview.bind",
+    "rac1.menu.preview.update",
+    "rac1.menu.preview.draw_available",
+    "rac1.menu.preview.draw_selected",
+    "rac1.menu.equipped_preview.update",
+    "rac1.menu.equipped_preview.draw",
+    "rac1.menu.preview.pose",
+    "rac1.hud.quick_select.init",
+    "rac1.hud.quick_select.update",
+    "rac1.hud.quick_select.draw",
+    "rac1.vendor.menu_update",
+    "rac1.vendor.initialize_selected",
+    "rac1.ammo.choose_drop",
+    "rac1.ammo.spawn_drop",
+    "rac1.save.prepare",
+    "rac1.save.request_autosave",
+    "rac1.save.restore",
+    "rac1.save.restore_data",
+    "rac1.save.new_game",
+    "rac1.save.new_game_plus",
+    "rac1.save.serialize",
+    "rac1.save.update_state"
   ],
   "load": {
     "after": [
@@ -43,6 +94,13 @@
     ]
   },
   "settings": [
+    {
+      "key": "start_unlocked",
+      "name": "Revolverator sbloccato da subito",
+      "description": "Assegna il Revolverator con20 munizioni alla prima fase giocabile se non e gia posseduto. Non ripristina le munizioni ai successivi caricamenti.",
+      "type": "bool",
+      "default": false
+    },
     {
       "key": "hud",
       "name": "Show charge inside the native weapon HUD",

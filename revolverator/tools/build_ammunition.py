@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (c) 2026 noire342
 """Build original Revolverator ammunition art and an isolated native-level extension.
 
@@ -212,7 +212,7 @@ def junction(source: Path, target: Path):
         target.symlink_to(source, target_is_directory=True)
 
 
-def build(levels: Path, out: Path, recipe_path: Path):
+def build(levels: Path, out: Path, recipe_path: Path, weapon_pack: Path | None = None):
     levels, out = levels.resolve(), out.resolve()
     if out.exists():
         raise ValueError('Output already exists. Choose a new output directory.')
@@ -222,6 +222,13 @@ def build(levels: Path, out: Path, recipe_path: Path):
     if not sources:
         raise ValueError('No extracted level manifests found.')
     before = {str(p/'manifest.json'): digest(p/'manifest.json') for p in sources}
+    weapon_class = None
+    if weapon_pack is not None:
+        weapon_pack = weapon_pack.resolve(strict=True)
+        weapon_meta = json.loads((weapon_pack/'rotor.json').read_text())
+        weapon_class = int(weapon_meta['target_class'])
+        if weapon_class != 2017 or weapon_meta.get('native_source_class') != 180:
+            raise ValueError('The additive weapon pack must use class2017 with the native180 skeleton')
     recipe = json.loads(recipe_path.read_text(encoding='utf8'))
     mesh, picture = geometry(recipe), texture(recipe)
     if len(mesh.positions) >= 65536:
@@ -277,6 +284,21 @@ def build(levels: Path, out: Path, recipe_path: Path):
                     'name': 'revolverator_ammunition' if identity == recipe['visual_class']
                             else 'revolverator_ammunition_vendor_preview'}
             added.append({'level': manifest['level'], 'scale': scale, 'visual_classes': identities})
+        if weapon_pack is not None and int(manifest['level']) in range(19):
+            if str(weapon_class) in manifest['classes']['moby']:
+                raise ValueError(f'Weapon render class {weapon_class} already used in {source.name}')
+            native_weapon = manifest['classes']['moby'].get('180')
+            if not native_weapon:
+                raise ValueError(f'Native Walloper class180 is absent from {source.name}')
+            own_weapon = dest/'revolverator_weapon'
+            (own_weapon/'mobys').mkdir(parents=True)
+            (own_weapon/'textures').mkdir()
+            mesh_name = f'moby_{weapon_class}.glb'
+            shutil.copy2(weapon_pack/source.name/'mobys'/mesh_name, own_weapon/'mobys'/mesh_name)
+            shutil.copy2(weapon_pack/source.name/'textures/moby_revolverator_original.png', own_weapon/'textures/moby_revolverator_original.png')
+            definition = dict(native_weapon)
+            definition.update(mesh=f'revolverator_weapon/mobys/{mesh_name}', name='revolverator_independent_weapon')
+            manifest['classes']['moby'][str(weapon_class)] = definition
         (dest/'manifest.json').write_text(json.dumps(manifest, indent=2)+'\n', encoding='utf8')
     after = {p: digest(Path(p)) for p in before}
     if before != after:
@@ -285,6 +307,8 @@ def build(levels: Path, out: Path, recipe_path: Path):
         'original_levels': str(levels), 'extended_levels': str(installed),
         'visual_class': recipe['visual_class'], 'native_pickup_class': recipe['native_pickup_class'],
         'vendor_visual_class': recipe.get('vendor_visual_class'),
+        'weapon_visual_class': weapon_class,
+        'weapon_pack': str(weapon_pack) if weapon_pack else None,
         'triangles': len(mesh.indices)//3, 'vertices': len(mesh.positions),
         'bounds_metres': {'min': [min(p[i] for p in mesh.positions) for i in range(3)],
                           'max': [max(p[i] for p in mesh.positions) for i in range(3)]},
@@ -297,7 +321,7 @@ def build(levels: Path, out: Path, recipe_path: Path):
         'Launch OpenRAC with --levels "'+str(installed)+'" and the usual Revolverator --mods pack.\n'
         'The overlay links existing assets read-only by convention and owns only cloned manifests and new art.\n'
         'Do not open this QA overlay as an editable level project. The installed game was not modified.\n'
-        'Native runtime creates a normal class225 ammo pickup, then uses visual class32000 for slot18 only.\n'
+        'Native runtime creates normal class225 ammo pickups, then uses visual class32000 only for logical Revolverator cartridges.\n'
         'Vendor preview visual class2016 uses the same energy-cartridge GLB and native225scale.\n'
         'This is a private QA extension, not a standard launcher-importable new-class pack.\n', encoding='utf8')
     print(json.dumps({k: receipt[k] for k in ('extended_levels','visual_class','vendor_visual_class','triangles','vertices','bounds_metres','original_manifests_unchanged')}, indent=2))
@@ -308,8 +332,9 @@ def main():
     parser.add_argument('--levels', type=Path, required=True)
     parser.add_argument('--out', type=Path, required=True)
     parser.add_argument('--recipe', type=Path, default=Path(__file__).resolve().parents[1]/'assets/ammunition/recipe.json')
+    parser.add_argument('--weapon-pack',type=Path,help='Add the separately built class2017 drill without replacing native class180')
     args = parser.parse_args()
-    build(args.levels, args.out, args.recipe)
+    build(args.levels, args.out, args.recipe, args.weapon_pack)
 
 
 if __name__ == '__main__':

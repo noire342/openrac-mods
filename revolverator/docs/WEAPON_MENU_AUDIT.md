@@ -1,85 +1,50 @@
-# Weapon menu capacity audit
+# Additive weapon inventory and native menu
 
-This audit is read-only and concerns the NTSC-U native implementation. The
-current Revolverator replaces Walloper item **18**. It consumes the existing
-cell, icon bank and quick-select entry, so it does not require smaller icons or
-an enlarged menu.
+Version 0.2 keeps the original Walloper and adds a logical Revolverator. Native
+item arrays and save formats are not extended with an invented free ID.
 
-For the player: **the Revolverator already fits the existing weapon menu. Keep
-the present icon size.** A sharper128px texture improves its detail within the
-same cell; shrinking the visible icon now would reduce clarity without making
-another weapon available.
+| Identity | Logical key | Native transport |
+| --- | ---: | ---: |
+| Walloper | 18 | 18 |
+| Revolverator | 65554 (`0x10012`) | 18, only inside the required context |
 
-## Screen geometry
+There is no safe spare native item ID in the audited range. Item 35 belongs to
+the Persuader, and 36 has hoverboard/minigame behavior. Array sizes also differ:
+unlocked 32, ammo 37, available 35 as declared, text variants 40. Native serialization
+includes additional original flags. An ammo-array entry does not make an item
+ID safe for ownership, equip, vendor, menus or persistence.
 
-`MenuItemGridData` stores explicit rows, columns, margins, selected cell, cell
-array and neighboring screens. `draw_menu_item_grid` iterates `rows * cols` and
-passes explicit screen width/height to `draw_hud_sprite_subpixel`. Replacing a
-32px texture with a 128px texture does not increase a menu cell's screen size.
+## Existing screens
 
-Changing icon size alone does not add inventory capacity. A future grid change
-must update its cell array and navigation together: `update_menu_grid_selection`
-contains special mappings when focus moves between three-column and five-column
-grids. The item slot editor has a separate fixed eight-slot quick-select array.
+`NativeWeaponMenu` extends the original weapon grid and quick-select editor,
+using the game's panels, focus, text and preview functions. The view has five
+columns and up to four visible rows:20 cells. Catalogues beyond 20 scroll through
+the same grid. Navigation and its backing cells change together; merely drawing
+smaller icons would not create an inventory entry.
 
-Relevant upstream source locations:
+The eight quick slots remain the existing eight slots. Their logical bindings
+can distinguish Walloper 18 from Revolverator 65554; gameplay icons and equipment
+project the selected key into the native operation. Preview and draw scopes do
+not change the persistent logical ownership or silently equip another weapon.
 
-- `include/rnc/ui/menus/menu_screen.h:64` — cell fields and explicit grid layout.
-- `include/rnc/ui/menus/menu_screen.h:124` — eight quick-select slots.
-- `src/ui/menus/draw_menu_item_grid.c:60` — rows/columns, spacing and sizing.
-- `src/ui/menus/draw_menu_item_grid.c:90` — drawing the cells and icon variants.
-- `src/ui/menus/update_menu_grid_selection.c:73` — three/five-column transition.
+The registry supports further descriptors internally. The public v2 service
+currently grants/inspects the registered Revolverator; it does not expose a
+cross-mod arbitrary-registration endpoint yet.
 
-## Inventory and save limits
+## Boundaries
 
-The native item arrays do not share one extensible capacity:
+- `arsenal::Registry`: stable IDs, ownership, XP, ammunition, equipment and logical favourites.
+- `NativeArsenal`: scoped metadata/counter projection and original Walloper preservation.
+- `NativeWeaponMenu`: cells, paging, navigation and preview contexts.
+- `NativeArsenalSave`: native serialization/lifecycle boundaries and per-slot sidecar selection.
+- `arsenal::Store`: validated atomic sidecar codec tied to the native save fingerprint.
+- `NativeArsenalXP`: optional v4 ownership filtering and independent progression.
 
-| Native array | Declared entries |
-| --- | ---: |
-| `alternate_item_available` | 128 |
-| `item_unlocked` | 32 |
-| `weapon_ammo_counts` | 37 |
-| `item_available` | 35 |
-| `item_text_variant` | 40 |
+The native file stores original IDs and Walloper state. Custom favourite
+bindings are sanitized while serializing, then RAM is restored. The sidecar
+retains custom records and logical bindings. No global item count, descriptor
+array bound or native save packet format is rewritten.
 
-Declarations are in `include/rnc/gameplay/state/item_state.h:8`. **37 ammo entries
-does not mean 37 free weapon slots.** Existing IDs also include gadgets and
-special items. A new item ID must be safe for every array and every caller, as
-well as purchase, pickup, equipment and save serialization paths.
-
-`build_filtered_menu_item_list` additionally enumerates a fixed 14 entries from
-four native cell groups: six, three, three and two. This is a particular filtered
-selection list, not proof that the entire inventory has a universal 14-item
-limit. A future genuinely additional weapon must extend that list where used;
-shrinking its visual icon cannot make it appear automatically.
-
-Relevant upstream locations:
-
-- `src/ui/menus/build_filtered_menu_item_list.c:49` — fixed collection loop.
-- `src/ui/menus/update_menu_preview_class_pose.c` — iteration over existing
-  0x25 item definitions.
-
-## Recommendation
-
-Keep the current layout and icon dimensions. For future additional weapons,
-first introduce an explicit item registry and audit native ID bounds, native
-save representation, all filtered selection lists and navigation resources.
-Then choose either a coordinated native grid extension or paging based on an
-actual capacity requirement. No native tables were patched as part of this audit.
-
-A future additional weapon has these separate requirements:
-
-1. An inventory identity valid across ownership, unlock, ammunition and text
-   arrays, with a compatible native save representation.
-2. A definition, ammo/pickup policy, vendor entry and acquisition path; visual
-   class32000 is a render model identifier, not an inventory slot.
-3. Entries in each applicable static/filtered selection list and preview table.
-4. Coordinated grid cells, focus/navigation and selection resources. The current
-   three/five-column transitions must be updated if those layouts change.
-5. A decision about the independent eight quick-select slots; additional owned
-   weapons do not automatically imply more quick-select buttons.
-6. Explicit XP registration/migration if the new item must have independent
-   progression. Replacing slot18 intentionally reuses that slot's XP identity.
-
-This source audit establishes these constraints. It does not claim that the
-inventory has already been expanded or that arbitrary new item IDs are safe.
+These contexts require the dedicated 30-hook OpenRAC bridge. Menu functionality
+has native fixture evidence; final icon/model rendering remains under graphical
+QA. See [NATIVE_VALIDATION.md](NATIVE_VALIDATION.md).

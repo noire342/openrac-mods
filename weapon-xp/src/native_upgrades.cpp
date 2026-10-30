@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #include "native_upgrades.hpp"
 
@@ -70,6 +70,20 @@ void NativeUpgrades::enqueue(int item, int before, int after) {
     }
 }
 
+bool NativeUpgrades::supports_presentation(int item) const {
+    if (weapon_index(item) < 0) return false;
+    const bool pal = std::strcmp(m_disc.version, "pal") == 0;
+    const auto scenes = m_api->relocate_level_data(1, pal ? 0x1CA720 : 0x1CA4A0);
+    const auto entry = scenes + unsigned(item) * 4;
+    return valid(entry, 4) && read<int>(entry) >= 0;
+}
+
+bool NativeUpgrades::request_presentation(int item) {
+    if (pending() || !supports_presentation(item)) return false;
+    m_queue.push_back({item, 0, true});
+    return true;
+}
+
 void NativeUpgrades::rename(Binding& b, int level) {
     if (b.level == level
         || read<unsigned>(b.entry) != (b.level == 1 ? b.original : b.replacement)) {
@@ -132,6 +146,7 @@ void NativeUpgrades::names(const Progression& state, bool enabled) {
         }
     }
     for (auto& b : m_bindings) {
+        if (requested_presentation_pending() && m_queue.front().item == b.item) continue;
         const int target = m_active && !m_queue.empty() && m_queue.front().item == b.item
                                ? m_queue.front().level
                                : state.weapon_level(b.item);
@@ -164,7 +179,7 @@ void NativeUpgrades::tick(const Progression& state, bool safe, bool versioned_na
         restore_player();
         write(hero + 0x20B8, m_previous_item);
         std::memcpy(m_api->memory + vendor(), m_vendor.data(), m_vendor.size());
-        notify(m_queue.front().item, m_queue.front().level);
+        if (!m_queue.front().presentation_only) notify(m_queue.front().item, m_queue.front().level);
         m_active = false;
         m_queue.pop_front();
         m_delay = 180;
@@ -207,7 +222,7 @@ void NativeUpgrades::tick(const Progression& state, bool safe, bool versioned_na
     if (read<int>(scenes + next.item * 4) < 0) {
         // RYNO is awarded by the shady salesman and has no retail vendor acquisition scene.
         // Preserve its native acquisition-message path rather than indexing an invalid archive.
-        notify(next.item, next.level);
+        if (!next.presentation_only) notify(next.item, next.level);
         m_queue.pop_front();
         m_preparing = false;
         m_delay = 180;
@@ -223,7 +238,7 @@ void NativeUpgrades::tick(const Progression& state, bool safe, bool versioned_na
     m_preparing = false;
     m_completed = 0;
     for (auto& b : m_bindings) {
-        if (b.item == next.item) {
+        if (b.item == next.item && !next.presentation_only) {
             rename(b, next.level);
         }
     }

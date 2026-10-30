@@ -1,53 +1,49 @@
-# Build from source
+# Build development source
 
-Requirements: CMake 3.20+, Python 3, a C++17 compiler and the pinned OpenRAC mod
-SDK 1.3.0. The SDK is downloaded as source/header tooling; it is not vendored here.
-The mods link only to the SDK interface, not the OpenRAC executable.
+Requirements: CMake 3.20+, Python 3, a C++17 compiler and pinned OpenRAC mod SDK 1.3.0.
+The SDK is downloaded separately; its fetcher verifies the URL/SHA256 in `sdk.lock`.
 
 ```sh
 python tools/fetch_sdk.py
-cmake -S . -B build
-cmake --build build --config Release
+cmake -S . -B build -DBUILD_WEAPON_XP=ON -DBUILD_REVOLVERATOR=ON -DBUILD_TESTING=ON
+cmake --build build --config Release --parallel
 ctest --test-dir build -C Release --output-on-failure
-python .sdk/openrac-mod-sdk-1.3.0/tools/package_mod.py build/package/weapon_xp -o dist
 ```
 
-The exact package directory is printed by the build; the SDK may normalize the
-target name to `weapon-xp`. Use the directory that contains the package manifest.
-On Windows, Visual Studio 2022 or later supplies the compiler. A generator can be
-specified explicitly when several toolchains are installed.
+`BUILD_WEAPON_XP` builds the 0.6.3-arsenal development companion. `BUILD_REVOLVERATOR`
+builds the additive 0.2 source and defaults off unless selected. The test suite
+contains 17 Revolverator and 13 Weapon Experience host groups. Build either mod
+separately by disabling the other option.
 
-For an SDK already unpacked elsewhere:
+An unpacked SDK can be selected with `-DOPENRAC_SDK=/path/to/openrac-mod-sdk-1.3.0`
+or an explicit `OpenRACMod_DIR`. On Windows use Visual Studio 2022 or later.
+On Linux the optional service symbol is exported explicitly and the consumer
+links `${CMAKE_DL_LIBS}`. The workflow builds/tests both modules on Windows and
+Ubuntu and uploads test logs; it does not create a stable release.
 
-```sh
-cmake -S . -B build -DOPENRAC_SDK=/path/to/openrac-mod-sdk-1.3.0
-```
+## Native gameplay requirements
 
-`sdk.lock` pins the SDK URL and SHA-256. The fetcher rejects a different archive.
-An explicit `OpenRACMod_DIR` takes precedence over `OPENRAC_SDK`.
+Host builds need no game assets or modified executable. Running Revolverator 0.2
+requires R&C1 NTSC-U data and the matching [arsenal bridge](arsenal-bridge/README.md),
+which adds 30 typed native hook boundaries on the pinned OpenRAC base. Build that
+runtime separately from your own disc and keep the official installation intact.
+Weapon Experience by itself does not require this new bridge.
 
-## Targets and tests
+The [local asset workflow](../revolverator/docs/BUILD_AND_ASSETS.md) constructs
+the original drill and authored ammunition locally, then extends native level
+manifests with 2017/32000/2016 while preserving 180. Original game art and the
+optional `revolverator_hd_icon_data.hpp` are not published. The authored
+`ammunition_icon_data.hpp` is included so public builds retain the cartridge HUD.
 
-`BUILD_WEAPON_XP` defaults on. It builds the 0.6.1-based source and twelve
-test groups, including the native adapter/DLL-host harness. These tests are
-separate from native game sessions described in [Validation](VALIDATION.md).
-Unreleased source portability fixes are listed in [Changelog](../CHANGELOG.md);
-the tagged 0.6.1 release archives remain unchanged.
+When packaging the optional companion, point `--weapon-xp-source` to this
+repository's `weapon-xp` directory and provide its matching built package.
+`--engine-source` points to the separately patched OpenRAC checkout. The private
+bundle helper's `--runtime` and `--bridge-patch` refer to those exact local inputs.
 
-`BUILD_REVOLVERATOR` defaults off because it is a source preview. Build/test it
-explicitly with `-DBUILD_WEAPON_XP=OFF -DBUILD_REVOLVERATOR=ON`. It has ten test
-groups. Enable both options to build both providers and run 22 test groups.
-Its [asset workflow](../revolverator/docs/BUILD_AND_ASSETS.md) separately generates
-the drill and ammunition components from local game data. CI uses the native
-glyph, downloads no game data and publishes only test logs.
+## Preview artifacts
 
-## Releasing
-
-Each mod has its own tag, for example `weapon-xp-v0.6.1`. Release archives contain
-the manifest at the ZIP root and libraries under `lib/<platform>/`. Include a
-`SHA256SUMS` asset so OpenRAC can verify the downloaded archives.
-
-The CI workflow builds/tests source changes and retains artifacts; it does not
-automatically promote an unverified development build to a public stable release.
-Publishing a tested artifact is a deliberate step with version and validation
-receipts checked together.
+This source builds the additive preview. Public preview bundles are delivered
+separately through Releases after artifact and native-session checks; a host
+build alone does not establish gameplay behavior. The published Weapon
+Experience 0.6.1 stable archives and historical validation receipts remain
+unchanged. The preview is separate from the final stable release.

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #include "native_world.hpp"
 #include "damage_targets.hpp"
@@ -142,15 +142,16 @@ void NativeWorld::hit(Target t,float damage,Vec3 direction){
  // may access this span; ordinary entity-memory bounds must stay conservative.
  stack.put(0,direction);stack.put(12,5627.925f);
  stack.put(0x10,weapon());stack.put<unsigned>(0x14,0x30000);
- stack.put<unsigned char>(0x19,3);stack.put<unsigned short>(0x1a,180);
+ stack.put<unsigned char>(0x19,3);stack.put<unsigned short>(0x1a,2017);
  stack.put(0x1c,damage);stack.put<int>(0x20,1);
  post_hit_(t.address,stack.at);
 }
 void NativeWorld::impact(Target t,std::optional<Target> other,float charge){
  const float yaw=read<float>(hero()+0x98);const Vec3 direction{std::cos(yaw)*2,std::sin(yaw)*2,1.3f};
- hit(t,3.f+charge*5.f,direction);if(other)hit(*other,3.f+charge*3.f,direction);
+ hit(t,(3.f+charge*5.f)*damage_multiplier_,direction);if(other)hit(*other,(3.f+charge*3.f)*damage_multiplier_,direction);
  if(trace_)log("native impact posted");
 }
+void NativeWorld::set_damage_multiplier(float value){damage_multiplier_=std::isfinite(value)?std::clamp(value,1.f,16.f):1.f;}
 bool NativeWorld::blocks_native_hit(unsigned hit)const{
  // Built-in Walloper swing remains the attack animation; its legacy impact must
  // not kill the enemy before capture. Our posted impacts name the weapon moby.
@@ -159,7 +160,7 @@ bool NativeWorld::blocks_native_hit(unsigned hit)const{
 }
 Frame NativeWorld::snapshot(bool primary,unsigned epoch)const{
  Frame f;f.epoch=epoch;f.seconds=read<float>(global(0x15ed7c));
- f.equipped=read<int>(hero()+0x10b8)==18&&read<int>(hero()+0x10b4)==2&&read<unsigned char>(hero()+0x20a4)==0;
+ f.equipped=active_&&read<int>(hero()+0x10b8)==18&&read<int>(hero()+0x10b4)==2&&read<unsigned char>(hero()+0x20a4)==0;
  f.playing=read<int>(mode())==0;f.paused=read<int>(mode())==3;
  const int state=read<int>(hero()+0x2084);
  f.alive=read<int>(hero()+0x22a8)>0&&state!=0x3d&&state!=0x82&&state!=0x77;

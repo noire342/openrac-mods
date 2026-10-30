@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #pragma once
 #include "memory.hpp"
@@ -20,13 +20,13 @@ struct HdIconData {
 
 class HdIcon:public Memory {
 public:
- explicit HdIcon(const openrac_api* api,GuestArena* arena=nullptr);
+ explicit HdIcon(const openrac_api* api,GuestArena* arena=nullptr,bool compact_hud_fallback=false);
  ~HdIcon();
  HdIcon(const HdIcon&)=delete;
  HdIcon& operator=(const HdIcon&)=delete;
  // first_frame/count must refer to the Presentation-owned, appended references,
  // never to the shared bank 59901 references. Existing icon pages stay intact.
- bool install(unsigned first_frame,unsigned count,const HdIconData& data);
+ bool install(unsigned first_frame,unsigned count,const HdIconData& data,const HdIconData* ammunition=nullptr);
  bool ready()const;
  void frame();
  // Bracket only the native ammo HUD callback. Its texture-derived size stays
@@ -43,10 +43,14 @@ private:
  int level_=-1;
  unsigned state_{},refs_{},first_{},count_{};
  unsigned images_{},palettes_{},image_copy_{},palette_copy_{};
+ unsigned header_{},header_copy_{};
+ std::array<std::uint32_t,45> old_header_{};
  unsigned image_count_{},palette_count_{},hd_page_{},blank_page_{},palette_page_{};
  unsigned hd_ref_{},blank_ref_{};
+ unsigned ammunition_ref_{};bool ammunition_enabled_{};
  bool hidden_{};
- std::array<unsigned,4> old_refs_{};
+ bool compact_hud_fallback_{};
+ std::array<unsigned,5> old_refs_{};
  std::vector<std::uint64_t> old_images_,old_palettes_;
  bool owns_tables()const;
  bool owns_refs()const;

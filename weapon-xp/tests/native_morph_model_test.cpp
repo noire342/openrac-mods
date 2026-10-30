@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #include <vector>
 
@@ -39,9 +39,9 @@ int main() {
         std::memcpy(memory.data() + moby + 0xC0, identity.data(), sizeof(identity));
         const auto snapshot = memory;
         NativeMorphModel pose(&api, disc);
-        pose.after(moby, false);
+        pose.prepare(moby, false);
         CHECK(memory == snapshot);
-        pose.after(moby, true);
+        pose.prepare(moby, true);
         float flipped[12];
         std::memcpy(flipped, memory.data() + moby + 0xC0, sizeof(flipped));
         CHECK(flipped[0] == -1 && flipped[5] == 1 && flipped[10] == -1);
@@ -49,17 +49,17 @@ int main() {
         CHECK(memory == snapshot);  // No beam/private state/position/aim changed.
         pose.reset();
         CHECK(memory == snapshot);  // Native owner already restored the basis.
-        pose.after(moby, true);
+        pose.prepare(moby, true);
         pose.reset();
         CHECK(memory == snapshot);
-        pose.after(moby, true);
+        pose.prepare(moby, true);
         put<float>(memory, moby + 0xC0, 7);
         pose.reset();
         float value;
         std::memcpy(&value, memory.data() + moby + 0xC0, 4);
         CHECK(value == 7);
         std::memcpy(memory.data() + moby + 0xC0, identity.data(), sizeof(identity));
-        pose.after(moby, true);
+        pose.prepare(moby, true);
         current_level = 2;
         pose.reset();
         std::memcpy(&value, memory.data() + moby + 0xC0, 4);

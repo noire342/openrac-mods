@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #pragma once
 #include <array>
@@ -18,6 +18,11 @@ public:
     NativeUpgrades(const openrac_api* api, const Disc& disc);
     ~NativeUpgrades();
     void enqueue(int item, int before, int after);
+    bool supports_presentation(int item) const;
+    bool request_presentation(int item);
+    bool requested_presentation_pending() const {
+        return !m_queue.empty() && m_queue.front().presentation_only;
+    }
     void tick(const Progression& state, bool safe, bool versioned_names = true);
     void reset();
     void filter_report(unsigned char* report, int size) const;
@@ -50,6 +55,7 @@ private:
 
     struct Upgrade {
         int item, level;
+        bool presentation_only = false;
     };
 
     std::deque<Upgrade> m_queue;

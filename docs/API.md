@@ -1,56 +1,64 @@
 # Mod APIs
 
-## Weapon Experience
+## Revolverator API v2
 
-The authoritative interface is the MIT-licensed
-[`weapon_xp_api.h`](../weapon-xp/include/weapon_xp_api.h). Full contracts are in
-[`weapon-xp/docs/API.md`](../weapon-xp/docs/API.md).
+Resolve `openrac_revolverator_query(2)` from the already loaded provider and cast
+the compatible v1 return pointer to `const revolverator_api_v2*`. Version 1 keeps
+its original prefix. Check version, table size, required function pointers and
+each caller-owned output's `size`; all calls run on the game thread.
 
-Resolve `openrac_weapon_xp_query` from the provider that OpenRAC already loaded.
-Do not load a second DLL. Query ABI 1, 2 or 3 explicitly, check the returned
-version and table size, and initialize the `size` of every input/output structure.
-All calls and callbacks run on the game thread.
+| Key | Meaning |
+|---|---|
+|18 | Original Walloper |
+|65554 / `0x10012` | Independent Revolverator |
+
+Never pass 65554 to native item arrays or GiveItem. The adapter scopes native
+transport18 internally. `get_state().item_id` remains the legacy transport field.
+
+| Member | Copied data / operation |
+|---|---|
+| `get_state`, `get_mechanics` | Controller, charge/counters, ammunition/capacity and motor state |
+| `get_inventory(key, out)` | Independent ownership/ammo/XP, native carrier, icons and economy |
+| `get_quick(out)` | Eight logical keys; Walloper and Revolverator remain distinct |
+| `grant(key, equip)` | Controlled custom grant through native acquisition; not a purchase |
+| `get_progress(out)` | Level, XP, thresholds, progress and effective optional multipliers |
+| `poll_level_up(out)` | Consume one logical level transition from the public event queue |
+
+Base ammunition capacity is 20. Optional XP reaches level 10 and uses independent
+state; without the XP provider progression awards are disabled. No arbitrary
+third-party weapon registration or direct custom XP setter is exposed.
+
+The [full contract and C example](../revolverator/docs/API.md) cover discovery,
+size checks, lifetime, offline sidecar codec and the declarative
+`extensions["noire342.arsenal"]` manifest metadata. That extension is a discovery
+contract for future utilities; the current launcher has no implementation.
+
+## Weapon Experience API v4
+
+The intentionally MIT-licensed [`weapon_xp_api.h`](../weapon-xp/include/weapon_xp_api.h)
+is the authoritative interop header. Resolve `openrac_weapon_xp_query` on an
+already loaded module; do not load a second provider.
 
 | ABI | Purpose |
 |---|---|
-| 1 | Weapon enumeration, copied progression stats, explicit XP awards and events. |
-| 2 | Idempotent co-op hit/death receipts with session provenance. It is not a network transport. |
-| 3 | Copied rules/settings, atomic revision-checked edits, rules reload, diagnostics and explicit XP flush. |
+|1 | Native weapon stats, explicit awards and events |
+|2 | Idempotent co-op hit/death receipts with provenance; no network transport |
+|3 | Copied rules/settings, revisioned configuration, reload, diagnostics and flush |
+|4 | Hit-ownership filters and optional native acquisition presentation helpers |
 
-v3 preserves the existing v1/v2 prefixes. Optional damage and capacity bonuses
-are off by default. Configuration edits are session-only and preserve earned XP.
-Never retain a service table after provider shutdown; unsubscribe on unload.
+The 0.6.3-arsenal source keeps older prefixes compatible. Filters exclude custom
+hits before native Walloper credit/damage handling. Callbacks copy context and
+must obey the [full API callback restrictions](../weapon-xp/docs/API.md).
+[`hit_owner.c`](../weapon-xp/examples/hit_owner.c) demonstrates the v4 ownership
+contract. Older 0.6.1 release binaries do not provide the required companion API.
 
-Examples are compiled as part of the tests:
-
-- [`rules_client.c`](../weapon-xp/examples/rules_client.c): minimal C client for
-  revision-checked configuration.
-- [`xp_observer.c`](../weapon-xp/examples/xp_observer.c): provider discovery and
-  event observation on Windows.
-
-Version 0.6.1 adds the independent Morph-o-Ray model-pose flag to ABI v3. It
-defaults off and does not add that weapon to the XP catalog.
-
-## Revolverator preview
-
-The source preview provides `openrac_revolverator_query(1)` and the
-[`revolverator_api.h`](../revolverator/include/revolverator_api.h) C table.
-`get_state` copies phase, charge and counters; `cancel` releases an active
-capture/throw. The optional appended `get_mechanics` copies ammunition, capacity,
-rotor angle/speed and dry-fire/synchronization state. Check the byte offset of
-that tail before reading its pointer.
-
-The [full contract](../revolverator/docs/API.md) and
-[plain-C example](../revolverator/examples/state_client.c) cover version/size
-checks, output initialization, discovery and provider lifetime. Calls are
-game-thread only; guest pointers and private C++ objects do not cross the ABI.
-Item 18 intentionally shares Walloper's XP identity rather than creating a
-separate thirteenth progression record.
+Optional damage and ammunition bonuses are off by default. Configuration edits
+are session-only and preserve earned XP. Never retain service pointers after
+provider shutdown, and coordinate shared event consumers.
 
 ## Composition
 
-Load-order declarations and version requirements belong in the consumer's
-`openrac-mod.json`. Do not patch another mod's private state. Restore an override
-only while the value/revision still belongs to the consumer; another mod may have
-legitimately changed it. A successful host test verifies an adapter contract,
-not native gameplay or all-mod compatibility.
+Declare dependencies/load order in each consumer manifest. Restore a native
+override only while it is still owned by that adapter. A passing host test
+checks the adapter contract; native gameplay and other-mod combinations need
+their own evidence.

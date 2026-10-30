@@ -13,6 +13,7 @@ extern "C" {
 #define WEAPON_XP_ABI_V1 1u
 #define WEAPON_XP_ABI_V2 2u
 #define WEAPON_XP_ABI_V3 3u
+#define WEAPON_XP_ABI_V4 4u
 #define WEAPON_XP_LEVEL_COUNT 10u
 #define WEAPON_XP_QUERY_SYMBOL "openrac_weapon_xp_query"
 
@@ -163,6 +164,55 @@ typedef struct weapon_xp_api_v3 {
     int32_t (*flush)(void); /* Atomic XP save now; no game-save-slot writes. */
     int32_t (*last_error)(char* buffer, uint32_t capacity); /* Required bytes incl NUL, or <0. */
 } weapon_xp_api_v3;
+
+/* Optional ownership classification, independent of the co-op adapter and its
+ * global external scope. A custom weapon may use an existing native item as a
+ * transport while retaining its own progression. Callbacks run synchronously
+ * on the game thread, before native scaling/credit. Do not mutate game memory,
+ * start native game calls, or award XP from a filter. Read-only queries and
+ * unregistering a filter are allowed. All fields are borrowed for this call;
+ * addresses must not be serialized or treated as stable actor identities. */
+typedef struct weapon_xp_hit_context_v4 {
+    uint32_t size;
+    uint32_t target_moby;
+    uint32_t hit_address;
+    int32_t target_class;
+    uint32_t attacker_moby;
+    int32_t attacker_class;
+    int32_t native_item; /* Candidate native item, -1 if not recognized. */
+    int32_t origin_class; /* Directional descriptor class, -1 without its tag. */
+    float raw_damage;
+    uint32_t flags;
+    uint64_t tick;
+    float target_position[3];
+    uint32_t level_epoch; /* Changes on native level/reset; never a save ID. */
+} weapon_xp_hit_context_v4;
+
+enum weapon_xp_hit_disposition_v4 {
+    WEAPON_XP_HIT_NATIVE = 0,
+    WEAPON_XP_HIT_EXTERNAL = 1 /* Skip native XP/scaling; leave the native hit usable. */
+};
+typedef int32_t (*weapon_xp_hit_filter_v4)(void* user,const weapon_xp_hit_context_v4* hit);
+typedef struct weapon_xp_api_v4 {
+    weapon_xp_api_v3 v3; /* Unchanged prefixes. base.size=sizeof(v4), abi_version=4. */
+    /* At most16 filters. Tokens belong to the consumer; unregister on unload.
+     * The first EXTERNAL result owns the hit. Native XP forgets earlier credit
+     * for that target, emits no native HIT event and does not scale its damage.
+     * Register/XP/configuration mutations return BUSY during filter dispatch.
+     * Unregister, including self-unregister, remains safe during dispatch. */
+    int32_t (*register_hit_filter)(weapon_xp_hit_filter_v4 filter,void* user,uint32_t* token);
+    int32_t (*unregister_hit_filter)(uint32_t token);
+    /* Optional tail; check base.size through the desired member before use.
+     * Queue one native acquisition scene without XP, level/name changes or XP
+     * events. Call on a normal game frame, never from an event/hit callback.
+     * OK=queued, DISABLED=animation setting off/no native scene, BUSY=queue or
+     * callback active. The consumer owns the custom identity/name projection. */
+    int32_t (*request_acquisition_presentation)(int32_t native_item);
+    /* 1 while the requested external scene is queued/preparing/active, 0 after
+     * completion; NOT_READY without a provider runtime. Native XP scenes do not
+     * count. This includes the quiet-input period and both actor-retirement frames. */
+    int32_t (*acquisition_presentation_active)(void);
+} weapon_xp_api_v4;
 
 typedef const weapon_xp_api_v1* (*weapon_xp_query_fn)(uint32_t abi_version);
 

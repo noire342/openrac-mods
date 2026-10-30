@@ -1,7 +1,8 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #include "native_vendor.hpp"
 #include "native_ammunition.hpp"
+#include "native_arsenal.hpp"
 #include <algorithm>
 #include <cstring>
 
@@ -58,8 +59,34 @@ void NativeVendor::frame() {
         write<int>(preview_model_address_,int(preview_class_));applied_preview_class_=preview_class_;
     }
 }
-void NativeVendor::before_build(){frame();}
+bool NativeVendor::selected_custom()const{
+    const auto base=level(vendor_menu);const int count=read<int>(base+count_offset),selected=read<int>(base+selection_offset);
+    return count>0&&count<=16&&selected>=0&&selected<count&&
+        read<Row>(base+rows_offset+unsigned(selected)*sizeof(Row)).unused==custom_row_marker;
+}
+unsigned NativeVendor::selected_key()const{
+    if(selected_custom())return arsenal::RevolveratorKey;
+    const auto base=level(vendor_menu);const int count=read<int>(base+count_offset),selected=read<int>(base+selection_offset);
+    if(count>0&&count<=16&&selected>=0&&selected<count){
+        const auto row=read<Row>(base+rows_offset+unsigned(selected)*sizeof(Row));
+        if(row.item>=0&&row.item<=36)return unsigned(row.item);
+    }
+    return arsenal::NativeWalloperKey;
+}
+void NativeVendor::before_build(){
+    if(arsenal_){
+        if(!arsenal_->ready())return;
+        rebuild_selected_custom_=selected_custom();build_previous_=arsenal_->projected();arsenal_->project(arsenal::NativeWalloperKey);
+        // Native rebuild writes four fields and leaves +12 untouched. Retire
+        // only our marker before a stock row can reuse the appended position.
+        const auto rows=level(vendor_menu)+rows_offset;
+        for(unsigned i=0;i<16;++i)
+            if(read<int>(rows+i*sizeof(Row)+12)==custom_row_marker)write<int>(rows+i*sizeof(Row)+12,0);
+    }
+    frame();
+}
 void NativeVendor::after_build(int skip_unflagged) {
+    if(arsenal_&&!arsenal_->ready())return;
     frame();
     if(!supported()||!price_owned_)return;
     const unsigned base=level(vendor_menu),rows=base+rows_offset;
@@ -72,6 +99,18 @@ void NativeVendor::after_build(int skip_unflagged) {
     next.original=read<std::array<Row,16>>(rows);next.applied=next.original;
     next.original_count=count;
     next.original_selection=read<std::int32_t>(next.selection);
+    if(arsenal_){
+        const auto* state=arsenal_->registry().custom_state(arsenal::RevolveratorKey);
+        const bool offer=state&&(state->owned||(!skip_unflagged&&unlocked()));
+        if(offer&&count<16){
+            const int sound=read<std::int32_t>(level(vendor_sounds)+item_id*20);
+            next.applied[unsigned(count)]={item_id,state->owned?1:0,0,custom_row_marker,sound};
+            next.applied_count=count+1;
+            next.applied_selection=rebuild_selected_custom_?count:std::clamp(next.original_selection,0,count);
+            next.active=true;write(rows,next.applied);write(base+count_offset,next.applied_count);write(next.selection,next.applied_selection);
+        }
+        menu_=next;arsenal_->project(build_previous_);return;
+    }
     const bool owned=read<std::uint8_t>(global(item_owned)+item_id)!=0;
     const bool ammunition=read<std::uint16_t>(price_address_+8)!=0;
     const bool can_offer=owned?ammunition:(!skip_unflagged&&unlocked());
@@ -128,6 +167,7 @@ void NativeVendor::after_vendor_update() {
     if(!supported())return;
     if(api_->loaded_level()!=level_||!price_owned_)frame();
     before_vendor_update();
+    if(arsenal_&&!selected_custom())return;
     const unsigned base=level(vendor_menu);
     if(read<int>(level(game_mode))!=5||!valid(base,count_offset+4)||read<int>(base+8)!=1)return;
     const int count=read<int>(base+count_offset),selected=read<int>(base+selection_offset);

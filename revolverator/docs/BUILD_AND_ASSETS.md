@@ -1,164 +1,88 @@
-# Build e asset della consegna privata
+# Build e asset della 0.2
 
-## Requisiti e percorsi
+La mod richiede R&C1 NTSC-U e gli asset estratti dalla propria copia del gioco.
+I builder leggono il formato livelli 3; non richiedono R&C2 e non modificano la
+ISO. I sorgenti pubblicabili non includono il trapano o le texture originali.
 
-Gli esempi PowerShell partono dalla radice di questa repository. Sostituire i percorsi
-dei tool se si usa un'altra installazione. I builder leggono gli asset estratti di
-**R&C1 NTSC-U, formato livelli 3**; non leggono R&C2 e non modificano la ISO.
+## Plugin
 
-```powershell
-$Mod = Join-Path $PWD 'revolverator'
-$Work = Split-Path -Parent $PWD
-$Sdk = Join-Path $PWD '.sdk/openrac-mod-sdk-1.3.0'
-$Python = 'python'
-$Editor = Join-Path $env:LOCALAPPDATA 'OpenRAC Launcher/openrac/editor'
-$Levels = Join-Path $env:USERPROFILE 'OpenRAC/active/rac1/data/port/ntsc'
-$CMake = 'cmake'
-$CTest = 'ctest'
-$Build = Join-Path $Work 'build-revolverator'
-```
-
-Servono Python 3.10+ e Pillow per gli strumenti grafici. La compilazione C++
-richiede un toolchain C++17 e CMake; usare il generatore Visual Studio installato
-o il generatore predefinito della propria piattaforma.
-
-## Plugin e controlli automatici
+Dal checkout `rac1-mods`, con CMake, un compilatore C++17 e SDK OpenRAC 1.3:
 
 ```powershell
-& $CMake -S $Mod -B $Build `
-  "-DOpenRACMod_DIR=$Sdk/cmake" -DBUILD_TESTING=ON
-& $CMake --build $Build --config Release
-& $CTest --test-dir $Build -C Release --output-on-failure
+cmake -S revolverator -B <build> -DOpenRACMod_DIR=<sdk>/cmake -DBUILD_TESTING=ON
+cmake --build <build> --config Release
+ctest --test-dir <build> -C Release --output-on-failure
 ```
 
-Il package nativo generato è `build-revolverator/package/revolverator`. Il
-manifest deve contenere la DLL della piattaforma sotto `plugin`. La suite
-CTest copre controller, posa/presa, munizioni, venditore, rotore, arena ospite,
-localizzazione, adattatore nativo del rotore, alias di classe e icona HD.
-I test non avviano il gioco.
+Il package formato 2 viene scritto sotto `<build>/package/revolverator`. Il
+manifest richiede ABI 1.1 e gli hook nominati in `openrac-mod.json`. I test host
+coprono controller, presa/posa, munizioni, rotore, registro, sidecar, menu, alias
+e consumer XP; non sostituiscono una prova nel gioco. Su Linux il target usa
+`${CMAKE_DL_LIBS}` e un export esplicito per `openrac_revolverator_query`.
 
-L'icona HD è opzionale. Per una build privata, generare l'header con
-`build_hd_icon.py` e `encode_hd_icon.py`, poi configurare
-`-DREVOLVERATOR_HD_ICON_DIR=<cartella-con-revolverator_hd_icon_data.hpp>`.
-Senza header resta disponibile il simbolo nativo 32×32. Estrattore, formato CSM1
-e footprint logico sono descritti in [HD_ICON_INTEGRATION.md](HD_ICON_INTEGRATION.md).
+## Runtime richiesto
 
-## Trapano originale con sola punta rotante
+La 0.2 usa il bridge arsenale: base OpenRAC `77a2f052` più 30 hook tipizzati.
+La logica delle armi rimane nel plugin; il bridge espone confini di menu,
+preview, scelta rapida, venditore, pickup e ciclo dei salvataggi. Non cambia
+l'ABI generica del modding. Il runtime standard privo di questi hook viene
+rifiutato con il nome dell'hook mancante.
 
-Usare una cartella di output nuova: il builder rifiuta di sovrascrivere una build
-precedente o una cartella attualmente usata da una sessione.
+Nel workspace di sviluppo la patch e la ricetta sono in
+`work/arsenal-bridge-tools/`; la build separata è
+`work/build-openrac-arsenal-bridge/`. Applicare la patch alla base corretta,
+rigenerare i binding con `sdk/tools/gen_binding.py rac1`, poi compilare il target
+`openrac-rac1-ntsc` secondo il toolchain OpenRAC. Non sovrascrivere l'eseguibile
+ufficiale durante queste prove. Gli asset di gioco restano input locali.
+
+Per gli XP opzionali usare il companion privato `weapon-xp 0.6.3-arsenal`, con
+API v4. Non basta un provider che espone soltanto le precedenti API XP.
+
+## Asset aggiuntivi
+
+Gli esempi usano cartelle di output nuove e percorsi scelti localmente:
 
 ```powershell
-& $Python "$Mod/tools/build_model_pack.py" --levels $Levels `
-  --out "$Work/revolverator-model-rebuild-01" --editor $Editor
-& $Python "$Mod/tests/model_rotor_test.py" --levels $Levels `
-  --pack "$Work/revolverator-model-rebuild-01" --editor $Editor
-& $Python "$Editor/overrides.py" check "$Work/revolverator-model-rebuild-01"
+python revolverator/tools/build_model_pack.py --levels <livelli-ntsc> --editor <editor-openrac> --out <trapano>
+python revolverator/tools/build_ammunition.py --levels <livelli-ntsc> --weapon-pack <trapano> --out <livelli-estesi>
 ```
 
-Questa è la ricetta di `revolverator-model-02`. Prende classe 164 da Hoven e ne
-mantiene geometria, topologia, normali, UV e texture originali. Applica soltanto
-la conversione di scala necessaria per lo slot del Walloper:
+Il builder del modello usa la classe originale del trapano di Hoven e la
+geometria/scheletro necessari al suo impiego come arma. L'output predefinito è
+una classe visuale aggiuntiva 2017; `--target-class 180` identifica invece il
+vecchio workflow di sostituzione e non è la configurazione 0.2.
 
-| Parte | Vertici | Triangoli | Giunto del modello risultante |
-|---|---:|---:|---:|
-| Corpo, impugnatura e motore | 1.338 | 1.338 | 0 |
-| Punta a spirale, componente originale 35 | 208 | 202 | 4 |
+Corpo e impugnatura sono separati dalla spirale rotante. La cartuccia è generata
+dalla ricetta originale `assets/ammunition/recipe.json`: una singola cella
+industriale, non un gruppo di trivelle. Il suo modello e la texture sono stati
+creati con assistenza AI. Pickup e venditore usano i rispettivi alias visuali,
+mentre raccolta, quantità e prezzo passano dalle operazioni native.
 
-Non esistono triangoli con vertici divisi fra corpo e punta. Il file contiene una
-sola istanza della mesh e conserva tutte le cinque matrici inverse di bind del
-Walloper richieste dall'importatore. `NativeRotor` compensa la matrice nativa del
-giunto 4 e usa il vero asse della punta; non riscrive lo scheletro condiviso.
-La geometria sorgente locale verificata ha SHA-256
-`947e9ccc5611fcd2bd5f3c31769ece6495a1608a0a5a919d8691b46fb383ac32`.
-`rotor.json` registra questi dati per ciascuno dei 19 livelli.
+Le viste estese collegano gli asset immutati; non modificarli attraverso questi
+collegamenti. I manifest base devono restare identici prima e dopo la build.
+Nel workspace le fixture 0.2 usano `work/revolverator-model-additive-01` e
+`work/revolverator-levels-additive-01/levels`. Questi percorsi sono output locali,
+non dipendenze da includere nel repository pubblico.
 
-Questo pack è un normale pack di sostituzione formato 1 e passa i controlli di
-compatibilità dello scheletro dello stacker. Le immagini e la geometria derivate
-dal gioco sono asset privati, esclusi dal pacchetto sorgente pubblico.
+L'upscale privato del simbolo nativo usa Real-ESRGAN. Per includere l'header
+locale configurare `REVOLVERATOR_HD_ICON_DIR`; senza di esso rimane il fallback
+nativo. Il clone 128×128 deve mantenere il footprint HUD 32×32. Vedi
+[contratto dell'icona](HD_ICON_INTEGRATION.md).
 
-## Cartuccia energetica e alias del venditore
+## Consegna privata
 
-```powershell
-& $Python "$Mod/tools/build_ammunition.py" --levels $Levels `
-  --out "$Work/revolverator-ammo-rebuild-01"
-& $Python "$Mod/tests/ammunition_model_test.py" `
-  --overlay "$Work/revolverator-ammo-rebuild-01"
-```
+La consegna portatile 0.2 deve contenere componenti compatibili: plugin, runtime
+bridge, companion XP opzionale e asset ricostruiti localmente, con hash e
+argomenti della sessione. La preparazione non installa o pubblica nulla.
 
-La ricetta predefinita è `assets/ammunition/recipe.json`: genera una sola
-cartuccia energetica, 612 triangoli, texture 128×128 e altezza nativa 0,389 m.
-È la ricetta dell'output `revolverator-ammo-levels-03`. Il builder:
+Il packager aggiornato `package_private_bundle.py` richiede `--runtime` e
+`--bridge-patch`; per XP usare `--weapon-xp` con `--weapon-xp-source` che punta
+ai sorgenti corrispondenti. Per il motore indicare `--engine-source` alla copia
+OpenRAC separata. Nel repository pubblico patch e istruzioni sono in
+[`docs/arsenal-bridge`](../../docs/arsenal-bridge/README.md).
 
-1. Clona i manifest dei 19 livelli di gioco e dei due livelli menu 98/99.
-2. Collega i grandi asset immutati con junction e hardlink; non li riscrive.
-3. Aggiunge classe visuale 32000 per i pickup e alias 2016 per il venditore.
-4. Fa puntare entrambe le classi alla stessa mesh e alla stessa scala della
-   classe nativa 225, attualmente `0.027870021760463715`.
-5. Confronta gli hash dei manifest originali prima e dopo la generazione.
-
-`NativeAmmoAlias` rende disponibile l'alias 2016 nello slot residente della
-classe 225. Il venditore può così istanziare il proprio modello senza dipendere
-da un hook di rendering assente nel runtime installato. La logica di raccolta,
-quantità, salvataggio e acquisto resta quella nativa, associata allo slot 18.
-
-L'output contiene collegamenti a dati installati: è una vista per esecuzione e
-QA, non un progetto su cui modificare gli asset collegati. `art/model.glb` è una
-versione in metri per DCC; i modelli nei livelli sono convertiti nello spazio
-nativo 225. `preview_ammunition.py` renderizza il GLB effettivo con Blender.
-
-## Un unico ZIP privato, senza modificare l'engine
-
-L'importatore standard attuale separa plugin formato 2 e sostituzioni formato 1.
-Il packager SDK include manifest, librerie e documenti, non un'estensione dei
-manifest dei livelli. Lo stacker dei modelli salta classi assenti nei manifest
-base. Pertanto non si deve presentare il seguente involucro come un nuovo formato
-importabile dal launcher con un solo trascinamento.
-
-Lo strumento privato raccoglie i due package standard e la sola nuova cartuccia:
-
-```powershell
-& $Python "$Mod/tools/package_private_bundle.py" `
-  --plugin "$Build/package/revolverator" `
-  --models "$Work/revolverator-model-02" `
-  --ammunition-overlay "$Work/revolverator-ammo-levels-03" `
-  --out "$Work/deliveries/revolverator-0.1.0-private.zip"
-```
-
-Lo ZIP contiene `Start-Revolverator.ps1`, il plugin, il pack del trapano, il GLB e
-PNG della cartuccia, documenti e un inventario SHA-256. Non contiene la ISO, i
-salvataggi, RAM o manifest originali dei livelli. Contiene comunque il trapano e
-la texture derivati dalla copia locale: **non è un artefatto approvato per la
-pubblicazione**. Lo script di packaging non installa, non avvia e non carica nulla
-su servizi esterni.
-
-Dopo l'estrazione, verificare prima la sola preparazione:
-
-```powershell
-& './Start-Revolverator.ps1' -PrepareOnly -SessionRoot 'C:/percorso/sessione-nuova'
-```
-
-PowerShell 5.1+ genera localmente l'overlay dei manifest e un registro plugin
-separato, copiando solo gli asset propri della cartuccia. Non richiede Python
-sul PC che esegue il bundle. I percorsi predefiniti sono quelli dell'installazione
-locale del launcher; `-Runtime`, `-InstalledData` e `-Settings` li sostituiscono.
-`session.json` registra argomenti e controlli effettuati con `started:false`.
-
-Senza `-PrepareOnly` lo script apre il runtime installato con `--levels` e
-`--mods`. Usa cards e dati di sessione separati, `--no-card`, impostazioni copiate
-e nessuna altra mod installata. Non assegna automaticamente l'arma e non copia
-progressi di campagna. Il parametro facoltativo `-Level 1` seleziona Novalis per
-una prova di sviluppo; l'acquisto normale resta vincolato a Hoven.
-
-Il bundle privato non cambia il formato del launcher né l'eseguibile OpenRAC.
-La pubblicazione corrente comprende solo sorgenti e strumenti. Le prove native
-eseguite e i limiti della preview sono in [Validation](../../docs/VALIDATION.md#revolverator-source-preview);
-[QA_CHECKLIST.md](QA_CHECKLIST.md) resta la lista completa delle regressioni.
-
-## Stato dell'audit degli asset
-
-La ricostruzione corrente è riproducibile con i due builder: test di partizione
-del rotore e test della cartuccia controllano i 19 modelli, gli alias 2016/32000 e
-l'integrità dei manifest base. Gli output di audit sono separati dai pack usati
-dalle sessioni attive. Questa prova di generazione non certifica animazioni,
-venditore o combattimento nel runtime.
+`Start-Revolverator.ps1 -PrepareOnly` prepara manifest e profilo persistente
+senza avviare il gioco. I controlli Windows PowerShell 5.1 conservano gli input
+originali, aggiungono le tre classi e riusano `.profile`; la ricevuta di sola
+preparazione non dichiara una prova nativa. La preview resta distinta dalla
+versione definitiva e ogni artefatto distribuito richiede il suo hash.

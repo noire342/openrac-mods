@@ -1,6 +1,18 @@
 # Changelog
 
-## Unreleased source changes
+## Revolverator 0.2.0 preview / Weapon Experience 0.6.3-arsenal
+
+- Revolverator 0.2 is additive: original Walloper preserved, logical
+  key 65554, independent 20-round inventory/XP/favourites and fingerprinted sidecars.
+- Include matching Weapon Experience 0.6.3-arsenal source with API v4 hit ownership
+  and acquisition helpers, plus the GPL engine bridge source patch.
+- Expose Revolverator API v2 and declarative discovery metadata for future tools.
+- Follow the upstream GPL-3.0-or-later mod convention; preserve SDK/interop MIT
+  notices and prior Git history. Original game art is excluded from this source.
+- Add an isolated Novalis trial launcher and an optional `start_unlocked` setting
+  (off by default); the normal path retains the Hoven purchase.
+- Enable position-independent core objects so the additive library also links
+  on Linux.
 
 - Make the native memory helper templates available to every translation unit,
   fixing GNU linker errors in the Linux source build. The published Windows

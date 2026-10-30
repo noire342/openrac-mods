@@ -1,37 +1,41 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #include "hd_icon.hpp"
 #include <algorithm>
 #include <cstring>
 
 namespace revolverator {
-HdIcon::HdIcon(const openrac_api* api,GuestArena* arena):Memory(api,arena),
- draw_(function<Draw>("FUN_001ffc30")){}
+HdIcon::HdIcon(const openrac_api* api,GuestArena* arena,bool compact_hud_fallback):Memory(api,arena),
+ draw_(function<Draw>("FUN_001ffc30")),compact_hud_fallback_(compact_hud_fallback){}
 HdIcon::~HdIcon(){reset();}
 
 bool HdIcon::owns_tables()const {
  return image_copy_&&api_->loaded_level()==level_&&
   read<unsigned>(state_+0x20)==refs_&&
+  read<unsigned>(state_+0x18)==header_copy_&&
   read<unsigned>(state_+0x24)==image_copy_&&
   read<unsigned>(state_+0x28)==palette_copy_;
 }
 bool HdIcon::owns_refs()const {
  if(!owns_tables())return false;
  const unsigned expected=hidden_?blank_ref_:hd_ref_;
- for(unsigned i=0;i<count_;++i)if(read<unsigned>(refs_+(first_+i)*4)!=expected)return false;
+ for(unsigned i=0;i<count_;++i)if(read<unsigned>(refs_+(first_+i)*4)!=(ammunition_enabled_&&i==3?ammunition_ref_:expected))return false;
  return true;
 }
 bool HdIcon::ready()const {return owns_refs();}
 
-bool HdIcon::install(unsigned first,unsigned count,const HdIconData& data){
+bool HdIcon::install(unsigned first,unsigned count,const HdIconData& data,const HdIconData* ammunition){
  if(image_copy_)return first_==first&&count_==count&&ready();
  const int current=api_->loaded_level();
  if(current<0||current>=19||!count||count>old_refs_.size()||
-    !data.pixels||data.pixel_bytes!=texture_size*texture_size||
-    !data.palette||data.palette_bytes!=1024||data.palette[3]!=0)return false;
+    !data.pixels||(data.pixel_bytes!=texture_size*texture_size&&data.pixel_bytes!=logical_size*logical_size)||
+    !data.palette||data.palette_bytes!=1024||(!ammunition&&data.palette[3]!=0))return false;
+ if(ammunition&&(count<4||!ammunition->pixels||ammunition->pixel_bytes!=logical_size*logical_size||
+    !ammunition->palette||ammunition->palette_bytes!=1024||ammunition->palette[3]!=0))return false;
  const unsigned state=global(0x19a3e8),defs=read<unsigned>(state+0x1c),refs=read<unsigned>(state+0x20);
  const unsigned images=read<unsigned>(state+0x24),palettes=read<unsigned>(state+0x28);
- if(!Memory::valid(defs,8)||!Memory::valid(refs,4))return false;
+ const unsigned header=read<unsigned>(state+0x18);
+ if(!Memory::valid(defs,8)||!Memory::valid(refs,4)||!Memory::valid(header,sizeof old_header_))return false;
  unsigned frames=0;bool terminated=false;
  for(unsigned i=0;i<1024;++i){
   const unsigned entry=defs+i*8;if(!Memory::valid(entry,8))return false;
@@ -45,47 +49,72 @@ bool HdIcon::install(unsigned first,unsigned count,const HdIconData& data){
   if(palette<0||image<0)return false;
   image_count=std::max(image_count,unsigned(image)+1);palette_count=std::max(palette_count,unsigned(palette)+1);
  }
+ image_count=std::max(image_count,read<unsigned>(header+0x44));
+ palette_count=std::max(palette_count,read<unsigned>(header+0x24));
  if(image_count>8190||palette_count>8191||!Memory::valid(images,image_count*8)||!Memory::valid(palettes,palette_count*8))return false;
  // One allocation: table clones, aligned PSMT8 texels, transparent 32px tile,
  // and CLUT. The session arena reserves this storage through the level loader.
- const unsigned image_bytes=(image_count+2)*8,palette_bytes=(palette_count+1)*8;
- const unsigned tables=(image_bytes+palette_bytes+63)&~63u;
- const unsigned size=tables+texture_size*texture_size+logical_size*logical_size+1024;
- const unsigned allocation=allocate_guest(size);if(!Memory::valid(allocation,size))return false;
+ const unsigned image_bytes=(image_count+(ammunition?3:2))*8,palette_bytes=(palette_count+(ammunition?2:1))*8;
+ const unsigned header_offset=(image_bytes+palette_bytes+3)&~3u;
+ const unsigned tables=(header_offset+unsigned(sizeof old_header_)+63)&~63u;
+ const unsigned size=tables+unsigned(data.pixel_bytes)+logical_size*logical_size+1024+(ammunition?2048:0);
+ unsigned allocation=allocate_guest(size);
+ if(!Memory::valid(allocation,size)&&compact_hud_fallback_&&data.pixel_bytes==logical_size*logical_size){
+  const auto cursor=read<unsigned>(state+0x10),end=read<unsigned>(state+0x14);
+  if(Memory::valid(cursor,size)&&end>=cursor&&end<=0x2000000&&end-cursor>=size+16)
+   allocation=function<unsigned(*)(unsigned)>("FUN_001ff288")(size);
+ }
+ if(!Memory::valid(allocation,size))return false;
  const unsigned palette_copy=allocation+image_bytes,pixels=allocation+tables;
- const unsigned blank=pixels+texture_size*texture_size,clut=blank+logical_size*logical_size;
+ const unsigned blank=pixels+unsigned(data.pixel_bytes),clut=blank+logical_size*logical_size;
  old_images_.resize(image_count);old_palettes_.resize(palette_count);
  std::memcpy(old_images_.data(),api_->memory+images,image_count*8);
  std::memcpy(old_palettes_.data(),api_->memory+palettes,palette_count*8);
  std::memcpy(api_->memory+allocation,api_->memory+images,image_count*8);
  std::memcpy(api_->memory+palette_copy,api_->memory+palettes,palette_count*8);
+ const auto header_copy=allocation+header_offset;
+ std::memcpy(old_header_.data(),api_->memory+header,sizeof old_header_);
+ std::memcpy(api_->memory+header_copy,api_->memory+header,sizeof old_header_);
+ write<unsigned>(header_copy+0x44,image_count+(ammunition?3:2));write<unsigned>(header_copy+0x24,palette_count+(ammunition?2:1));
  std::memcpy(api_->memory+pixels,data.pixels,data.pixel_bytes);
  std::memset(api_->memory+blank,0,logical_size*logical_size);
  std::memcpy(api_->memory+clut,data.palette,data.palette_bytes);
  const unsigned hd_page=allocation+image_count*8,blank_page=hd_page+8;
  const unsigned palette_page=palette_copy+palette_count*8;
- write(hd_page,pixels);write<std::uint16_t>(hd_page+4,0);write<std::uint8_t>(hd_page+6,7);write<std::uint8_t>(hd_page+7,7);
+ const auto dimension=std::uint8_t(data.pixel_bytes==texture_size*texture_size?7:5);
+ write(hd_page,pixels);write<std::uint16_t>(hd_page+4,0);write<std::uint8_t>(hd_page+6,dimension);write<std::uint8_t>(hd_page+7,dimension);
  write(blank_page,blank);write<std::uint16_t>(blank_page+4,0);write<std::uint8_t>(blank_page+6,5);write<std::uint8_t>(blank_page+7,5);
  write(palette_page,clut);write<std::uint16_t>(palette_page+4,0);write<std::uint16_t>(palette_page+6,0);
+ unsigned ammunition_ref=0;
+ if(ammunition){
+  const unsigned ammo_pixels=clut+1024,ammo_clut=ammo_pixels+1024,ammo_page=blank_page+8,ammo_palette=palette_page+8;
+  std::memcpy(api_->memory+ammo_pixels,ammunition->pixels,1024);std::memcpy(api_->memory+ammo_clut,ammunition->palette,1024);
+  write(ammo_page,ammo_pixels);write<std::uint16_t>(ammo_page+4,0);write<std::uint8_t>(ammo_page+6,5);write<std::uint8_t>(ammo_page+7,5);
+  write(ammo_palette,ammo_clut);write<std::uint32_t>(ammo_palette+4,0);
+  ammunition_ref=((image_count+2)<<16)|(palette_count+1);
+ }
  state_=state;refs_=refs;first_=first;count_=count;level_=current;
  images_=images;palettes_=palettes;image_copy_=allocation;palette_copy_=palette_copy;
+ header_=header;header_copy_=header_copy;
  image_count_=image_count;palette_count_=palette_count;hd_page_=hd_page;blank_page_=blank_page;palette_page_=palette_page;
- hd_ref_=(image_count<<16)|palette_count;blank_ref_=((image_count+1)<<16)|palette_count;
- for(unsigned i=0;i<count;++i){old_refs_[i]=read<unsigned>(refs+(first+i)*4);write(refs+(first+i)*4,hd_ref_);}
- write(state+0x24,image_copy_);write(state+0x28,palette_copy_);
+ hd_ref_=(image_count<<16)|palette_count;blank_ref_=((image_count+1)<<16)|(palette_count+(ammunition?1:0));
+ ammunition_ref_=ammunition_ref;ammunition_enabled_=ammunition!=nullptr;
+ for(unsigned i=0;i<count;++i){old_refs_[i]=read<unsigned>(refs+(first+i)*4);write(refs+(first+i)*4,ammunition_enabled_&&i==3?ammunition_ref_:hd_ref_);}
+ write(state+0x18,header_copy_);write(state+0x24,image_copy_);write(state+0x28,palette_copy_);
  return true;
 }
 
 void HdIcon::frame(){
  if(!ready()){if(image_copy_)reset();return;}
- // Native bank counts cover only the original pages. Invalidate our appended
- // pages once per tick so transient GS allocation cannot reuse a stale texture.
+ // Counts in the cloned header also cover every appended page. Each native
+ // paging pass can therefore invalidate them, including multiple UI panels in
+ // the same frame. Clear once here as well before the next native tick.
  write<std::uint16_t>(hd_page_+4,0);write<std::uint16_t>(blank_page_+4,0);write<std::uint16_t>(palette_page_+4,0);
 }
 bool HdIcon::before_base(){
  if(hidden_)return ready();
  if(!ready()){if(image_copy_)reset();return false;}
- for(unsigned i=0;i<count_;++i)write(refs_+(first_+i)*4,blank_ref_);
+ for(unsigned i=0;i<count_;++i)if(!ammunition_enabled_||i!=3)write(refs_+(first_+i)*4,blank_ref_);
  hidden_=true;return true;
 }
 void HdIcon::after_base(){
@@ -115,15 +144,23 @@ void HdIcon::reset(){
   const bool own_refs=read<unsigned>(state_+0x20)==refs_;
   if(own_refs)for(unsigned i=0;i<count_;++i){
    const unsigned at=refs_+(first_+i)*4,value=read<unsigned>(at);
-   if(value==hd_ref_||value==blank_ref_)write(at,old_refs_[i]);
+   if(value==hd_ref_||value==blank_ref_||(ammunition_enabled_&&value==ammunition_ref_))write(at,old_refs_[i]);
   }
   // A later owner may have copied references containing our appended indices.
   // In that case leave the level-owned pages alive instead of dangling its refs.
-  if(own_refs&&read<unsigned>(state_+0x24)==image_copy_){merge_pages(images_,image_copy_,old_images_);write(state_+0x24,images_);}
-  if(own_refs&&read<unsigned>(state_+0x28)==palette_copy_){merge_pages(palettes_,palette_copy_,old_palettes_);write(state_+0x28,palettes_);}
+  if(own_refs&&owns_tables()){
+   merge_pages(images_,image_copy_,old_images_);merge_pages(palettes_,palette_copy_,old_palettes_);
+   for(unsigned i=0;i<old_header_.size();++i){
+    if(i==0x24/4||i==0x44/4)continue;
+    if(read<unsigned>(header_+i*4)==old_header_[i])write(header_+i*4,read<unsigned>(header_copy_+i*4));
+   }
+   write(state_+0x18,header_);write(state_+0x24,images_);write(state_+0x28,palettes_);
+  }
  }
  level_=-1;state_=refs_=first_=count_=images_=palettes_=image_copy_=palette_copy_=0;
  image_count_=palette_count_=hd_page_=blank_page_=palette_page_=hd_ref_=blank_ref_=0;
+ header_=header_copy_=0;old_header_.fill(0);
+ ammunition_ref_=0;ammunition_enabled_=false;
  hidden_=false;old_refs_.fill(0);old_images_.clear();old_palettes_.clear();
 }
 }

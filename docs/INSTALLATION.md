@@ -1,63 +1,51 @@
-# Installation
+# Installation and development status
 
-## Weapon Experience 0.6.1
+## Stable Weapon Experience 0.6.1
 
-Use the Windows x86-64 ZIP from the release. Import it through the OpenRAC
-launcher's Mods page, enable Weapon Experience, and restart the game. The ZIP
-includes a root `openrac-mod.json` and the DLL under `lib/windows-x86_64/`.
+The existing Windows x86-64 ZIP remains the latest stable download. Import it
+through OpenRAC's Mods page, enable the mod and restart. It retains progression-only
+defaults, ten levels and independently disabled damage/ammo bonuses.
 
-The default is progression only. Weapon damage, ammunition capacity, projectiles,
-aiming and effects remain native. The launcher's existing mod settings separately
-enable damage scaling and capacity scaling. Both are off by default.
+Profiles are separate from native game saves. Choose one profile per campaign;
+loading an older save does not rewind native weapon XP. Windows profiles are
+under `%LOCALAPPDATA%/OpenRAC/weapon-xp/`. Migration, checksums, atomic replacement
+and locking retain the behavior documented in that release. Its archives are
+not changed by the development source on this branch.
 
-XP appears inside the original weapon HUD. The Suck Cannon retains a vertical
-layout. Weapon names use v2 through v10, and level-ups use the native acquisition
-presentation where the original game provides one.
+## Revolverator 0.2 and XP 0.6.3-arsenal — preview
 
-### Profiles and saves
+Use the matching preview asset and instructions on the release page, or build
+these sources for review. This preview is separate from the final stable release.
+Revolverator is an additional weapon; the original Walloper remains
+available with independent ownership, favourites, ammunition and XP.
 
-XP profiles are independent of the game's save slots. Choose a different profile
-name for each campaign. Loading an older game save does not rewind XP.
+For a local test setup:
 
-On Windows, profiles are stored in `%LOCALAPPDATA%/OpenRAC/weapon-xp/`. The mod
-uses checksums, an exclusive profile lock and atomic replacement. It saves dirty
-XP periodically, on planet changes and on normal shutdown. Forced termination
-can lose progress since the previous write.
+1. Build the mod using the pinned SDK and the [source instructions](BUILDING.md).
+2. Build a separate NTSC-U runtime with the [arsenal bridge patch](arsenal-bridge/README.md).
+3. Generate the drill/art and three extended render classes from your own
+   extraction using the [asset workflow](../revolverator/docs/BUILD_AND_ASSETS.md).
+4. If XP is enabled, use the matching 0.6.3-arsenal/API v4 source build; otherwise
+   leave Weapon Experience disabled. The older stable 0.6.1 provider is not compatible
+   with this custom-hit ownership requirement.
 
-Version 0.6.1 reads older supported profile formats and writes format 4. Migration
-preserves earned XP and creates a backup of the older file. Older mod releases
-cannot read format 4. Back up profiles before downgrading.
+A DLL alone does not supply the runtime hooks or generated level manifests.
+The preview launcher helper prepares separate sessions and defaults to its
+bundled local runtime. Its first preparation copies the user's card/settings
+and XP profiles into `.profile`; later sessions reuse that persistent copy.
+It does not overwrite the official installation or original user card.
 
-### Compatibility
+Custom state is stored in `saveN.bin.arsenal`, fingerprinted against the native
+save. Original IDs and Walloper state stay in the native file. The normal vendor
+starts offering Revolverator after Hoven for 15,000 bolts, with 20 rounds and
+2-round pickups. The normal launcher does not grant it automatically.
 
-The manifest declares PAL and NTSC. Windows NTSC-U has native runtime evidence.
-PAL has host-test coverage only; a native PAL campaign has not been verified.
-Other mods that change damage or ammunition capacity need composition testing
-when the optional bonuses are enabled.
+NTSC-U Windows native checks and remaining limits are documented in
+[Validation](VALIDATION.md). PAL gameplay and full campaigns are not certified.
 
-No original game files or OpenRAC source changes are required by Weapon Experience.
-
-## Revolverator
-
-Revolverator is still being integrated and tested. It replaces the native
-Walloper slot while enabled and currently targets NTSC-U. No finished download
-is advertised in this revision.
-
-Its gameplay module and graphics are distinct. The original drill companion is
-built locally from the player's extracted game assets; original models/textures
-are not redistributed here. A custom ammunition render class additionally needs
-the generated extended-level manifests. The present ordinary launcher model-pack
-importer cannot add an absent class by itself.
-
-The final preview instructions must name the exact asset builder and `--levels`
-output to use. Importing only a DLL ZIP must not be described as sufficient for
-the full custom-art setup.
-## Revolverator source preview
-
-Revolverator is published as source and local asset-building tools. There is no
-public Revolverator binary or single launcher-importable package in this preview.
-Use its [README](../revolverator/README.md) and
-[asset workflow](../revolverator/docs/BUILD_AND_ASSETS.md). It requires NTSC-U
-game data, a locally generated drill pack and the cartridge's native manifest
-extension. Existing Walloper ownership becomes Revolverator ownership in slot 18.
-Read the [known limitations](REVOLVERATOR.md#known-limitations) before building.
+The preview setting `start_unlocked` defaults to false. Enabling it grants the
+Revolverator for an immediate test; the ordinary path retains Hoven purchase
+conditions. `Avvia-Prova.cmd` uses `-Trial`: a separate empty Novalis session, the Revolverator
+unlocked with 20 rounds, and isolated XP/card data. `Avvia-Revolverator.cmd` uses
+the persistent `.profile`. For a custom persistent setup, `-StartUnlocked` is
+optional.

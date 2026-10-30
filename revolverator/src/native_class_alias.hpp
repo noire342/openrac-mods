@@ -1,8 +1,9 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #pragma once
 #include "memory.hpp"
 #include <cstdint>
+#include <vector>
 
 namespace revolverator {
 
@@ -27,13 +28,26 @@ public:
     void frame();
     void reset();
     bool ready() const;
+    // Pause-menu ammunition previews have no ammo-pickup update callback. Give
+    // only a validated native225 preview this render ID after its native work.
+    bool apply_preview(unsigned subject,bool custom);
+    // Restore an owned preview before native class comparisons/binding. Other
+    // actors or third-party class changes are never canonicalized.
+    void canonicalize_preview(unsigned subject);
+    void restore_previews();
 
 private:
+    static constexpr unsigned MaximumPreviews=32;
+    struct Visual {unsigned address{},pclass{},pvars{},stamp{};};
+    std::vector<Visual> previews_;
     int level_=-1;
     unsigned map_=0;
     std::uint8_t slot_=0xff;
     bool owned_=false;
     bool supported() const;
     bool source_valid(unsigned map,std::uint8_t slot) const;
+    bool ensure_mapping();
+    bool visual_valid(const Visual& visual) const;
+    void restore_visual(Visual& visual);
 };
 }

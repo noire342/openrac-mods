@@ -2,57 +2,79 @@
 
 [![Build and test](https://github.com/noire342/openrac-mods/actions/workflows/build.yml/badge.svg)](https://github.com/noire342/openrac-mods/actions/workflows/build.yml)
 
-My Ratchet & Clank mods for the native OpenRAC port. I want them to feel like part
-of the original game: the existing HUD, native presentation, and settings that
-make optional changes explicit.
+My Ratchet & Clank mods for the native OpenRAC port, using the existing HUD,
+menus and native presentation.
 
-| Mod | Status | What it does |
+**This branch contains current preview source. Revolverator 0.2 adds a separate
+weapon and preserves the original Walloper**, including its ownership,
+function, favourites and progress. Revolverator has its own 20-round inventory,
+XP and save sidecar.
+
+| Component | Current source | Download status |
 |---|---|---|
-| [Weapon Experience](weapon-xp/README.md) | **0.6.1 available** | Ten persistent weapon levels, native HUD integration and a versioned C API. Damage and ammo bonuses are off by default. |
-| [Revolverator](revolverator/README.md) | **0.1.0 source preview** | Capture, spin and throw reconstruction with native ammunition/HUD, localized text and a C API. Build code and generate required art locally. |
+| [Revolverator](revolverator/README.md) | **0.2.0 PREVIEW source**, additional weapon and API v2 | Preview packages are published separately through Releases |
+| [Weapon Experience](weapon-xp/README.md) | **0.6.3-arsenal PREVIEW companion**, APIs v1–v4 and custom-hit ownership | Latest published stable download remains **0.6.1** |
 
-Download Weapon Experience from [Releases](https://github.com/noire342/openrac-mods/releases).
-Each mod is distributed separately. Revolverator is currently available as
-source and local asset-building tools; no Revolverator binaries or game-derived
-art are published. See its [current scope and limitations](docs/REVOLVERATOR.md).
+The earlier Revolverator 0.1 source preview reused the Walloper slot as a
+replacement. That historical implementation is superseded by the additive 0.2
+source on this branch. See [current scope](docs/REVOLVERATOR.md).
 
-## Install Weapon Experience
+## Stable Weapon Experience download
 
-1. Download `weapon-xp-0.6.1-windows-x86_64.zip` from its release.
-2. Add the ZIP through the OpenRAC launcher's **Mods** page and enable it.
-3. Select a separate XP profile for each campaign, then restart the game.
+Download `weapon-xp-0.6.1-windows-x86_64.zip` from
+[Releases](https://github.com/noire342/openrac-mods/releases), import it through
+the OpenRAC launcher's Mods page and restart the game. Its existing release
+archives are unchanged. Damage and ammo bonuses are off by default.
 
-The Windows ZIP has the manifest at its root and contains only the native mod,
-license and player documentation. You do not need to compile or modify OpenRAC.
-See [Installation](docs/INSTALLATION.md) for settings, profiles and compatibility.
+Stable 0.6.1 can run independently on its supported runtime. The preview
+Revolverator needs the matching API v4 companion source here when XP is enabled;
+0.6.1 is not that companion. Revolverator also runs without Weapon Experience.
 
-## For developers
+## Preview setup
 
-- [Build from source](docs/BUILDING.md)
-- [API guide](docs/API.md)
-- [Weapon Experience configuration](weapon-xp/docs/CONFIGURATION.md)
-- [Revolverator API](revolverator/docs/API.md) and [asset/build workflow](revolverator/docs/BUILD_AND_ASSETS.md)
-- [Validation and compatibility](docs/VALIDATION.md)
-- [Credits and asset provenance](CREDITS.md)
+Revolverator 0.2 requires the [arsenal bridge source patch](docs/arsenal-bridge/README.md)
+on the documented OpenRAC base. Its 30 typed hooks cover native inventory,
+previews, vendor transactions, drops and save lifecycle. All weapon policy
+stays in the mod. A stock executable without these hooks cannot run the 0.2 mod.
 
-Code is organized into small controllers, native adapters, presentation and
-persistence modules. Public interfaces use versioned C tables; other mods do not
-need to link against private implementation code.
+The drill and optional upscaled icon are generated from the player's own
+NTSC-U extraction. They are excluded from this repository. The original
+procedural ammunition recipe and its authored 32px HUD data are included.
+Build and asset preparation are documented in [Building](docs/BUILDING.md) and
+[the local asset workflow](revolverator/docs/BUILD_AND_ASSETS.md).
 
-## Compatibility
+| Revolverator economy | Base value |
+|---|---:|
+| First vendor availability | Visit Hoven |
+| Weapon price | 15,000 bolts |
+| Capacity | 20 rounds |
+| Pickup | 2 rounds, capped at 20 |
+| Ammo unit price | 25 bolts |
 
-Weapon Experience declares PAL and NTSC-U support. Native gameplay evidence is
-currently **Windows NTSC-U**; PAL has host-test coverage, not a completed native
-playthrough. Revolverator currently targets NTSC-U only. No complete campaign
-playthrough is claimed for either mod.
+`start_unlocked` is off by default. Enable it for an immediate trial grant;
+normal progression retains Hoven availability and the 15,000-bolt purchase.
 
-This is a personal mod project, independent of the OpenRAC team, Insomniac Games
-and Sony Interactive Entertainment. Game assets and game files are not included.
+The native weapon panel shows 16 weapons in a 4×5 grid, with scrolling prepared
+for larger catalogs. The original eight quick slots remain; Walloper and
+Revolverator can occupy separate favourites.
+
+## Developer information
+
+- [API guide](docs/API.md): Revolverator API v2, Weapon Experience API v4 and compatibility.
+- [Build and bridge requirements](docs/BUILDING.md).
+- [Installation and development status](docs/INSTALLATION.md).
+- [Validation and limits](docs/VALIDATION.md).
+- [Credits and asset provenance](CREDITS.md).
+
+Native gameplay evidence is Windows NTSC-U. PAL gameplay, complete campaigns,
+all bosses and every mod combination have not been verified. Host builds on
+Linux do not establish native Linux gameplay coverage. No runtime executable,
+ISO, original game art, save or RAM dump is included in this source update.
 
 ## License
 
-Project code authored here is [MIT-licensed](LICENSE), Copyright (c) 2026
-noire342. The upstream `tools/fetch_sdk.py` retains its GPL-3.0-or-later license
-and OpenRAC copyright; its license text is in [LICENSES](LICENSES/GPL-3.0-or-later.txt).
-Retain file-specific notices. The OpenRAC runtime/engine and game assets are
-not relicensed by this repository. See [licensing scope](docs/LICENSING.md).
+Mod implementations are [GPL-3.0-or-later](LICENSE), Copyright (c) 2026 noire342,
+following the upstream mod repository's convention. OpenRAC's SDK and the
+intentionally MIT-licensed Weapon Experience interoperability header/examples
+retain their own notices. Engine files and game assets keep their respective
+rights. See [licensing scope](docs/LICENSING.md).

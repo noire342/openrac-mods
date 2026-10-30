@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #pragma once
 #include <array>
@@ -9,9 +9,9 @@
 #include "openrac/openrac_mod.h"
 
 namespace weaponxp {
-// Optional held-model orientation only. The native update/beam uses the original
-// basis; its post-update render pose rolls around the local firing axis (row 1).
-// Forward stays forward: the model is upside down, never aimed back at Ratchet.
+// Roll around the local firing axis (row 1) before the native update samples the
+// muzzle joint. Rendering, beam, light and sparks then share the same pose/origin.
+// Forward stays forward; native targeting and transformation code remain in charge.
 class NativeMorphModel {
 public:
     NativeMorphModel(const openrac_api* api, const Disc& disc) : m_api(api), m_disc(disc) {}
@@ -27,7 +27,8 @@ public:
         m_moby = 0;
     }
 
-    void after(unsigned moby, bool enabled) noexcept {
+    void prepare(unsigned moby, bool enabled) noexcept {
+        reset();
         if (!enabled || !valid(moby, 256) || read<short>(moby + 0xA6) != 185) {
             return;
         }

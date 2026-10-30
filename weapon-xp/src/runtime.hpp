@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #pragma once
 #include <array>
@@ -10,6 +10,7 @@
 #include "discs.hpp"
 #include "events.hpp"
 #include "hud_bridge.hpp"
+#include "hit_filters.hpp"
 #include "native_damage.hpp"
 #include "native_hud.hpp"
 #include "native_morph_model.hpp"
@@ -43,6 +44,8 @@ private:
     Settings m_settings;
     Combat m_combat;
     Events m_events;
+    HitFilters m_filters;
+    std::uint32_t m_level_epoch=0;
     bool m_ready = false;
     std::uint64_t m_revision = 1;
     std::string m_rules_error;
@@ -121,16 +124,12 @@ private:
     template <class T>
     T read(std::uint32_t address) {
         T result{};
-        if (valid(address, sizeof(T))) {
-            std::memcpy(&result, m_api->memory + address, sizeof(T));
-        }
+        if (valid(address, sizeof(T))) std::memcpy(&result, m_api->memory + address, sizeof(T));
         return result;
     }
     template <class T>
     void write(std::uint32_t address, T value) {
-        if (valid(address, sizeof(T))) {
-            std::memcpy(m_api->memory + address, &value, sizeof(T));
-        }
+        if (valid(address, sizeof(T))) std::memcpy(m_api->memory + address, &value, sizeof(T));
     }
     std::uint32_t resident(std::uint32_t address);
     std::uint32_t overlay(std::uint32_t address);
@@ -143,7 +142,7 @@ private:
     void remember_source();
     int source_item(std::uint32_t hit);
     std::uint32_t get_hit(std::uint32_t moby, std::int32_t mask, std::int32_t keep);
-    std::uint32_t process_hit(std::uint32_t moby, std::uint32_t hit);
+    std::uint32_t process_hit(std::uint32_t moby, std::uint32_t hit,bool* external=nullptr);
     bool external_context(const weapon_xp_external_hit_v2*, bool require_ring);
     static bool same_key(const ExternalKey&, const weapon_xp_external_hit_v2&);
     int begin_external_scope(std::uint64_t);

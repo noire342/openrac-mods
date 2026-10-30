@@ -1,67 +1,48 @@
-# Native HD icon integration
+# Native glyph and optional HD icon
 
-The selected original glyph is bank **59901, frame 13**. `build_hd_icon.py`
-extracts the actual 32×32 PSMT8 image and its CSM1 palette from a local native
-RAM capture; it does not crop the contact sheet. It invokes the official
-[Real-ESRGAN ncnn Vulkan runtime](https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan)
-with `realesrgan-x4plus-anime`, scale 4, producing a faithful 128×128 image.
-The runtime, model files and game-derived input/output are local build inputs.
+The selected original drill glyph is bank 59901, frame 13, for inventory and
+quick select. The gameplay ammunition HUD uses the cartridge icon. `build_hd_icon.py` extracts
+the actual 32×32 PSMT8 image and CSM1 palette from local game data, then uses
+[Real-ESRGAN ncnn Vulkan](https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan)
+for its 128×128 upscale. `encode_hd_icon.py` writes the native indexed image and
+palette header. Original input, generated artwork and embedded headers remain
+private game-derived build inputs.
 
-`encode_hd_icon.py` converts that image into a 255-color PSMT8 image and a native
-CSM1 RGBA palette. Index zero remains transparent for the original HUD callback.
-The generated header and images contain game-derived artwork and must remain
-outside the public source tree.
+Configure `REVOLVERATOR_HD_ICON_DIR` only for a local build with the generated
+`revolverator_hd_icon_data.hpp`. A build without that data retains the native
+fallback. The upscale changes drill-glyph detail in inventory/quick select. It must not
+replace the gameplay cartridge icon or enlarge the native logical footprint.
 
-## Adapter contract
+## Texture adapter contract
 
-`HdIcon` clones the image/palette page tables and appends HD and transparent
-pages. It changes only Presentation's four appended frame references, leaving
-the original shared bank and every other weapon reference unchanged. Inventory
-grids and quick select draw the full 128×128 texture into their existing cells.
+`HdIcon` owns cloned image/palette pages and the presentation's appended frame
+references. The existing bank and other weapons' references remain under their
+owners. In the ammo HUD, the base callback temporarily samples a transparent
+32×32 page; the HD draw then samples the full 128×128 texture into the native
+32×32 area. Panel layout, text, position, alpha and slide timing remain native.
 
-The native ammo HUD function derives icon dimensions from its texture. Merely
-replacing its texture with 128×128 would enlarge the HUD icon four times.
-`before_base()` temporarily points the four references at a transparent 32×32
-page. `after_base()` restores the HD references, and `draw(x,y,alpha)` uses the
-native sprite renderer with an explicit **32×32 logical size** and full 128×128
-texture sampling. Native panel layout, ammo text, slide position and fade remain
-the source of truth.
+This describes the texture adapter; the final 0.2 HUD binding must select the
+cartridge rather than the drill. Menu cells use explicit screen dimensions. The 4×5 weapon view and eight-slot
+ring must show the correct logical weapon's glyph, including when Walloper and
+Revolverator are both owned. An alias class or a successful allocation alone
+does not prove the renderer selected the intended texture.
 
-Add `src/hd_icon.cpp` to the mod target. For a private build, add the generated
-header's output directory to include paths and include
-`revolverator_hd_icon_data.hpp`. The runtime constructor receives the existing
-API and the session's `GuestArena*`. The level-load hook reserves that arena
-from the returned heap cursor before any presentation allocation. The native
-HUD heap has insufficient spare capacity for an HD image and must not be used
-for these runtime allocations. A missing/exhausted arena leaves the stock glyph
-available. The no-arena constructor is retained for legacy host-test fixtures.
+Allocate optional pages from the reserved level arena after essential arm/rotor
+resources. Failed allocation or conflicting ownership must leave a usable native
+fallback. Reset icon references before their frame tables and level arena are
+released; never write through pointers belonging to an old level.
 
-1. After `bind_icon()` has installed its cloned frame table, call
-   `hd.install(first_appended_frame, 4, generated::hd_icon_data())`.
-2. Call `hd.frame()` once per tick after binding. It invalidates only the
-   appended GS page cache entries; native bank counts do not include them.
-3. In `draw_base`, call `hd.before_base()`, the existing native callback, then
-   `hd.after_base()` in that order. Always restore immediately after the
-   callback, including frames where an additional charge indicator is hidden.
-4. In the HUD post-draw path, after calculating native fade `alpha`, draw at
-   `x + read<short>(element+0x48)`, `y + read<short>(element+0x4a)`.
-   Do this before any `Phase::Spinning` early return.
-5. Call `hd.reset()` **before** Presentation restores its frame table/animation
-   definition, and reset all arena users before the session resets its arena.
-   Reset also occurs before level memory is discarded.
+## Current evidence
 
-Missing or invalid HD data, failed allocation, or conflicting table ownership
-leaves the existing 32×32 native glyph available. A new level must construct or
-reset/rebind the adapter. The adapter does not write into stale level memory.
-If a later owner replaces the frame table, appended pages remain in the
-level-owned arena storage so copied HD references do not dangle.
+Host tests cover sizing, page metadata, base-callback restoration, cache
+invalidation, allocation reuse, fallback and teardown. The initial 0.2 XP
+fixture showed a crossed native glyph; that observation is historical. Later
+Novalis menu/HUD fixtures verified the corrected additive binding. Rilgar 5,
+Nebula 6 and Quartu 15 then completed 2,400-frame standalone runs with exact
+cartridge texels/CLUT and displayed ammunition 19/20. Rilgar/Nebula used the
+compact native 32px drill glyph; Quartu used the 128px glyph. Remaining HUD heap
+was 3,456/624/12,304 bytes. These low-memory runs did not open menus or load XP.
 
-## Validation boundary
-
-The independent adapter test covers fixed logical size, full-resolution page
-metadata, native HUD suppression/restoration, transient GS cache invalidation,
-single-allocation reuse, failure fallback, cooperative edits, and level teardown.
-These tests do not prove the in-game renderer. Native preview checks and their scope are recorded in
-[Validation](../../docs/VALIDATION.md#revolverator-source-preview). Public builds
-use the original 32px glyph; Rilgar also uses that fallback in private HD builds
-when presentation memory is insufficient. Full campaign coverage is not claimed.
+The exact binary hashes and scope are in [NATIVE_VALIDATION.md](NATIVE_VALIDATION.md).
+The optional game-derived HD header remains excluded from public source. These
+fixtures do not establish all aspect ratios, PAL gameplay or campaign completion.

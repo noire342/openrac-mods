@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #include "native_rotor.hpp"
 #include <cmath>
@@ -21,7 +21,7 @@ bool unit_rotation(const std::array<float,16>& m){
     return true;
 }
 }
-NativeRotor::NativeRotor(const openrac_api* api,GuestArena& arena):Memory(api),guest_(arena){}
+NativeRotor::NativeRotor(const openrac_api* api,GuestArena& arena,bool hud_fallback):Memory(api),guest_(arena),hud_fallback_(hud_fallback){}
 NativeRotor::~NativeRotor(){reset();}
 bool NativeRotor::attached()const{
     return owner_&&api_->loaded_level()==level_&&valid(owner_,256)&&
@@ -44,6 +44,11 @@ bool NativeRotor::attach(unsigned weapon){
     pivot_=source_pivot*(source_scale/scale*1024.f);
     if(arena_level_!=api_->loaded_level()){arena_=0;arena_level_=api_->loaded_level();}
     if(!arena_)arena_=guest_.allocate(5*64);
+    if(!arena_&&hud_fallback_){
+        const auto state=global(0x19a3e8),cursor=read<unsigned>(state+0x10),end=read<unsigned>(state+0x14);
+        if(valid(cursor,5*64)&&end>=cursor&&end<=0x2000000&&end-cursor>=5*64+16)
+            arena_=function<unsigned(*)(unsigned)>("FUN_001ff288")(5*64);
+    }
     if(!valid(arena_,5*64)){arena_=0;return false;}
     std::memset(api_->memory+arena_,0,5*64);
     owner_=weapon;klass_=klass;stamp_=read<unsigned>(weapon+0x38);

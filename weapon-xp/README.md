@@ -1,4 +1,4 @@
-# Weapon Experience 0.6.1
+# Weapon Experience 0.6.3-arsenal — preview companion
 
 Twelve weapons gain ten persistent levels. The default is progression only: original
 damage, ammo capacity, projectiles, aiming, colors, particles and weapon behavior.
@@ -10,7 +10,7 @@ gauge. Localized names use v2 through v10. Level increases retain the native acq
 presentation. RYNO has no short retail acquisition scene and uses its native banner.
 The mod does not unlock weapons or refill ammunition.
 
-## Extensible rules and API v3
+## Extensible rules and APIs v3/v4
 
 Rules are data, independent of game-memory adapters. Every weapon can have its own
 ten XP thresholds, ten damage/ammo multipliers and integer XP weight (0 pauses awards).
@@ -25,6 +25,15 @@ file reload, diagnostics and explicit XP flush. ABI v1/v2 consumers remain suppo
 API edits are session-only, work on the game thread and preserve earned XP. Rule
 mutations wait until acquisition and active co-op scopes end. See [API](docs/API.md)
 and the compiled plain-C [consumer example](examples/rules_client.c).
+
+## Additive arsenal companion
+
+This development source exposes API v4 hit-ownership filters and acquisition
+presentation helpers for Revolverator0.2. It excludes accepted custom hits from
+native Walloper XP; Revolverator stores its independent progress in its own
+sidecar. Existing ABI v1/v2/v3 prefixes remain compatible. The latest published
+stable download remains0.6.1; preview packages are separate from the stable release.
+See `docs/API.md` and `examples/hit_owner.c`.
 
 ## Settings
 
@@ -50,7 +59,8 @@ all multipliers are 1 at every level. Capacity rounds upward and never grants am
 
 `flip_morph_model` defaults to false. When enabled, the held Morph-o-Ray is rolled
 180 degrees around its firing axis: upside down, with the barrel still toward the
-enemy. Native targeting, beam and transformation run before the render-only change.
+enemy. The native muzzle joint is sampled after the roll, so the beam, sparks and
+light start at the flipped barrel. Native aiming and transformation code is retained.
 Switching it off restores the original pose. This is a cosmetic option, independent
 of XP levels; the Morph-o-Ray is not part of the twelve-weapon XP catalog.
 The attribution to an original concept drawing has not been independently confirmed.
@@ -104,7 +114,7 @@ Install the ZIP through the launcher's Mods page and restart the game.
 
 ## License
 
-The mod code authored for this project is [MIT-licensed](LICENSE),
+The mod code authored for this project is [GPL-3.0-or-later](LICENSE),
 Copyright (c) 2026 noire342. Existing third-party notices remain applicable.
 The OpenRAC SDK keeps its MIT notice; the OpenRAC runtime and any engine patch
 retain their upstream GPL licenses. Game code and assets are not relicensed.

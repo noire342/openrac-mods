@@ -1,51 +1,61 @@
-# Private source and build packaging
+# Preview source and portable packaging
 
-Revolverator is published as a source preview. Game-derived assets and native
-binaries remain in the private build workflow. Running the source packaging
-tool creates a **private snapshot** and never pushes a commit,
-creates a GitHub release, or uploads an artifact.
+Version 0.2 is an additive preview, separate from the final stable release.
+The packaging scripts prepare reviewable artifacts; public downloads are
+published separately through Releases. Native evidence and remaining limits
+are listed in [NATIVE_VALIDATION.md](NATIVE_VALIDATION.md).
 
-```powershell
-python tools/package_source.py --output <private-output>/revolverator-source.zip
-```
+## Public source boundary
 
-The archive contains an allowlisted source tree and a SHA-256 inventory. It
-excludes SDK/toolchains, compiled binaries, game artwork, game-derived icon
-headers, RAM captures, campaign saves and local fixtures. The tool rejects
-symbolic external source paths and refuses to overwrite an existing archive.
-If another process changes selected source files while packaging, it removes
-the incomplete snapshot and reports the conflict.
+The source package contains the allowlisted code, documentation, original ammo
+recipe and its SHA-256 inventory. Build the native library against a separately
+obtained OpenRAC SDK. Reconstruct the original drill and native icon locally
+from the player's own NTSC-U assets.
 
-Build native code against the separately obtained OpenRAC SDK. The private
-graphics companion builders read assets extracted from the player's own game.
-The ammo recipe is original project data with AI-assisted model provenance.
-Do not include the extracted Hoven drill, its textures, generated copies,
-derived HUD image/header, the game ISO, or memory/save data in a source release.
-The generated HD header is enabled only through a local
-`REVOLVERATOR_HD_ICON_DIR` build path. A binary built with that header embeds
-game-derived artwork and belongs to the private build workflow.
+Exclude the ISO, extracted game models/textures, generated copies of the Hoven
+drill, game-derived HD glyph/header, RAM captures, memory cards, sidecars,
+private fixtures and installed-data links. A local binary compiled with the
+HD glyph header embeds game-derived artwork and belongs to the private workflow.
 
-## Additional service export on Linux
+The cartridge model/texture were created with AI assistance; the procedural
+builder generates the project's original single-cell design from its recipe.
+The selected native HUD glyph is upscaled with
+[Real-ESRGAN ncnn Vulkan](https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan).
+Keep this provenance distinct from Insomniac Games/Sony's original game assets.
 
-The OpenRAC SDK's `openrac_add_mod` generates an ELF version script exposing
-only the three loader entry points. `OPENRAC_MOD_EXPORT` alone does not override
-its `local: *` rule. After `openrac_add_mod(revolverator ...)`, the target's
-existing generated export map must additionally name its service:
+`tools/package_source.py` creates a private source snapshot with an allowlist
+and hashes; it does not publish it. Inspect that allowlist after adding 0.2 files
+so registry, store, menu, XP adapter, headers and documentation are included.
+Reject external symbolic source paths and do not include local generated data.
 
-```cmake
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/revolverator.exports"
-    "{\n global: openrac_mod_query; openrac_mod_load; openrac_mod_unload; openrac_revolverator_query;\n local: *;\n};\n")
-endif()
-```
+## Runtime and companion
 
-The SDK already passes this exact file to the linker and adds it to
-`LINK_DEPENDS`; do not append a second anonymous version script. Verify the
-resulting library with `nm -D --defined-only revolverator.so`, then resolve
-`openrac_revolverator_query` from its loaded handle. A query returning null
-before `openrac_mod_load` is expected; a missing dynamic symbol is an export
-failure.
+The additive inventory requires the dedicated runtime bridge based on
+`77a2f052`, with 30 typed hooks. The existing generic mod ABI remains 1.1; the
+extra hook IDs still require that runtime. The corresponding bridge patch and base are documented in
+[`docs/arsenal-bridge`](../../docs/arsenal-bridge/README.md). Do not claim an ordinary stock
+OpenRAC executable has these hooks.
 
-Native host tests, ELF symbol checks and source archive inspection are distinct
-from in-game validation. A public release additionally needs the exact final
-binary/graphics workflow and its native gameplay evidence.
+Weapon XP is optional. The matching preview companion is
+`0.6.3-arsenal` provider with API v4 ownership filters and an optional acquisition
+presentation tail. Without XP the weapon works normally; an installed provider
+without the ownership filter is incompatible.
+
+The portable preview bundle is prepared separately after integration QA. It
+uses isolated paths and leaves the official installation intact. It is not a
+new standard launcher import format. Its manifest pins runtime, plugin, graphics
+and companion hashes. `Avvia-Prova.cmd` starts an empty isolated Novalis trial
+with the weapon and 20 rounds. The normal launcher uses persistent `.profile`
+state; `start_unlocked` stays off unless explicitly enabled.
+
+## Linux service export
+
+`openrac_add_mod` normally exports the three loader entry points. The mod's
+existing ELF version map must also name `openrac_revolverator_query`; visibility
+attributes alone do not override `local: *`. The CMake target already extends
+that map and links `${CMAKE_DL_LIBS}` for optional provider discovery.
+
+Verify `nm -D --defined-only revolverator.so` and resolve the service from an
+already loaded handle. A null query before mod load is expected; an absent
+dynamic symbol is an export failure. Export checks and host tests do not prove
+native gameplay or an approved graphical result.

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #include "native_ammunition.hpp"
 
@@ -69,19 +69,19 @@ int main(){
     {
         Fixture f;NativeAmmunition ammunition(&f.api);ammunition.frame();
         CHECK(f.get<std::uint16_t>(vendor+8)==25&&f.get<std::uint16_t>(vendor+10)==25);
-        CHECK(f.get<std::uint16_t>(vendor+12)==2&&f.get<std::uint16_t>(vendor+14)==10);
-        CHECK(f.get<std::uint16_t>(vendor+18)==10);
+        CHECK(f.get<std::uint16_t>(vendor+12)==2&&f.get<std::uint16_t>(vendor+14)==20);
+        CHECK(f.get<std::uint16_t>(vendor+18)==20);
         CHECK(f.get<std::uint16_t>(definition+0x3a)==225&&f.get<std::uint16_t>(resident+0x3a)==225);
         CHECK(f.get<int>(ammo_at)==0); // Loading an existing empty save does not refill it.
-        CHECK(ammunition.maximum()==10&&ammunition.count()==0);
+        CHECK(ammunition.maximum()==20&&ammunition.count()==0);
         CHECK(f.get<int>(text_count)==5&&f.allocations==1);
         const auto copy=f.get<unsigned>(text_ptr);
         CHECK(copy!=bank&&f.get<TextRecord>(copy)==f.get<TextRecord>(bank));
         CHECK(f.get<int>(copy+3*16+4)==f.get<std::uint16_t>(definition+0x34));
         CHECK(f.get<int>(copy+4*16+4)==f.get<std::uint16_t>(definition+0x36));
         for(int i=0;i<100;++i)ammunition.frame();CHECK(f.allocations==1);
-        f.put(ammo_at,10);CHECK(ammunition.begin_attack());
-        CHECK(f.last_item==18&&f.last_amount==1&&f.takes==1&&ammunition.count()==9);
+        f.put(ammo_at,20);CHECK(ammunition.begin_attack());
+        CHECK(f.last_item==18&&f.last_amount==1&&f.takes==1&&ammunition.count()==19);
         f.put(0x15f5c4,3);CHECK(!ammunition.begin_attack()&&f.takes==1);
         f.put(0x15f5c4,0);f.put(hero+0x10b8,10);CHECK(!ammunition.begin_attack()&&f.takes==1);
         f.put(hero+0x10b8,18);f.put(hero+0x22a8,0);CHECK(!ammunition.begin_attack()&&f.takes==1);
@@ -132,14 +132,14 @@ int main(){
         NativeAmmunition ammunition(&f.api);ammunition.frame();
         CHECK(f.get<unsigned>(text_ptr)==bank&&f.get<int>(text_count)==3);
         CHECK(f.get<TextSnapshot>(bank)==original_text);
-        CHECK(ammunition.maximum()==10&&ammunition.count()==3&&f.takes==0);
-        CHECK(f.get<std::uint16_t>(vendor+8)==25&&f.get<std::uint16_t>(vendor+12)==2&&f.get<std::uint16_t>(vendor+18)==10);
+        CHECK(ammunition.maximum()==20&&ammunition.count()==3&&f.takes==0);
+        CHECK(f.get<std::uint16_t>(vendor+8)==25&&f.get<std::uint16_t>(vendor+12)==2&&f.get<std::uint16_t>(vendor+18)==20);
         CHECK(f.get<std::uint16_t>(definition+0x3a)==225&&f.get<std::uint16_t>(resident+0x3a)==225);
         CHECK(f.get<std::uint16_t>(definition+0x34)==321&&f.get<std::uint16_t>(definition+0x36)==322);
         CHECK(f.get<std::uint16_t>(resident+0x34)==621&&f.get<std::uint16_t>(resident+0x36)==622);
         CHECK(ammunition.begin_attack()&&f.takes==1&&f.last_item==18&&f.last_amount==1&&ammunition.count()==2);
         // Optional labels do not force another allocation or disable later shots.
-        f.fail_allocate=false;ammunition.frame();CHECK(f.allocations==1&&ammunition.maximum()==10);
+        f.fail_allocate=false;ammunition.frame();CHECK(f.allocations==1&&ammunition.maximum()==20);
         CHECK(f.get<unsigned>(text_ptr)==bank&&f.get<int>(text_count)==3);
         ammunition.reset();
         CHECK(f.get<VendorSnapshot>(vendor)==original_vendor);
@@ -158,7 +158,7 @@ int main(){
         const auto original_text=f.get<TextSnapshot>(bank);
         NativeAmmunition ammunition(&f.api,&guest,false);ammunition.frame();
         CHECK(f.allocations==0&&guest.used()==32&&guest.available()==0);
-        CHECK(ammunition.maximum()==10&&ammunition.count()==3);
+        CHECK(ammunition.maximum()==20&&ammunition.count()==3);
         CHECK(f.get<std::uint16_t>(vendor+8)==25&&f.get<std::uint16_t>(vendor+12)==2);
         CHECK(f.get<std::uint16_t>(definition+0x3a)==225&&f.get<std::uint16_t>(resident+0x3a)==225);
         CHECK(f.get<std::uint16_t>(definition+0x34)==401&&f.get<std::uint16_t>(definition+0x36)==402);

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (c) 2026 noire342
 """Extract the selected native glyph and upscale it with Real-ESRGAN ncnn Vulkan.
 

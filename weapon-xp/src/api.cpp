@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #include <cmath>
 #include <cstring>
@@ -51,7 +51,7 @@ int Runtime::get_stats(int item, weapon_xp_stats_v1* out) {
 }
 
 int Runtime::award_xp(int item, std::uint32_t amount) {
-    if (m_events.dispatching()) {
+    if (m_events.dispatching() || m_filters.dispatching()) {
         return WEAPON_XP_BUSY;
     }
     if (weapon_index(item) < 0) {
@@ -90,7 +90,7 @@ bool Runtime::external_context(const weapon_xp_external_hit_v2* c, bool require_
 }
 
 int Runtime::begin_external_scope(std::uint64_t session) {
-    if (m_events.dispatching() || m_external_processing) {
+    if (m_events.dispatching() || m_filters.dispatching() || m_external_processing) {
         return WEAPON_XP_BUSY;
     }
     if (session == m_external_scope) {
@@ -107,7 +107,7 @@ int Runtime::begin_external_scope(std::uint64_t session) {
 }
 
 int Runtime::prepare_local_hit(const weapon_xp_external_hit_v2* c, weapon_xp_prepared_hit_v2* out) {
-    if (m_events.dispatching() || m_external_processing) {
+    if (m_events.dispatching() || m_filters.dispatching() || m_external_processing) {
         return WEAPON_XP_BUSY;
     }
     if (!out || out->size < sizeof(*out) || !external_context(c, false)) {
@@ -173,9 +173,10 @@ int Runtime::prepare_local_hit(const weapon_xp_external_hit_v2* c, weapon_xp_pre
     p.secondary = false;
     p.at = m_tick;
     std::memcpy(p.before.data(), m_api->memory + p.hit, 64);
-    if (!process_hit(p.moby, p.hit)) {
+    bool external=false;
+    if (!process_hit(p.moby, p.hit,&external) || external) {
         p = ExternalPrepared{};
-        return WEAPON_XP_INVALID_ARGUMENT;
+        return external?WEAPON_XP_DISABLED:WEAPON_XP_INVALID_ARGUMENT;
     }
     m_combat.forget(p.moby);  // Replayed native death must not award before confirmation.
     p.damage = read<float>(p.hit + 0x2C);
@@ -187,7 +188,7 @@ int Runtime::prepare_local_hit(const weapon_xp_external_hit_v2* c, weapon_xp_pre
 }
 
 int Runtime::mark_replicated_hit(const weapon_xp_external_hit_v2* c) {
-    if (m_events.dispatching() || m_external_processing) {
+    if (m_events.dispatching() || m_filters.dispatching() || m_external_processing) {
         return WEAPON_XP_BUSY;
     }
     if (!external_context(c, true)) {
@@ -205,7 +206,7 @@ int Runtime::mark_replicated_hit(const weapon_xp_external_hit_v2* c) {
 }
 
 int Runtime::confirm_external_death(const weapon_xp_external_hit_v2* c) {
-    if (m_events.dispatching() || m_external_processing) {
+    if (m_events.dispatching() || m_filters.dispatching() || m_external_processing) {
         return WEAPON_XP_BUSY;
     }
     if (!external_context(c, false)) {
@@ -244,7 +245,7 @@ int Runtime::confirm_external_death(const weapon_xp_external_hit_v2* c) {
 }
 
 const weapon_xp_api_v1* Runtime::query(std::uint32_t abi) {
-    if (abi != WEAPON_XP_ABI_V1 && abi != WEAPON_XP_ABI_V2 && abi != WEAPON_XP_ABI_V3) {
+    if (abi != WEAPON_XP_ABI_V1 && abi != WEAPON_XP_ABI_V2 && abi != WEAPON_XP_ABI_V3 && abi != WEAPON_XP_ABI_V4) {
         return nullptr;
     }
     static const weapon_xp_api_v1 service{
@@ -362,7 +363,7 @@ const weapon_xp_api_v1* Runtime::query(std::uint32_t abi) {
             if (!s_instance || !s_instance->m_ready) {
                 return WEAPON_XP_NOT_READY;
             }
-            if (s_instance->m_events.dispatching() || s_instance->m_external_processing) {
+            if (s_instance->m_events.dispatching() || s_instance->m_filters.dispatching() || s_instance->m_external_processing) {
                 return WEAPON_XP_BUSY;
             }
             s_instance->save();
@@ -388,7 +389,37 @@ const weapon_xp_api_v1* Runtime::query(std::uint32_t abi) {
         table.v2.base.abi_version = WEAPON_XP_ABI_V3;
         return table;
     }();
-    return &versioned.v2.base;
+    if(abi==WEAPON_XP_ABI_V3)return &versioned.v2.base;
+    static const weapon_xp_api_v4 ownership=[] {
+        weapon_xp_api_v4 table{};table.v3=versioned;
+        table.v3.v2.base.size=sizeof(table);table.v3.v2.base.abi_version=WEAPON_XP_ABI_V4;
+        table.register_hit_filter=+[](weapon_xp_hit_filter_v4 filter,void* user,std::uint32_t* token)->std::int32_t{
+            if(!s_instance||!s_instance->m_ready)return WEAPON_XP_NOT_READY;
+            if(s_instance->m_events.dispatching()||s_instance->m_filters.dispatching()||s_instance->m_external_processing)return WEAPON_XP_BUSY;
+            return s_instance->m_filters.subscribe(filter,user,token);
+        };
+        table.unregister_hit_filter=+[](std::uint32_t token)->std::int32_t{
+            return s_instance&&s_instance->m_ready?s_instance->m_filters.unsubscribe(token):WEAPON_XP_NOT_READY;
+        };
+        table.request_acquisition_presentation=+[](std::int32_t item)->std::int32_t {
+            if(!s_instance||!s_instance->m_ready)return WEAPON_XP_NOT_READY;
+            auto& runtime=*s_instance;
+            if(runtime.m_events.dispatching()||runtime.m_filters.dispatching()||runtime.m_external_processing)
+                return WEAPON_XP_BUSY;
+            if(weapon_index(item)<0)return WEAPON_XP_INVALID_ARGUMENT;
+            if(!runtime.m_settings.animations)return WEAPON_XP_DISABLED;
+            if(runtime.m_upgrades->pending())return WEAPON_XP_BUSY;
+            try {
+                return runtime.m_upgrades->request_presentation(item)?WEAPON_XP_OK:WEAPON_XP_DISABLED;
+            } catch (...) {return WEAPON_XP_IO_ERROR;}
+        };
+        table.acquisition_presentation_active=+[]()->std::int32_t {
+            if(!s_instance||!s_instance->m_ready)return WEAPON_XP_NOT_READY;
+            return s_instance->m_upgrades->requested_presentation_pending()?1:0;
+        };
+        return table;
+    }();
+    return &ownership.v3.v2.base;
 }
 
 }  // namespace weaponxp

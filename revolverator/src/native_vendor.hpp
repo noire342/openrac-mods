@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #pragma once
 #include "memory.hpp"
@@ -6,6 +6,7 @@
 #include <cstdint>
 
 namespace revolverator {
+class NativeArsenal;
 
 // Price, transient vendor-list and ammunition-preview policy. The native game owns its
 // saved stock, planet visits, inventory grants, purchases, ammunition and bolts.
@@ -33,6 +34,9 @@ public:
     void before_build();
     void after_build(int skip_unflagged);
     bool unlocked() const;
+    void set_arsenal(NativeArsenal* arsenal){arsenal_=arsenal;}
+    unsigned selected_key()const;
+    bool selected_custom()const;
     void set_preview_class(unsigned klass){preview_class_=klass;}
 
     // Bracket preview_hook with these calls. frame() restores the temporary
@@ -54,6 +58,10 @@ private:
         bool active=false;
     } menu_;
     int level_=-1;
+    NativeArsenal* arsenal_{};
+    unsigned build_previous_=18;
+    bool rebuild_selected_custom_=false;
+    static constexpr int custom_row_marker=0x52564f31;
     unsigned price_address_=0;
     std::int32_t original_price_=0;
     bool price_owned_=false;

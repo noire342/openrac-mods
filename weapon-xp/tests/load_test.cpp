@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #include <chrono>
 #include <cmath>
@@ -93,7 +93,7 @@ std::uint32_t exe(std::uint32_t address) {
 }
 
 std::uint32_t level_data(int level, std::uint32_t address) {
-    CHECK(level == 0);
+    CHECK(level == 0 || level == 1);
     return address + 0x4000;
 }
 
@@ -213,6 +213,55 @@ std::uint32_t original_load(std::int32_t level) {
     return 0x123456;
 }
 
+void original_morph(unsigned moby) {
+    // Native moby_point_position: scale a local joint, transform by the held
+    // basis, then add the model's world position. The native ray samples joint 0.
+    constexpr float joint[]{.25f, 2.f, .75f};
+    const auto vars = get<unsigned>(moby + 0x78);
+    for (unsigned axis = 0; axis < 3; ++axis) {
+        float world = get<float>(moby + 0x10 + axis * 4);
+        for (unsigned row = 0; row < 3; ++row) {
+            world += joint[row] * get<float>(moby + 0xC0 + row * 16 + axis * 4);
+        }
+        put<float>(vars + axis * 4, world);
+    }
+}
+
+void morph_origin_contract(bool flipped) {
+    constexpr unsigned moby = 0x550000, vars = 0x551000;
+    const auto hero = exe(disc->hero);
+    const auto held = exe(disc->item_in_hand);
+    const auto old_moby = get<unsigned>(hero + 0x1090);
+    const auto old_item = get<int>(held);
+    const auto old_mode = get<int>(ov(disc->mode));
+    const auto old_block = get<unsigned char>(hero + 0x20A4);
+    put<unsigned>(hero + 0x1090, moby);
+    put<int>(held, 21);
+    put<int>(ov(disc->mode), 0);
+    put<unsigned char>(hero + 0x20A4, 0);
+    put<short>(moby + 0xA6, 185);
+    put<unsigned>(moby + 0x78, vars);
+    const float basis[]{1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0};
+    std::memcpy(ram.data() + moby + 0xC0, basis, sizeof(basis));
+    put<float>(moby + 0x10, 10);
+    put<float>(moby + 0x14, 20);
+    put<float>(moby + 0x18, 30);
+    put<unsigned>(vars + 0x10, 0x552000);  // Native target ownership.
+    auto update = reinterpret_cast<void (*)(unsigned)>(hooks.at("rac1.moby.morphoray.update"));
+    for (unsigned frame = 0; frame < 2; ++frame) {
+        update(moby);
+        CHECK(get<float>(vars) == (flipped ? 9.75f : 10.25f));
+        CHECK(get<float>(vars + 4) == 22.f);  // Firing axis remains forward.
+        CHECK(get<float>(vars + 8) == (flipped ? 29.25f : 30.75f));
+        CHECK(get<unsigned>(vars + 0x10) == 0x552000);
+        CHECK(get<float>(moby + 0xD4) == 1.f);
+    }
+    put<unsigned>(hero + 0x1090, old_moby);
+    put<int>(held, old_item);
+    put<int>(ov(disc->mode), old_mode);
+    put<unsigned char>(hero + 0x20A4, old_block);
+}
+
 int host_hook(
     openrac_mod*, const char* name, const char* signature, void* replacement, void** original
 ) {
@@ -233,8 +282,7 @@ int host_hook(
         return OPENRAC_HOOK_SIGNATURE;
     }
     if (key == "rac1.moby.morphoray.update") {
-        *original =
-            reinterpret_cast<void*>(+[](unsigned moby) { CHECK(get<float>(moby + 0xC0) == 1.0f); });
+        *original = reinterpret_cast<void*>(original_morph);
     } else if (key == "rac1.weapon.take_ammo") {
         *original = reinterpret_cast<void*>(original_take_ammo);
     } else if (key == "rac1.moby.hero_bomb.update" || key == "rac1.moby.moby305.update") {
@@ -582,6 +630,7 @@ void extension_contract(
     CHECK(v3->set_configuration(&cfg, cfg.revision) == WEAPON_XP_STALE_REVISION);
     CHECK(v3->get_configuration(&cfg) == 0 && cfg.revision == 2);
     CHECK(cfg.flags & WEAPON_XP_FLIP_MORPH_MODEL);
+    morph_origin_contract(true);
     weapon_xp_rules_v3 rules{};
     rules.size = sizeof(rules);
     CHECK(v3->get_rules(13, &rules) == 0);
@@ -643,6 +692,7 @@ void extension_contract(
     cfg.flags &= ~WEAPON_XP_FLIP_MORPH_MODEL;
     CHECK(v3->set_configuration(&cfg, cfg.revision) == 0);
     CHECK(v3->get_configuration(&cfg) == 0 && !(cfg.flags & WEAPON_XP_FLIP_MORPH_MODEL));
+    morph_origin_contract(false);
     CHECK(observed.calls >= 5 && service->unsubscribe(configuration_token) == 0);
     unload();
     CHECK(v3->get_configuration(&cfg) == WEAPON_XP_NOT_READY);
@@ -652,6 +702,141 @@ void extension_contract(
         "ABI v3: atomic patches, stale revisions, co-op guards, reload rollback, bonuses and "
         "persistence: ok"
     );
+}
+
+void ownership_contract(
+    weapon_xp_query_fn query,const openrac_api& api,openrac_mod* handle,
+    openrac_mod_load_fn load,void(*unload)()
+) {
+    test_profile=std::string("ownership-")+disc->version;
+    scale_damage=true;scale_capacity=false;test_xp_rate=1;
+    CHECK(load(&api,handle)==0);
+    const auto* raw=query(4);
+    CHECK(raw&&raw->size==sizeof(weapon_xp_api_v4)&&raw->abi_version==4&&query(5)==nullptr);
+    CHECK(query(1)->size==sizeof(weapon_xp_api_v1)&&query(1)->abi_version==1);
+    CHECK(query(2)->size==sizeof(weapon_xp_api_v2)&&query(2)->abi_version==2);
+    CHECK(query(3)->size==sizeof(weapon_xp_api_v3)&&query(3)->abi_version==3);
+    const auto* v4=reinterpret_cast<const weapon_xp_api_v4*>(raw);
+    const auto* v3=&v4->v3;const auto* v2=&v3->v2;
+    service=query(1);base_ammo();put<int>(exe(disc->item_in_hand),18);
+    put<float>(exe(disc->tick_seconds),1.f/60);frame(nullptr);
+    CHECK(service->award_xp(18,kThresholds[1])==WEAPON_XP_OK);
+    const auto before=stats(18).xp;
+    std::uint32_t observer_token{};CHECK(service->subscribe(observer,nullptr,&observer_token)==0);
+    struct Client {
+        const weapon_xp_api_v4* api;
+        unsigned token{},calls{};bool claim_all=false,self_remove=false;
+        weapon_xp_hit_context_v4 context{};
+    } client{v4};
+    const auto filter=+[](void* user,const weapon_xp_hit_context_v4* context)->std::int32_t {
+        auto& c=*static_cast<Client*>(user);++c.calls;CHECK(context&&context->size==sizeof(*context));c.context=*context;
+        weapon_xp_configuration_v3 configuration{};configuration.size=sizeof(configuration);
+        CHECK(c.api->v3.get_configuration(&configuration)==0);
+        CHECK(c.api->v3.set_configuration(&configuration,configuration.revision)==WEAPON_XP_BUSY);
+        CHECK(c.api->v3.v2.base.award_xp(18,1)==WEAPON_XP_BUSY);
+        CHECK(c.api->request_acquisition_presentation(18)==WEAPON_XP_BUSY);
+        unsigned unused=77;
+        CHECK(c.api->register_hit_filter(nullptr,user,&unused)==WEAPON_XP_BUSY&&unused==77);
+        if(c.self_remove)CHECK(c.api->unregister_hit_filter(c.token)==WEAPON_XP_OK);
+        return c.claim_all||context->origin_class==2017?WEAPON_XP_HIT_EXTERNAL:WEAPON_XP_HIT_NATIVE;
+    };
+    CHECK(v4->register_hit_filter(nullptr,&client,&client.token)==WEAPON_XP_INVALID_ARGUMENT);
+    CHECK(v4->register_hit_filter(filter,&client,&client.token)==WEAPON_XP_OK);
+    const auto first_token=client.token;
+    const auto hit=reinterpret_cast<std::uint32_t(*)(std::uint32_t,int,int)>(hooks["rac1.combat.get_hit"]);
+    const auto death=reinterpret_cast<void(*)(std::uint32_t,int,int)>(hooks["rac1.moby.record_death"]);
+    const auto load_level=reinterpret_cast<std::uint32_t(*)(int)>(hooks["rac1.level.load_gameplay"]);
+    constexpr unsigned target=0x390000,source=0x490000;
+    hit_address=ov(disc->hit_ring);
+    const auto fresh=[&](unsigned origin){
+        std::memset(ram.data()+hit_address,0,64);
+        put<short>(target+0xa6,133);put<unsigned char>(target+0xb1,0xff);
+        put<short>(target+0xb4,10);put<short>(target+0xb6,10);put<unsigned char>(target+0xa4,0);
+        put<float>(target+0x10,10);put<float>(target+0x14,20);put<float>(target+0x18,30);
+        put<short>(source+0xa6,180);put<unsigned>(hit_address+0x20,source);
+        put<unsigned>(hit_address+0x24,0x10000);put<float>(hit_address+0x1c,5627.9248046875f);
+        put<unsigned short>(hit_address+0x2a,static_cast<unsigned short>(origin));
+        put<float>(hit_address+0x2c,4);put<unsigned>(hit_address+0x34,target);
+    };
+    fresh(2017);const auto before_hits=hits;
+    CHECK(hit(target,0x10000,0)==hit_address&&get<float>(hit_address+0x2c)==4);
+    CHECK(client.context.native_item==18&&client.context.origin_class==2017&&client.context.attacker_class==180);
+    CHECK(client.context.raw_damage==4&&client.context.target_position[0]==10&&client.context.level_epoch!=0);
+    death(target,0,0);death(target,0,0);
+    CHECK(stats(18).xp==before&&hits==before_hits);
+    // No packet cache: the same ring slot/target can immediately contain a real
+    // Walloper hit. Its scale and XP resume without a timeout or scope reset.
+    fresh(180);CHECK(hit(target,0x10000,0)==hit_address);
+    CHECK(std::abs(get<float>(hit_address+0x2c)-4.6f)<.0001f&&hits==before_hits+1);
+    death(target,0,0);CHECK(stats(18).xp==before+10);
+    client.claim_all=true;
+    CHECK(hit(target,0x10000,1)==hit_address&&client.context.raw_damage==4);
+    CHECK(get<float>(hit_address+0x2c)==4);death(target,0,0);CHECK(stats(18).xp==before+10);
+    client.claim_all=false;
+    // Local ownership filtering does not acquire/replace the co-op scope.
+    CHECK(v2->begin_external_scope(88771)==WEAPON_XP_OK);
+    fresh(2017);
+    weapon_xp_external_hit_v2 external{sizeof(external),1,88771,1,500,target,hit_address,133};
+    weapon_xp_prepared_hit_v2 prepared{sizeof(prepared),-1,0,0};
+    CHECK(v2->prepare_local_hit(&external,&prepared)==WEAPON_XP_DISABLED);
+    CHECK(stats(18).xp==before+10);
+    CHECK(v2->begin_external_scope(0)==WEAPON_XP_OK);
+    const auto epoch=client.context.level_epoch;
+    CHECK(load_level(0)==0x123456);frame(nullptr);fresh(2017);
+    CHECK(hit(target,0x10000,0)==hit_address&&client.context.level_epoch!=epoch);
+    client.self_remove=true;CHECK(hit(target,0x10000,0)==hit_address);
+    CHECK(v4->unregister_hit_filter(first_token)==WEAPON_XP_NOT_FOUND);
+    client.self_remove=false;
+    CHECK(v4->register_hit_filter(filter,&client,&client.token)==0&&client.token!=first_token);
+    CHECK(v4->unregister_hit_filter(first_token)==WEAPON_XP_NOT_FOUND);
+    CHECK(v4->unregister_hit_filter(client.token)==0);
+    CHECK(service->unsubscribe(observer_token)==0);
+    unload();unsigned token{};
+    CHECK(v4->register_hit_filter(filter,&client,&token)==WEAPON_XP_NOT_READY);
+    CHECK(v4->unregister_hit_filter(client.token)==WEAPON_XP_NOT_READY);
+    std::puts("XP v4: immutable legacy ABI, independent ownership, damage rollback, co-op isolation and lifecycle: ok");
+}
+
+void presentation_contract(weapon_xp_query_fn query,const openrac_api& api,openrac_mod* handle,
+                           openrac_mod_load_fn load,void(*unload)()) {
+    const auto* v4=reinterpret_cast<const weapon_xp_api_v4*>(query(WEAPON_XP_ABI_V4));
+    CHECK(v4 && v4->v3.v2.base.size==sizeof(*v4));
+    CHECK(offsetof(weapon_xp_api_v4,request_acquisition_presentation)
+          == sizeof(weapon_xp_api_v3)+2*sizeof(void(*)()));
+    CHECK(v4->request_acquisition_presentation(18)==WEAPON_XP_NOT_READY);
+    CHECK(v4->acquisition_presentation_active()==WEAPON_XP_NOT_READY);
+    test_profile=std::string("presentation-")+disc->version;
+    CHECK(load(&api,handle)==0);
+    CHECK(v4->acquisition_presentation_active()==0);
+    CHECK(v4->request_acquisition_presentation(-1)==WEAPON_XP_INVALID_ARGUMENT);
+    CHECK(v4->request_acquisition_presentation(37)==WEAPON_XP_INVALID_ARGUMENT);
+    weapon_xp_configuration_v3 configuration{};configuration.size=sizeof(configuration);
+    CHECK(v4->v3.get_configuration(&configuration)==0);
+    configuration.flags &= ~unsigned(WEAPON_XP_LEVEL_UP_ANIMATION);
+    CHECK(v4->v3.set_configuration(&configuration,configuration.revision)==0);
+    CHECK(v4->request_acquisition_presentation(18)==WEAPON_XP_DISABLED);
+    CHECK(v4->acquisition_presentation_active()==0);
+    CHECK(v4->v3.get_configuration(&configuration)==0);
+    configuration.flags |= WEAPON_XP_LEVEL_UP_ANIMATION;
+    CHECK(v4->v3.set_configuration(&configuration,configuration.revision)==0);
+    const auto archive=ov(std::strcmp(disc->version,"pal")==0?0x1CA720:0x1CA4A0)+18*4;
+    put<int>(archive,-1);
+    CHECK(v4->request_acquisition_presentation(18)==WEAPON_XP_DISABLED);
+    put<int>(archive,0);
+    const auto before=stats(18);
+    const auto before_changed=changed,before_levels=upgrades;
+    CHECK(v4->request_acquisition_presentation(18)==WEAPON_XP_OK);
+    CHECK(v4->acquisition_presentation_active()==1);
+    CHECK(v4->request_acquisition_presentation(18)==WEAPON_XP_BUSY);
+    CHECK(stats(18).xp==before.xp && stats(18).level==before.level);
+    CHECK(changed==before_changed && upgrades==before_levels);
+    unload();
+    CHECK(v4->acquisition_presentation_active()==WEAPON_XP_NOT_READY);
+    CHECK(v4->request_acquisition_presentation(18)==WEAPON_XP_NOT_READY);
+    CHECK(load(&api,handle)==0 && v4->acquisition_presentation_active()==0);
+    CHECK(stats(18).xp==before.xp && stats(18).level==before.level);
+    unload();
+    std::puts("XP v4 optional presentation tail: C ABI, settings, queue, lifecycle and unchanged native progression: ok");
 }
 
 int main(int argc, char** argv) {
@@ -904,6 +1089,8 @@ int main(int argc, char** argv) {
         loaded = 0;
         auto api = make_api(selected);
         extension_contract(query, api, handle, load, unload);
+        ownership_contract(query,api,handle,load,unload);
+        presentation_contract(query,api,handle,load,unload);
     }
     CHECK(changed >= 32 && upgrades >= 4 && hits >= 30);
     CHECK(!observer_load || observed_levels >= 4);

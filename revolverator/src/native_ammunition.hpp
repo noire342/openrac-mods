@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #pragma once
 
@@ -15,7 +15,7 @@ namespace revolverator {
 class NativeAmmunition final : public Memory {
 public:
     static constexpr int item_id = 18;
-    static constexpr int capacity = 10;
+    static constexpr int capacity = 20;
     static constexpr int pickup = 2;
     static constexpr int unit_price = 25;
     static constexpr unsigned native_pickup_class = 225;

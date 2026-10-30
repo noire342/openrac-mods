@@ -26,10 +26,10 @@ The optional local HUD-upscaling workflow uses
 [Real-ESRGAN ncnn Vulkan](https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan).
 Its runtime/model files and game-derived output are not vendored here.
 
-Source files retain their own SPDX/copyright notices. Mod implementation and
-public API code authored for this project are MIT-licensed, Copyright (c) 2026
-noire342. The unchanged upstream `tools/fetch_sdk.py` remains GPL-3.0-or-later,
-Copyright (c) 2026 the OpenRAC contributors; its full GPL text is retained in
-`LICENSES/GPL-3.0-or-later.txt`. Downloaded SDK files keep their upstream MIT
-notices and are not vendored. OpenRAC engine code and game assets keep their
-own rights and licenses; see [licensing scope](docs/LICENSING.md).
+Source files retain their own SPDX/copyright notices. Mod implementation code
+is GPL-3.0-or-later, Copyright (c) 2026 noire342. The Weapon Experience interop
+header and intentionally MIT client examples retain their MIT notices. Downloaded
+OpenRAC SDK files remain MIT. The unchanged upstream `tools/fetch_sdk.py` remains
+GPL-3.0-or-later, Copyright (c) 2026 the OpenRAC contributors. Engine bridge changes
+keep upstream GPL/file-specific notices, and original game assets keep their own
+rights. See [licensing scope](docs/LICENSING.md).

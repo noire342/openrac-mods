@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (c) 2026 noire342
 cmake_minimum_required(VERSION 3.20)
 project(NoireOpenRACMods LANGUAGES C CXX)
@@ -16,7 +16,7 @@ find_package(OpenRACMod 1.3 REQUIRED)
 include(CTest)
 
 option(BUILD_WEAPON_XP "Build Weapon Experience" ON)
-option(BUILD_REVOLVERATOR "Build the Revolverator source preview" OFF)
+option(BUILD_REVOLVERATOR "Build additive Revolverator development source" OFF)
 if(BUILD_WEAPON_XP)
   add_subdirectory(weapon-xp)
 endif()

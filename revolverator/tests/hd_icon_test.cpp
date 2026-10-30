@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #include "hd_icon.hpp"
 #include "native_arena.hpp"
@@ -10,7 +10,7 @@ using revolverator::HdIcon;
 #define CHECK(expression) do{if(!(expression)){std::fprintf(stderr,"line %d: %s\n",__LINE__,#expression);std::exit(1);}}while(0)
 
 namespace {
-constexpr unsigned state=0x19a3e8,defs=0x300000,refs=0x301000,images=0x302000,palettes=0x303000;
+constexpr unsigned state=0x19a3e8,defs=0x300000,refs=0x301000,images=0x302000,palettes=0x303000,header=0x304000;
 struct Fixture;
 Fixture* fixture;
 struct Fixture {
@@ -36,6 +36,7 @@ struct Fixture {
    });return nullptr;
   };
   put(state+0x1c,defs);put(state+0x20,refs);put(state+0x24,images);put(state+0x28,palettes);
+  put(state+0x18,header);put<unsigned>(header+0x44,2);put<unsigned>(header+0x24,2);
   put<std::uint16_t>(defs,59901);put<std::uint16_t>(defs+2,6);put<std::uint16_t>(defs+4,0);
   put<std::uint16_t>(defs+8,60018);put<std::uint16_t>(defs+10,4);put<std::uint16_t>(defs+12,6);
   put<std::uint16_t>(defs+16,0xffff);
@@ -69,6 +70,9 @@ int main(){
   Fixture f;HdIcon icon(&f.api);CHECK(icon.install(6,4,f.data())&&icon.ready());
   const unsigned image_copy=f.get<unsigned>(state+0x24),palette_copy=f.get<unsigned>(state+0x28);
   CHECK(image_copy!=images&&palette_copy!=palettes&&f.allocations==1);
+  const auto header_copy=f.get<unsigned>(state+0x18);CHECK(header_copy!=header);
+  CHECK(f.get<unsigned>(header_copy+0x44)==4&&f.get<unsigned>(header_copy+0x24)==3);
+  CHECK(f.get<unsigned>(header+0x44)==2&&f.get<unsigned>(header+0x24)==2);
   CHECK(f.get<unsigned>(refs)==0x00010001&&f.get<unsigned>(refs+6*4)==0x00020002);
   CHECK(f.get<std::uint16_t>(image_copy+2*8+6)==0x0707);
   CHECK(icon.install(6,4,f.data())&&f.allocations==1);
@@ -84,6 +88,7 @@ int main(){
   f.put(palettes,0x555500u); // An edit in the original table wins over the clone.
   CHECK(icon.before_base());icon.reset();
   CHECK(f.get<unsigned>(state+0x24)==images&&f.get<unsigned>(state+0x28)==palettes);
+  CHECK(f.get<unsigned>(state+0x18)==header&&f.get<unsigned>(header+0x44)==2&&f.get<unsigned>(header+0x24)==2);
   CHECK(f.get<unsigned>(images)==0x444400&&f.get<unsigned>(palettes)==0x555500);
   CHECK(f.get<unsigned>(refs+6*4)==0x00010001&&!icon.ready());
  }
@@ -98,7 +103,7 @@ int main(){
   CHECK(f.get<unsigned>(state+0x24)==images);icon.reset();
  }
  {
-  Fixture f;HdIcon icon(&f.api);auto bad=f.data();bad.pixel_bytes=32*32;
+  Fixture f;HdIcon icon(&f.api);auto bad=f.data();bad.pixel_bytes=2048;
   CHECK(!icon.install(6,4,bad)&&!icon.install(6,5,f.data())&&!icon.install(9,4,f.data()));
   f.palette[3]=128;CHECK(!icon.install(6,4,f.data())&&f.allocations==0);
  }
@@ -113,6 +118,34 @@ int main(){
   Fixture f;HdIcon icon(&f.api);CHECK(icon.install(6,4,f.data()));
   f.level=2;f.put(state+0x24,0x500000u);f.put(refs+6*4,88u);
   CHECK(!icon.ready());icon.reset();CHECK(f.get<unsigned>(state+0x24)==0x500000&&f.get<unsigned>(refs+6*4)==88);
+ }
+ {
+  Fixture f;HdIcon icon(&f.api);auto ammunition=f.data();ammunition.pixel_bytes=32*32;
+  CHECK(icon.install(5,5,f.data(),&ammunition)&&icon.ready());
+  const auto header_copy=f.get<unsigned>(state+0x18),image_copy=f.get<unsigned>(state+0x24);
+  CHECK(f.get<unsigned>(header_copy+0x44)==5&&f.get<unsigned>(header_copy+0x24)==4);
+  const auto drill=f.get<unsigned>(refs+5*4),ammo=f.get<unsigned>(refs+8*4);
+  CHECK(drill!=ammo&&f.get<std::uint16_t>(image_copy+unsigned(ammo>>16)*8+6)==0x0505);
+  CHECK(icon.before_base()&&f.get<unsigned>(refs+8*4)==ammo&&f.get<unsigned>(refs+5*4)!=drill);
+  icon.after_base();CHECK(icon.ready()&&f.get<unsigned>(refs+8*4)==ammo&&f.get<unsigned>(refs+5*4)==drill);
+  icon.reset();CHECK(f.get<unsigned>(state+0x18)==header&&f.get<unsigned>(refs+8*4)==0x00010001);
+  auto native_drill=f.data();native_drill.pixel_bytes=32*32;
+  CHECK(icon.install(5,5,native_drill,&ammunition));
+ }
+ {
+  Fixture f;revolverator::GuestArena no_tail;auto native=f.data();native.pixel_bytes=32*32;
+  f.put<unsigned>(state+0x10,0x600000);f.put<unsigned>(state+0x14,0x610000);
+  HdIcon unavailable(&f.api,&no_tail);CHECK(!unavailable.install(5,5,native,&native)&&f.allocations==0);
+  HdIcon compact(&f.api,&no_tail,true);
+  CHECK(!compact.install(5,5,f.data(),&native)&&f.allocations==0); // HD never takes the bounded native pool.
+  CHECK(compact.install(5,5,native,&native)&&compact.ready()&&f.allocations==1);
+  CHECK(f.get<unsigned>(refs+8*4)!=f.get<unsigned>(refs+5*4));
+ }
+ {
+  Fixture f;revolverator::GuestArena no_tail;auto native=f.data();native.pixel_bytes=32*32;
+  f.put<unsigned>(state+0x10,0x600000);f.put<unsigned>(state+0x14,0x600400);
+  HdIcon compact(&f.api,&no_tail,true);
+  CHECK(!compact.install(5,5,native,&native)&&f.allocations==0&&f.get<unsigned>(state+0x18)==header);
  }
  std::puts("HD icon: PSMT8 pages, logical32px draw, native HUD suppression, cache invalidation, ownership, failure and level lifecycle passed");
 }

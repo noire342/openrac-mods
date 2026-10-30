@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #include <algorithm>
 #include <limits>
@@ -13,7 +13,7 @@ static_assert(std::tuple_size<Rules>::value == kWeapons.size());
 
 bool Runtime::configuration_busy() const {
     // A network session keeps a stable ruleset for prepared/confirmed receipts.
-    return m_events.dispatching() || m_external_processing || m_external_scope
+    return m_events.dispatching() || m_filters.dispatching() || m_external_processing || m_external_scope
            || m_upgrades->pending();
 }
 

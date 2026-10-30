@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #pragma once
 #include "controller.hpp"
@@ -24,6 +24,8 @@ public:
  void impact(Target target,std::optional<Target> other,float charge)override;
  void animate(Motion motion)override;
  Frame snapshot(bool primary,std::uint32_t epoch)const;
+ void set_active(bool active){active_=active;}
+ void set_damage_multiplier(float value);
  bool frozen(std::uint32_t moby)const;
  bool blocks_native_hit(std::uint32_t hit)const;
  bool lease_valid()const;
@@ -48,6 +50,8 @@ private:
  using Animation=void(*)(int,int,float);
  Allocate allocate_; Hit post_hit_;Ray ray_;Basis basis_;State state_;Animation animation_;
  openrac_mod* mod_; bool trace_;
+ bool active_=true;
+ float damage_multiplier_=1.f;
  int level_=-1;
  struct Lease {
   Target target{};unsigned collision{},disabled{};Vec3 origin{},angles{},local_sphere{};

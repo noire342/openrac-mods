@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (c) 2026 noire342
 """Validate head-only binding while preserving authentic source art and importer compatibility."""
 import argparse
@@ -28,6 +28,7 @@ def main():
     triangles=builder.accessor_values(source,raw,original_primitive['indices'])
     texture=(source_path.parent/source['images'][0]['uri']).read_bytes()
     metadata=json.loads((args.pack/'rotor.json').read_text())
+    target_class=int(metadata.get('target_class',180))
     assert metadata['source_sha256']==hashlib.sha256(source_path.read_bytes()).hexdigest()
     assert metadata['texture_sha256']==hashlib.sha256(texture).hexdigest()
     total=0
@@ -35,7 +36,7 @@ def main():
         name=f'level_{level:02}'
         native_info=json.loads((args.levels/name/'manifest.json').read_text())['classes']['moby']['180']
         native_path=args.levels/name/native_info['mesh']
-        model_path=args.pack/name/'mobys/moby_180.glb'
+        model_path=args.pack/name/f'mobys/moby_{target_class}.glb'
         document,data=builder.read_glb(model_path)
         primitive=document['meshes'][0]['primitives'][0]
         output={key:builder.accessor_values(document,data,index) for key,index in primitive['attributes'].items()}
@@ -60,8 +61,10 @@ def main():
         assert overrides.same_skeleton(overrides.skeleton(model_path),overrides.skeleton(native_path)),f'{name}: launcher skeleton compatibility changed'
         assert (args.pack/name/'textures/moby_revolverator_original.png').read_bytes()==texture,f'{name}: authentic texture changed'
         assert metadata['levels'][name]['head_vertices']==208
+        if target_class!=180:
+            assert not (args.pack/name/'mobys/moby_180.glb').exists(),f'{name}: independent pack must not replace native Walloper geometry'
         total+=1
-    print(json.dumps({'models':total,'body_vertices_each':1338,'head_vertices_each':208,
+    print(json.dumps({'models':total,'target_class':target_class,'body_vertices_each':1338,'head_vertices_each':208,
         'mixed_triangles':0,'geometry_uv_normals_topology_preserved':True,
         'all_native_inverse_binds_compatible':True,'original_texture_preserved':True},indent=2))
 

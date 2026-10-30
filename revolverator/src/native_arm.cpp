@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #include "native_arm.hpp"
 #include <algorithm>
@@ -268,7 +268,8 @@ void NativeArm::unlink(unsigned owner,unsigned node) {
     for(unsigned i=0;i<32;++i){
         const auto at=read<unsigned>(link);
         if(at==node){write(link,read<unsigned>(node+8));return;}
-        if(!valid(at,64))return;link=at+8;
+        if(!valid(at,64))return;
+        link=at+8;
     }
 }
 void NativeArm::reset(bool discard) {

@@ -1,21 +1,23 @@
 # Licensing scope
 
-Code authored for these mods, their public API headers, examples, tests and
-project-specific build scripts is licensed under the [MIT License](../LICENSE),
-Copyright (c) 2026 noire342. Each mod also carries its own MIT `LICENSE` file.
+Mod implementations, authored assets/recipes, tests and project-specific build
+scripts use [GPL-3.0-or-later](../LICENSE), Copyright (c) 2026 noire342, following
+the upstream `OpenRAC/rac1-mods` convention. The earlier MIT policy is superseded
+by this normal source commit; Git history and previous artifacts are not rewritten.
 
-The following material retains its separate notice:
-
-| Material | License and owner |
+| Material | Retained notice |
 |---|---|
-| `tools/fetch_sdk.py` | GPL-3.0-or-later, Copyright (c) 2026 the OpenRAC contributors. The source is preserved unchanged; the complete license text is in [`LICENSES/GPL-3.0-or-later.txt`](../LICENSES/GPL-3.0-or-later.txt). |
-| Downloaded OpenRAC mod SDK | MIT, Copyright (c) 2026 the OpenRAC contributors; its files and notices remain upstream-owned. SDK downloads/build outputs are not part of this source publication. |
-| OpenRAC runtime and engine patches | Their upstream GPL and file-specific licenses remain applicable. A mod's MIT license does not relicense the engine. |
-| Original game code, models, textures, icons, animation and sound | Not covered by this project's MIT license. The player supplies the original game; these assets are not published here. |
+| `include/weapon_xp_api.h` in both modules and intentionally MIT C interop examples | MIT, Copyright (c) 2026 noire342; explicit file notices remain applicable |
+| Downloaded OpenRAC mod SDK | MIT, Copyright (c) 2026 the OpenRAC contributors; not vendored in this source update |
+| `tools/fetch_sdk.py` | GPL-3.0-or-later, Copyright (c) 2026 the OpenRAC contributors; preserved unchanged |
+| [Arsenal engine bridge patch](arsenal-bridge/README.md) | Upstream GPL and file-specific notices; its exact base and GPL text are included |
+| Original game art/code/assets | Not relicensed by this project; the player supplies them and original artwork is not published here |
 
-The original procedural ammunition mesh/texture recipe is authored mod material;
-its AI assistance is disclosed in [CREDITS](../CREDITS.md). Private companions
-that extract original artwork retain the original artwork's ownership.
+The SDK's MIT license is separate from the mod repository's GPL convention.
+It does not change the OpenRAC runtime's license. The complete GPL text is in
+`LICENSE` and [`LICENSES/GPL-3.0-or-later.txt`](../LICENSES/GPL-3.0-or-later.txt).
+The procedural ammunition recipe and authored HUD tile are project material;
+AI assistance is disclosed in [CREDITS](../CREDITS.md).
 
-This licensing update changes notices and metadata only; it does not publish
-an unreleased feature implementation or change the existing validation claims.
+The complete retained MIT text for the interoperability files is in
+[`LICENSES/MIT.txt`](../LICENSES/MIT.txt) and each module's `docs/LICENSE-MIT.md`.

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #include "runtime.hpp"
 
@@ -234,6 +234,7 @@ void Runtime::restore_hits() {
 }
 
 void Runtime::reset_level() {
+    if(++m_level_epoch==0)++m_level_epoch;
     if (m_morph_model) {
         m_morph_model->reset();
     }
@@ -327,7 +328,8 @@ std::uint32_t Runtime::get_hit(std::uint32_t moby, std::int32_t mask, std::int32
     return process_hit(moby, hit);
 }
 
-std::uint32_t Runtime::process_hit(std::uint32_t moby, std::uint32_t hit) {
+std::uint32_t Runtime::process_hit(std::uint32_t moby, std::uint32_t hit,bool* external) {
+    if(external)*external=false;
     try {
         m_native_damage->restore();
         if (m_trace && hit && m_combat_traces++ < 64) {
@@ -371,6 +373,25 @@ std::uint32_t Runtime::process_hit(std::uint32_t moby, std::uint32_t hit) {
         auto& edit = m_edits[(hit - ring) / 0x40];
         const float damage = read<float>(hit + 0x2C);
         const int item = source_item(hit);
+        if(!std::isfinite(damage)||damage<=0||damage>1000000)return hit;
+        weapon_xp_hit_context_v4 context{};
+        context.size=sizeof context;context.target_moby=moby;context.hit_address=hit;
+        context.target_class=read<std::int16_t>(moby+kMobyClass);
+        context.attacker_moby=read<unsigned>(hit+0x20);
+        context.attacker_class=valid(context.attacker_moby,0x100)?read<std::int16_t>(context.attacker_moby+kMobyClass):-1;
+        context.native_item=item;
+        context.origin_class=read<float>(hit+0x1c)==5627.9248046875f?read<std::uint16_t>(hit+0x2a):-1;
+        context.raw_damage=edit.hit==hit&&edit.owner==moby&&edit.scaled==damage?edit.raw:damage;
+        context.flags=read<unsigned>(hit+0x24);context.tick=m_tick;context.level_epoch=m_level_epoch;
+        for(unsigned axis=0;axis<3;++axis)context.target_position[axis]=read<float>(moby+0x10+axis*4);
+        if(m_filters.external(context)){
+            if(external)*external=true;
+            // Undo only an edit still owned by this module when a filter was
+            // registered after an earlier observation of the same packet.
+            if(edit.hit==hit&&edit.owner==moby&&edit.scaled==damage&&edit.raw!=edit.scaled)
+                write(hit+0x2c,edit.raw);
+            edit={};m_combat.forget(moby);return hit;
+        }
         if (m_settings.scale_damage && item == 15) {
             m_native_damage->prepare(m_state.rule(item).damage[m_state.weapon_level(item) - 1]);
         }
@@ -631,9 +652,8 @@ std::int32_t Runtime::draw_hud(std::uint32_t element) {
 }
 
 void Runtime::update_morph(unsigned moby) {
-    m_morph_model->reset();
+    m_morph_model->prepare(moby, m_settings.flip_morph_model && playing() && !m_upgrades->active());
     m_morph_update(moby);
-    m_morph_model->after(moby, m_settings.flip_morph_model && playing() && !m_upgrades->active());
 }
 
 void Runtime::relay(std::uint32_t element) {

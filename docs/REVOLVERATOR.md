@@ -1,61 +1,67 @@
-# Revolverator source preview
+# Revolverator 0.2 — preview source
 
-The [0.1.0 source preview](../revolverator/README.md) reconstructs the removed
-drill weapon for the native OpenRAC port of R&C1 NTSC-U. It replaces Walloper
-item 18 and uses the game's existing ownership, vendor, ammunition, quick-select
-and save mechanisms. It does not add a new inventory slot or claim to recover
-the removed weapon's complete original code.
+The [current implementation](../revolverator/README.md) adds the removed drill
+weapon alongside the original Walloper. They have independent ownership,
+ammunition, favourite bindings and progression.
 
-Hold Circle near an eligible enemy to catch it, lift it at the actual contact
-point and spin it above the drill; release to throw. A quick tap does not capture.
-Only the original drill tip rotates. The native HUD retains its ammunition tile
-and adds a slim charge channel inside it. Pickup text and weapon descriptions
-support English, French, German, Spanish and Italian.
+| Identity | API key | Native transport |
+|---|---:|---:|
+| Original Walloper |18 |18 |
+| Revolverator |65554 (`0x10012`) |18 only inside scoped native operations |
 
-| Economy | Base value |
-| --- | ---: |
-| First normal vendor availability | After visiting Hoven |
-| Weapon price | 15,000 bolts |
-| Capacity | 10 charges |
-| Consumption | 1 charge per activation |
-| Ammunition pickup | 2 charges, capped at capacity |
-| Ammunition unit price | 25 bolts |
+The custom key is never used as a native array index. Render class 2017 belongs
+to the drill; class 180 retains the original Walloper model. Pickup/render aliases
+32000 and 2016 use native ammunition 225 without changing the original item arrays.
 
-The new pickup is one industrial energy cartridge, generated with AI assistance
-from an original procedural mesh/texture recipe. It is not a set of spare drill
-tips. The [builders](../revolverator/docs/BUILD_AND_ASSETS.md) read the original
-Hoven drill from the player's own extraction and generate private local assets.
-The custom cartridge requires a generated native level-manifest extension; it
-cannot currently be added by treating a new render class as an ordinary model
-replacement. No OpenRAC executable changes are required.
+Hold Circle for at least 0.18 seconds near an eligible enemy to catch and lift
+it at the contact point, spin it above the tip and release to throw. A quick
+tap performs the native melee response. Bosses and other uncapturable targets
+keep their melee response. The tip turns slowly at rest, matches the captured
+enemy's spin and stops without ammunition; an empty trigger produces a short jerk.
 
-## Verified scope
+The weapon is offered after visiting Hoven for 15,000 bolts. Capacity is 20,
+ordinary pickups give 2 and vendor ammunition costs 25 bolts per round. The
+existing HUD shows an authored cartridge icon; inventory/quick selection use
+the drill glyph. Model and texture recipe for the cartridge were created with
+AI assistance, as described in [Credits](../CREDITS.md).
 
-The source includes ten host test groups. Native Windows NTSC-U checks covered
-capture/throw, contact/shaft alignment, tip motor synchronization, empty-ammo
-jerk/rollback, native ammunition and crate damage, Hoven pricing/unlock, API
-cancellation and earned Weapon XP. All gameplay levels 0..18 were loaded in
-smoke sessions. Orxon in Clank mode correctly blocks normal weapon use.
+The native weapon and quick-select editors use 4×5 visible cells, scrolling
+beyond 20 entries and the original eight favourites. Both weapons can be bound
+at the same time. No extra inventory panel is introduced.
 
-The detailed [validation record](VALIDATION.md#revolverator-source-preview) keeps
-these observations separate from campaign coverage. They are evidence for a
-source preview, not a full campaign or boss-fight playthrough.
+## Runtime, progression and saves
 
-## Known limitations
+The [GPL arsenal bridge patch](arsenal-bridge/README.md) on OpenRAC base
+`77a2f05257c5dfc2ab9b1ec52a84fc78e8f64225` is required. A DLL and ordinary model
+replacement pack alone are insufficient. The [asset builders](../revolverator/docs/BUILD_AND_ASSETS.md)
+create local extended manifests while preserving native class 180.
 
-- NTSC-U only. PAL is untested and is not declared compatible by this preview.
-- Public builds use the original 32px glyph. Optional private Real-ESRGAN HD
-  builds preserve the same 32px logical footprint; Rilgar falls back to the native
-  glyph when that level cannot reserve enough presentation memory.
-- Custom cartridge pickup notifications can be unavailable on Blarg Station
-  when its text bank cannot be extended within the available memory. Gameplay
-  and native ammunition handling still operate.
-- The original drill and the optional HD icon are game-derived art. They are
-  generated locally and excluded from this repository and its CI artifacts.
-- No Revolverator binary or ready-to-import public gameplay bundle is provided.
-  The private bundle wrapper is a local build tool, not a new launcher format.
-- Full campaign, every enemy, every interruption and all combinations of other
-  mods have not been exercised. An enemy class whitelist governs capture.
+Optional Weapon Experience integration requires API v4; the matching source
+here is 0.6.3-arsenal. Custom hits are excluded from Walloper awards, and the
+Revolverator owns a separate XP record. Level progression reaches 10; optional
+bonuses remain off by default. An older XP provider lacking the ownership filter
+is rejected when loaded alongside the development weapon.
 
-Developer contracts are in the [API guide](../revolverator/docs/API.md), including
-the optional mechanics tail, game-thread lifetime and item 18 XP identity.
+Native saves retain original item IDs. Revolverator state and logical favourites
+are saved atomically in `saveN.bin.arsenal`, bound to the exact native save's
+fingerprint and protected by a CRC. Stale or malformed sidecars are not applied.
+The public [API v2](../revolverator/docs/API.md) exposes copy-only inventory,
+progress, quick slots and controlled grant operations.
+
+## Verified scope and development status
+
+[Native evidence](../revolverator/docs/NATIVE_VALIDATION.md) distinguishes real
+combat XP, vendor/pickup checks, save round trips, menus and the limited-memory
+HUD runs on Rilgar, Nebula G34 and Quartu. The last three are standalone gameplay
+smokes, not full level completion or packed-level menu coverage.
+
+The development source builds without original game art, using native glyphs
+and the authored cartridge data. Optional 128px private glyphs fall back to 32px
+when presentation memory is limited. Original drill art and the optional HD
+header remain local outputs and are excluded from public source and CI artifacts.
+
+Preview packages and exact setup instructions are published separately through
+[Releases](https://github.com/noire342/openrac-mods/releases). This is not a final release.
+PAL, a full campaign, every capture target/boss, interruption and mod combination
+remain outside the verified scope. Historical 0.1 replacement behavior and its
+10-charge evidence are not the behavior of the 0.2 source.

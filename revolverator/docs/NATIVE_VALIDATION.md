@@ -1,56 +1,65 @@
-# Verifica NTSC-U del 30 ottobre 2026
+# Verifica della build aggiuntiva 0.2
 
-Build privata OpenRAC 0.9.0, commit runtime `77a2f052`, mod `0.1.0`.
-DLL Windows x64 SHA-256:
-`ff3b5b109a65ef9ad786f4f6bb819b130c7e77887589cf4ea55d3296db40cb29`.
-Asset: `model-02` (sola spirale sul giunto 4), `ammo-levels-03`
-(cartuccia singola, classi 32000/2016), icona privata Real-ESRGAN 128×128.
-Le fixture sono isolate, senza campagne utente; RAM e asset originali non fanno
-parte dei sorgenti pubblici.
+R&C1 NTSC-U, Windows x64, runtime locale basato su OpenRAC `77a2f052` con 30 hook
+aggiuntivi. Weapon XP opzionale: build privata `0.6.3-arsenal`. Le prove sotto
+riguardano fixture isolate; non modificano l'installazione ufficiale. La nuova
+capacità è 20. Le prove XP storiche usavano ancora il limite10; acquisti,
+pickup e UI sono stati riprovati con20.
 
-| Prova | Esito osservato |
-|---|---|
-| Build Windows | 10/10 gruppi CTest superati |
-| Tap di cinque frame | 0 catture, 0 lanci, una carica consumata |
-| Pressione minima | 0,18 s nel controller; test ai bordi prima/dopo la soglia |
-| Presa/lancio reali su Novalis | 1 cattura, 1 lancio, 1 impatto, 10→9 munizioni |
-| Posa durante la presa | Asse verticale misurato 0,99999–1,00000; arma visibile |
-| Punto di presa | Contatto ricostruito da RAM entro 1,04 mm dalla punta, con coordinate arrotondate |
-| Rotore | Minimo 1 rad/s; durante la presa sincronizzato con il nemico, fino a 18 rad/s |
-| Arma scarica | Ferma a 0,93333 rad; scatto fino a 1,13240, ritorno a 0,93333 in 0,18 s |
-| Annullamento API durante la presa | A 260 frame annullata; a 270 Idle, nessun lancio o impatto |
-| Cassa munizioni nativa | Cassa distrutta, 4→3 per il colpo, poi raccolta ordinaria 3→5 |
-| Raccolta al limite | Pickup nativo 9→10, senza superare la capacità |
-| Venditore prima di Hoven | Slot 18 assente dalla lista di una partita nuova |
-| Venditore Hoven | Prezzo 15.000; 20.000→5.000 bolts, possesso e 10 munizioni |
-| Rifornimento dal venditore | 2→3 munizioni, 5.000→4.975 bolts; modello cartuccia presente |
-| HUD e impostazione carica disabilitata | Icona HD nel riquadro nativo 32×32, contatore e pannello originali |
-| Weapon XP installato 0.6.2 | Profilo isolato: 39 XP guadagnati dall'impatto reale |
-| Nomi con Weapon XP | Prova distinta, 3.500 XP assegnati tramite API: stringa nativa `Revolverator v4` |
-| Caricamento pianeti | Livelli 0–18 caricati; arma e rotore operativi nei contesti Ratchet ammessi |
+| Prova | Evidenza osservata |
+| --- | --- |
+| Bridge | 30 firme compilate corrispondenti; registrazione di tutti gli hook; 2400 frame fra gioco, Armi e Scelta Rapida |
+| Menu aggiuntivo | Walloper 18 e Revolverator 65554 distinti; griglia nativa 4×5 e preferiti logici separati |
+| XP guadagnati | Primo Birdbot: cattura 1, lancio 1, impatto 1, morte nativa; Revo 0→39, Walloper fermo a 0 |
+| Walloper normale dopo il Revo | Secondo Birdbot: morte nativa; Walloper 0→39, Revo rimasto 39 |
+| Munizioni e impostazioni della fixture XP | 10→9 cariche, capacità 10; moltiplicatori danni/munizioni 1 |
+| Commercio/pickup nativi con20 | 24 controlli: Hoven15.000→20; refill2→20 costa450; acquisto Walloper7.500 indipendente; pickup4→6,19→20 e pieno20 invariato |
+| HUD e menu finali Novalis | 2400 frame,16 armi nel pannello nativo4×5, icone Walloper/Revo distinte nei preferiti; cartuccia32px nell'HUD20/20+LV1 |
+| HUD nei livelli con poca memoria, senza XP | Rilgar (5), Nebula G34 (6) e Quartu (15): 2.400 frame ciascuno, arma impugnata completa a riposo e cartuccia 32px con 19/20; texel e CLUT del frame3 verificati esatti in RAM. Glifo arma 32px nei livelli5/6, 128px nel15; heap HUD residuo rispettivamente 3.456/624/12.304 byte, senza crash o errori nativi di allocazione. DLL `62cbd609ec86b2088888eef4c55b901e17b3107fa90f89e615b1816047b312cd`; ricevuta `work/arsenal-commerce-tools/packed-hud-native-62cbd-03.json`. Menu e anteprime non esercitati da questi tre smoke test |
+| Anteprima rotante | Punta e corpo assemblati a più angoli, sia Armi sia piccolo pannello Scelta Rapida; nessun taglio superiore |
+| Autosave duplicato | Richiesta con 7 cariche, RAM portata a 3 e seconda richiesta mentre pending; ricaricamento conserva 7 |
+| Consumer XP host | 658 controlli Windows e Linux, anche con ASan/UBSan: attribuzione, expiry, duplicati, frazioni, configurazione e danni opzionali |
 
-Il test API dei nomi non dimostra progressione guadagnata: quella è verificata
-separatamente con i 39 XP. Su Orxon la prima visita controlla Clank; forzare
-uno slot arma nel probe non abilita armi che il gioco vieta a Clank.
+## Prova XP riproducibile
 
-## Memoria e limiti
+La fixture locale `work/qa-vendor-arsenal-earned-xp-01` ha completato 1800 frame con
+Revolverator 0.2.0 e Weapon XP 0.6.3-arsenal caricati. Il probe assegna le due armi
+tramite API e porta due Birdbot originali a distanza di combattimento. Non
+modifica XP, salute dei nemici o valori delle ricompense.
 
-Braccio e rotore hanno un'arena essenziale di 1 KiB. Il livello riserva fino a
-128 KiB aggiuntivi quando disponibili, senza superare il limite dell'heap. Nei
-livelli pieni, l'arena essenziale usa un'allocazione nativa HUD eseguita per prima.
-La capacità delle munizioni e il combattimento non dipendono dall'allocazione
-dei testi personalizzati o dell'icona HD. Rilgar, Blarg Station e Quartu sono
-stati riprovati esplicitamente dopo questa correzione; raccolta e cap sono stati
-verificati anche a Rilgar.
+Il primo GetHit accettato porta origine 2017; il secondo combattimento usa il
+Walloper nativo con origine 180. Entrambi arrivano a RecordDeath. La ricevuta
+`work/arsenal-xp-tools/receipt.json` registra i passaggi 0→39 separati, lo stato
+dei plugin e gli hash dei file effettivamente provati. I contatori di impatto da
+soli non sarebbero una prova di danno o esperienza guadagnata.
 
-A Rilgar non c'è spazio per la pagina HD e resta il simbolo nativo 32×32.
-I messaggi di raccolta aggiunti possono mancare quando il clone del banco testi
-non entra in memoria; le munizioni vengono comunque raccolte normalmente.
-L'upscale e la traduzione personalizzata restano attivi quando le relative
-risorse sono disponibili.
+La DLL Revo di quella fixture ha SHA-256
+`dd3ae8723a7eb5d0071e7bf0c1321a9a8b29aee0e714c952ead7074a442d537e`;
+il runtime ha SHA-256
+`fc717cd0526ca1977895f3baf8e86186adcc5bfd41d0d75b5622148f0e689f9b`.
+Le ricompilazioni successive richiedono una ricevuta propria per essere
+identificate come artefatto finale.
 
-Lo smoke dei diciannove livelli non è una campagna completa: non certifica ogni
-nemico, boss, combinazione di mod, salvataggio, formato video o interruzione.
-La verifica PAL e una prova completa della campagna rimangono fuori da questi
-esiti. I boss sono esclusi dalla presa e conservano il colpo ravvicinato nativo;
-non è stata eseguita una boss fight completa in questa sessione.
+## Combinazione grafica provata
+
+La fixture `work/qa-vendor-arsenal-menu-additive-06` ha concluso2400 frame con
+Weapon XP0.6.3-arsenal e Revolverator0.2.0. Gli screenshot960/990/1020 e
+1500/1560/1620 mostrano le due anteprime assemblate;2340 mostra l'HUD della
+cartuccia dopo la chiusura della ruota. La DLL della fixture ha SHA-256
+`402c5e92c215130529a9d3f80c08a232857c33b58f593f258fd671e85814a054`.
+
+La correzione conserva separati rotore impugnato e posa neutra dell'anteprima.
+Il renderer HUD usa un frame3 dedicato alla cartuccia, lasciando la trivella
+nei frame di inventario e selezione rapida. La regressione host relativa al
+contratto nativo60018 comprende63 controlli; la suite Windows completa passa17/17.
+
+## Verifiche aperte
+
+La prova grafica descritta riguarda Novalis nella configurazione della fixture.
+Carica, livelli, animazione di acquisizione, tutti i pianeti e formati video
+richiedono verifiche della combinazione finale; gli esiti sopra non le sostituiscono.
+
+I test della precedente 0.1 non certificano automaticamente la 0.2. Non sono
+coperti una campagna completa, tutte le boss fight, ogni combinazione di mod,
+PAL o il comportamento nativo macOS. I test host Linux non sono una prova di
+esecuzione del gioco su Linux. La lista operativa è in [QA_CHECKLIST.md](QA_CHECKLIST.md).

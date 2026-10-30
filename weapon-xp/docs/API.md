@@ -62,13 +62,63 @@ on the next frame. Damage/capacity flags default off. A successful mutation emit
 Flags are 1 damage, 2 capacity, 4 HUD, 8 reduced motion, 16 acquisition animation,
 32 versioned names, and 64 `WEAPON_XP_FLIP_MORPH_MODEL`. Flag 64 is available since
 provider 0.6.1 and defaults off: it rolls only the held Morph-o-Ray model around its
-firing axis, leaving native aim/beam/transformation unchanged. Require >=0.6.1 when
+firing axis, retaining native aim/transformation code. Since 0.6.2 the native beam
+origin follows the flipped muzzle. Require >=0.6.2 for that fix; >=0.6.1 when
 using it; it does not add Morph-o-Ray progression to the XP weapon catalog.
 
 API mutations are session-only. They do not overwrite launcher settings or `rules.ini`.
 The consumer owns its override: retain a snapshot and restore on unload only if the values/revision
 still belong to it. A rules-file reload explicitly replaces API overrides with file/default values.
 See `examples/rules_client.c`, compiled as C in the test build, for a minimal independent client.
+
+## Custom hit ownership (v4, 0.6.3-arsenal preview)
+
+`query(WEAPON_XP_ABI_V4)` returns `weapon_xp_api_v4`. Its complete v1/v2/v3 prefix is unchanged;
+the returned base reports ABI 4 and the full v4 size. Querying an earlier ABI still returns its
+original version and size. This preview is an isolated companion build for the additive arsenal.
+
+`register_hit_filter(callback, user, &token)` installs one of at most 16 synchronous ownership
+filters. The copied 64-byte context includes target/source classes, candidate native item,
+directional origin class, raw damage, native hit address, tick and a reset epoch. Origin class
+is -1 unless the native directional-hit tag is present. An address is valid only during the
+callback; the epoch is a runtime lifecycle identifier, not a save/profile or persistent actor ID.
+
+Return `WEAPON_XP_HIT_EXTERNAL` for packets owned by a custom weapon using a native item as
+transport. The first claiming filter stops classification. Weapon XP forgets pending native
+credit for that target, emits no native HIT event and leaves native damage unscaled. If the
+same packet had already been scaled by this provider, its unchanged owned edit is restored.
+The native hit remains usable. This callback observes a hit record before reaction; it does
+not prove the enemy accepted damage or died. The custom owner must verify those events and
+maintain its own progression. A filtered v2 `prepare_local_hit` returns DISABLED and creates
+no native receipt; this classification does not alter the global co-op scope.
+
+Callbacks run on the game thread. Do not mutate guest memory, recurse into native game calls
+or call XP/configuration mutations. Read queries are allowed. Registering another filter and
+mutating XP/configuration return BUSY during dispatch. `unregister_hit_filter(token)` is safe
+inside a callback, including self-unregistration. An exception disconnects that callback and
+claims the current packet to prevent accidental native credit. A forbidden recursive hit is
+also classified external. Registrations survive level changes and end with the provider runtime.
+
+Keep the provider loaded while retaining its API pointer. Unregister before unloading the
+consumer so no callback points into unloaded code. Tokens are never reused in one runtime;
+duplicate callback/user registrations are rejected. See `examples/hit_owner.c`, compiled as
+C11 with fixed-layout assertions, for a minimal consumer independent of SDK/C++ types.
+
+The optional v4 tail adds `request_acquisition_presentation(native_item)` and
+`acquisition_presentation_active()`. Before reading either pointer, require `base.size >=
+offsetof(weapon_xp_api_v4, member) + sizeof(api->member)`; a hit-filter-only v4 provider has
+the same prefix and a shorter size. The request queues one supported native weapon's original
+acquisition scene without awarding XP, changing its native level/caption or emitting XP events.
+The caller projects the logical weapon's custom model/name while the request is pending.
+
+Request on a normal game frame after the custom progression owner has confirmed a level-up,
+never inside an event/filter callback. OK means queued; BUSY means a scene is already pending
+or a callback is executing; DISABLED means the animation setting is off or that carrier has no
+native acquisition archive. Unsupported item IDs return INVALID_ARGUMENT. The active getter
+returns 1 while that external request is queued, preparing, playing or waiting for its native
+actors to retire, then 0. It does not report unrelated native XP presentations. Both calls return
+NOT_READY when the provider runtime is absent. The existing quiet-input phase, player-body
+visibility guard and two-frame actor retirement are shared with native level-up scenes.
 
 Limits are documented in CONFIGURATION.md. New fields require an ABI revision or an explicitly
 compatible appended tail; never alter existing v1/v2 layouts. The API exposes policies and events,

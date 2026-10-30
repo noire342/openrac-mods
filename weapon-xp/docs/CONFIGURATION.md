@@ -22,8 +22,9 @@ The mod creates a commented template only when absent. The default file is share
 profiles in that directory; choose a different filename for a separate ruleset.
 Simple filenames up to 64 ASCII letters/digits/underscores/dots/hyphens are accepted.
 
-The Morph-o-Ray option affects only its held model, not aim, beam, transformation or
-XP rules. Item 21 is the Morph-o-Ray; it is outside the twelve-weapon XP catalog.
+The Morph-o-Ray option rolls its held model before the native muzzle-joint query,
+so the original beam and effects start at the flipped barrel. It retains native
+aiming/transformation code and XP rules. Item 21 is outside the twelve-weapon XP catalog.
 API v3 consumers using this flag should require Weapon Experience >=0.6.1.
 
 ```ini

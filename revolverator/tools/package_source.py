@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (c) 2026 noire342
-"""Create an audited PRIVATE source snapshot; this tool never publishes it."""
+"""Create an audited source snapshot; this tool never publishes it."""
 from __future__ import annotations
 import argparse
 import hashlib
@@ -56,7 +56,7 @@ def main():
     files = snapshot(source)
     inventory = {name: {'bytes': len(data), 'sha256': digest(data)}
                  for name, data in files.items()}
-    receipt = {'format': 1, 'publication': 'PRIVATE; not approved for release',
+    receipt = {'format': 1, 'publication': 'SOURCE SNAPSHOT; not published by this tool',
         'files': inventory, 'excluded': ['SDK/toolchains', 'binaries', 'game artwork',
             'derived icon headers', 'RAM/save data', 'local QA fixtures', 'credentials']}
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -69,7 +69,7 @@ def main():
     if snapshot(source) != files:
         output.unlink()
         raise RuntimeError('Source changed during packaging; no archive retained')
-    print(json.dumps({'publication': 'PRIVATE', 'files': len(files),
+    print(json.dumps({'publication': 'SOURCE SNAPSHOT', 'files': len(files),
         'archive': str(output), 'sha256': digest(output.read_bytes())}, indent=2))
 
 

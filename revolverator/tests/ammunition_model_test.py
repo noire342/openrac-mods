@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (c) 2026 noire342
 """Verify a single energy-cell asset and matching world/vendor visual aliases."""
 import argparse
@@ -40,6 +40,18 @@ def main():
         positions=document['accessors'][0]
         height=(positions['max'][2]-positions['min'][2])*entry['scale']
         assert abs(height-.389)<.00001
+        if receipt.get('weapon_visual_class') is not None:
+            weapon_class=str(receipt['weapon_visual_class'])
+            assert weapon_class=='2017'
+            original=json.loads((Path(receipt['original_levels'])/folder.name/'manifest.json').read_text())
+            assert manifest['classes']['moby']['180']==original['classes']['moby']['180']
+            weapon=manifest['classes']['moby'][weapon_class]
+            assert weapon['scale']==original['classes']['moby']['180']['scale']
+            weapon_model=folder/weapon['mesh'];weapon_data=weapon_model.read_bytes()
+            original_pack=Path(receipt['weapon_pack'])/folder.name/'mobys/moby_2017.glb'
+            assert weapon_data==original_pack.read_bytes()
+            size=struct.unpack_from('<I',weapon_data,12)[0];weapon_doc=json.loads(weapon_data[20:20+size])
+            assert (weapon_model.parent/weapon_doc['images'][0]['uri']).is_file()
     for original,expected in receipt['original_manifests_sha256'].items():
         assert checksum(Path(original))==expected
     previous=0
