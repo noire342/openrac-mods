@@ -1,5 +1,17 @@
 # Mod APIs
 
+## Skill Points API v1
+
+[`skill_points_api.h`](../skill-points-ra/include/skill_points_api.h) exposes a
+copy-based read interface for the catalogue, unlocks and totals, plus achievement
+and shutdown events. It cannot award achievements manually. Resolve the service
+from the loaded producer and observe its game-thread/lifetime rules. The
+[API guide](../skill-points-ra/docs/API.md) and MIT-licensed
+[observer example](../skill-points-ra/examples/achievement_observer.c) document
+size checks and optional integration. It has no dependency on Weapon Experience.
+
+Cinematic Journeys exposes launcher settings and no additional public C service.
+
 ## Revolverator API v2
 
 Resolve `openrac_revolverator_query(2)` from the already loaded provider and cast

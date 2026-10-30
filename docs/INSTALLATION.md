@@ -16,8 +16,8 @@ replacement is part of this installation flow.
 
 The preview URL must include `/releases/tag/revolverator-v0.2.0-preview.1`.
 The launcher excludes prereleases from its normal repository-root selection;
-the explicit tag selects this preview. The repository index exposes only
-Weapon Experience and Revolverator.
+the explicit tag selects this preview. The repository index exposes
+Weapon Experience, Revolverator, Skill Points and Cinematic Journeys.
 
 ## Trying the weapon and preserving progress
 
@@ -42,3 +42,24 @@ by default. Stable 0.6.1 archives remain unchanged for standalone use.
 See [Compatibility](COMPATIBILITY.md) for the exact supported executable and
 [Validation](VALIDATION.md) for binary-specific native scope. The earlier outer
 portable ZIP and helper scripts are historical development workflows.
+
+## Skill Points: RetroAchievements
+
+Add the repository root in Mods or import
+`skill-points-ra-0.1.2-windows-x86_64.zip` from its release. Enable the mod and
+use Pause → Goodies → Skill Points (Italian: Pausa → Premi → Punti stile).
+Goodies is available directly below Options from the beginning of the campaign.
+The Kerwan timed obstacle challenge defaults off; enable it in the mod settings
+to include all 178 achievements instead of the default 177. Existing unlocks
+remain in the separate local profile. No login is required and nothing is
+submitted to RetroAchievements. This release supports NTSC-U only.
+
+## Cinematic Journeys
+
+Add the repository root in Mods or import
+`cinematic-journeys-0.1.0-windows-x86_64.zip`. Enable it and launch normally.
+Hold L1+L2+R1+R2 and press Start to skip deliberately. Ordinary menu/pause Start
+is retained. The flight minimum defaults to five seconds and can be changed
+from 0 to 30 in the launcher's mod settings. Development `--skip-movies` bypasses
+movie playback before the mod and is outside this protection. PAL is declared
+by the adapter, but the preserved in-game tests cover NTSC-U.

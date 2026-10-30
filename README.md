@@ -5,6 +5,25 @@
 My Ratchet & Clank mods for the native OpenRAC port. Revolverator adds a separate
 weapon alongside the original Walloper, with native menus, 20 rounds and its own
 progress. Weapon Experience adds ten persistent weapon levels.
+Skill Points: RetroAchievements brings the achievement set into the native
+Skill Points menu. Cinematic Journeys prevents accidental cutscene skipping.
+
+## Install Skill Points and Cinematic Journeys
+
+Add [this repository](https://github.com/noire342/openrac-mods) in the launcher's
+Mods page, select the mod, install it and enable it. Local ZIP import is also
+available through the individual releases:
+
+| Mod | Download | Behavior and scope |
+|---|---|---|
+| [Skill Points: RetroAchievements](skill-points-ra/README.md) | [0.1.2 Windows x64](https://github.com/noire342/openrac-mods/releases/tag/skill-points-ra-v0.1.2) | NTSC-U; 178 offline achievements integrated into Pause → Goodies → Skill Points; Kerwan timed challenge off by default, giving 177 active |
+| [Cinematic Journeys](cinematic-journeys/README.md) | [0.1.0 Windows x64](https://github.com/noire342/openrac-mods/releases/tag/cinematic-journeys-v0.1.0) | Protects cutscenes; deliberate skip with L1+L2+R1+R2+Start; configurable 5-second minimum flight; NTSC-U tested, PAL adapter included but not tested in-game |
+
+These mods need no modified OpenRAC client. Skill Points works offline without
+an account or server submissions. It stores its own progress independently from
+the game's memory cards. Load it after other level-loading hooks, including XP,
+if managing `plugins.json` by hand. Full details and validation limits are in the
+module READMEs and [validation notes](docs/VALIDATION.md).
 
 ## Install the Revolverator preview
 
@@ -22,13 +41,15 @@ custom `--levels` path or replacement client EXE is required.
 
 Use the explicit release address for this preview: the launcher skips
 prereleases when given only the repository's root address. The root index lists
-only Weapon Experience and Revolverator; utility source folders are not extra
+Weapon Experience, Revolverator, Skill Points and Cinematic Journeys; utility source folders are not extra
 installable cards.
 
 | Component | Current source | Role |
 |---|---|---|
 | [Revolverator](revolverator/README.md) |0.2.0 preview | Additional weapon, native inventory/API v2, automatic asset staging |
 | [Weapon Experience](weapon-xp/README.md) |0.6.3-arsenal | Optional matching API v4 progression companion |
+| [Skill Points: RetroAchievements](skill-points-ra/README.md) |0.1.2 | Native menu, offline rules and read-only/event C API v1 |
+| [Cinematic Journeys](cinematic-journeys/README.md) |0.1.0 | Cutscene protection and configurable original flight animation |
 | [Arsenal compatibility](arsenal-compat/README.md) |0.1.0 | Private bundled native-hook utility |
 | [File overlay](arsenal-file-overlay/README.md) |0.1.0 | Private bundled read-only manifest alias utility |
 
@@ -41,7 +62,7 @@ normal purchase starts at Hoven for 15,000 bolts, pickups give 2, ammo costs 25 
 
 ## Compatibility and source
 
-Native support currently targets the unchanged official Windows x64 NTSC-U
+The Revolverator native package targets the unchanged official Windows x64 NTSC-U
 client 0.9.0, commit `77a2f052`, SHA256
 `b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081`.
 Other builds fail clearly. The plugin reads original manifests and stages

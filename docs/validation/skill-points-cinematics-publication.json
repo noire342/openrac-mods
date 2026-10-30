@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-30",
+  "baseCommit": "441f4905ef11fb6c50f5bc06d34534e7362d6b4f",
+  "newModules": {"skill-points-ra": "0.1.2", "cinematic-journeys": "0.1.0"},
+  "cleanWindowsSourceBuild": {"configuration": "Release x64", "hostTestGroupsPassed": 41, "hostTestGroupsFailed": 0},
+  "groupBreakdown": {"weaponXp": 13, "revolverator": 19, "hookProvider": 1, "fileOverlay": 1, "skillPoints": 5, "cinematics": 2},
+  "runtimeImplementationMatchesOriginalValidatedSource": true,
+  "releasedNativeDllsUnchanged": {
+    "skill_points_ra.dll": "559bd12508c634d8c6883ff9eee11a59101076bfdcecf59f6170d85a6bdd846c",
+    "cinematic_journeys.dll": "34b937835be553e29b531d0a913874373d560d9976405a4575ba957da906468f"
+  },
+  "releaseMetadataChangesOnly": true,
+  "nativeReceipts": ["skill-points-ra-0.1.2.json", "cinematic-journeys-0.1.0.json"],
+  "ciEvidence": "See the GitHub build workflow for the corresponding source commit; Windows and Ubuntu jobs are independent host checks.",
+  "newNativeGameplayClaimedByPublication": false,
+  "everyModCombinationCertified": false
+}

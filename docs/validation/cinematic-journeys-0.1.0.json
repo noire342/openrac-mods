@@ -1,0 +1,50 @@
+{
+  "version": "0.1.0",
+  "dllSha256": "34b937835be553e29b531d0a913874373d560d9976405a4575ba957da906468f",
+  "hostTests": {
+    "groups": 2,
+    "padCombinations": 65536,
+    "discs": [
+      "pal",
+      "ntsc"
+    ]
+  },
+  "nativePort": {
+    "version": "0.9.0",
+    "commit": "2a457b30",
+    "disc": "ntsc",
+    "api": "1.4"
+  },
+  "movieStartBlocked": true,
+  "movieFullChordSkips": true,
+  "nativeSceneStartOnlyControlFrame": 2311,
+  "nativeSceneChordControlFrame": 1213,
+  "flights": [
+    {
+      "minimumSeconds": 5,
+      "postponedFinalPassAtSeconds": [
+        3.967
+      ],
+      "arrivedOnPlanet3": true,
+      "fixtureRequestedTravel": true
+    },
+    {
+      "minimumSeconds": 10,
+      "postponedFinalPassAtSeconds": [
+        3.967,
+        7.934
+      ],
+      "arrivedOnPlanet3": true,
+      "fixtureRequestedTravel": true
+    }
+  ],
+  "palNativeVerified": false,
+  "allScenesVerified": false,
+  "originalSaveFilesUsed": false,
+  "openracPatched": false,
+  "notes": [
+    "Flight fixtures use the native transition entry; no manual planet-map proof.",
+    "The final DLL was tested for movie skip and the default 5 second flight.",
+    "The 10 second flight preceded the report-restoration ownership refinement."
+  ]
+}

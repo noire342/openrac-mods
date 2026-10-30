@@ -1,0 +1,1 @@
+{"format":2,"id":"skill-points-qa","name":"Skill points isolated QA","version":"0.0.1","author":"Local QA","description":"Only for isolated automated verification.","license":"GPL-3.0-or-later","api":"1.1","games":{"rac1":["ntsc"]}}

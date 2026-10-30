@@ -1,0 +1,49 @@
+{
+  "format": 2,
+  "id": "skill-points-ra",
+  "name": "Punti stile: RetroAchievements",
+  "version": "0.1.2",
+  "author": "noire342; achievement set by Gollawiz, zizom and Fridge",
+  "description": "178 obiettivi locali con le regole originali di RetroAchievements, integrati nella schermata Punti stile. Nessun account richiesto in gioco.",
+  "license": "GPL-3.0-or-later",
+  "api": "1.1",
+  "games": {
+    "rac1": [
+      "ntsc"
+    ]
+  },
+  "hooks": [
+    "rac1.level.load_gameplay"
+  ],
+  "load": {
+    "after": [
+      "weapon-xp",
+      "difficulty-mod",
+      "item-randomizer"
+    ]
+  },
+  "settings": [
+    {
+      "key": "kerwan_time_trial",
+      "name": "Sfida a tempo di Kerwan",
+      "type": "bool",
+      "default": false,
+      "description": "Abilita Real Men Can Sving Vithout Silly Toys: percorso a ostacoli entro 1:08, senza helipack o jetpack. Se disattivata, la sfida non viene valutata e non conta nel totale; gli sblocchi precedenti restano salvati."
+    },
+    {
+      "key": "profile",
+      "name": "Profilo obiettivi",
+      "type": "string",
+      "default": "campagna-1",
+      "description": "Profilo locale separato dagli slot della memory card. Usa un nome diverso per una nuova campagna."
+    },
+    {
+      "key": "notifications",
+      "name": "Notifiche originali",
+      "type": "bool",
+      "default": true,
+      "description": "Usa l'avviso originale Punto stile ottenuto per i nuovi obiettivi."
+    }
+  ],
+  "homepage": "https://github.com/noire342/openrac-mods/tree/main/skill-points-ra"
+}

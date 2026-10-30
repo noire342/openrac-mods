@@ -1,0 +1,5 @@
+/build*/
+/.sdk/
+/qa-*/
+/dist/
+__pycache__/

@@ -1,0 +1,7 @@
+build/
+.sdk/
+qa-*/
+research/
+*.log
+native-level-smokes.json
+__pycache__/

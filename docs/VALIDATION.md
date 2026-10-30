@@ -1,5 +1,25 @@
 # Validation
 
+## Standalone Skill Points and Cinematic Journeys
+
+- [Skill Points 0.1.2 receipt](validation/skill-points-ra-0.1.2.json): five host
+  groups; Windows NTSC-U native load, normal initial pause route, controlled
+  Pyrocitor unlock, optional Kerwan challenge both on/off and XP coexistence.
+  The 19-level UI smoke and pause-reopening records are explicitly from 0.1.1;
+  no claim that all 178 achievements were manually completed.
+- [Cinematic Journeys 0.1.0 receipt](validation/cinematic-journeys-0.1.0.json):
+  two host groups, all 65,536 button combinations, PAL/NTSC adapter tests, native
+  NTSC-U protected movie Start, full-chord skip and default five-second flight.
+  The ten-second fixture preceded the last ownership refinement. Flights were
+  requested through a native transition fixture, not manual map navigation;
+  PAL and every campaign scene were not tested in-game.
+
+These are the original binary-specific native receipts. Publication adds clean
+source build/CI checks; it does not turn host tests into additional gameplay
+proof or certify every combination with the Revolverator preview.
+The combined clean Windows source build passes **41/41 host groups**; see the
+[publication source receipt](validation/skill-points-cinematics-publication.json).
+
 ## Current self-contained native package
 
 The [native receipt](validation/revolverator-0.2.0-native-package.json) records
@@ -27,7 +47,7 @@ unchanged. The current exact hashes are:
 - Optional XP: `68205f76fea997336d4ee01fcb7c2812a2fdd32b6d79d3b67cc51a8b162cb67c`.
 - Official EXE: `b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081`.
 
-The current source matrix passes 34/34 groups on Windows and Linux:
+The previously published Revolverator/XP source subset passes 34/34 groups on Windows and Linux:
 19 Revolverator, 13 XP, 1 hook provider, 1 file-overlay group. The new staging group
 checks serialization, argument precedence, source immutability and owned cache
 cleanup; file-overlay policy/parser tests add 1,865 checks. The separate hook

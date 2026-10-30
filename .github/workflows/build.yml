@@ -12,28 +12,50 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-24.04]
-        mod: [weapon-xp, revolverator, arsenal-compat, arsenal-file-overlay]
+        mod: [weapon-xp, revolverator, arsenal-compat, arsenal-file-overlay, skill-points-ra, cinematic-journeys]
         include:
           - mod: weapon-xp
+            skill_points: 'OFF'
+            cinematic: 'OFF'
             xp: 'ON'
             revolverator: 'OFF'
             compat: 'OFF'
             overlay: 'OFF'
           - mod: revolverator
+            skill_points: 'OFF'
+            cinematic: 'OFF'
             xp: 'OFF'
             revolverator: 'ON'
             compat: 'ON'
             overlay: 'ON'
           - mod: arsenal-compat
+            skill_points: 'OFF'
+            cinematic: 'OFF'
             xp: 'OFF'
             revolverator: 'OFF'
             compat: 'ON'
             overlay: 'OFF'
           - mod: arsenal-file-overlay
+            skill_points: 'OFF'
+            cinematic: 'OFF'
             xp: 'OFF'
             revolverator: 'OFF'
             compat: 'OFF'
             overlay: 'ON'
+          - mod: skill-points-ra
+            xp: 'OFF'
+            revolverator: 'OFF'
+            compat: 'OFF'
+            overlay: 'OFF'
+            skill_points: 'ON'
+            cinematic: 'OFF'
+          - mod: cinematic-journeys
+            xp: 'OFF'
+            revolverator: 'OFF'
+            compat: 'OFF'
+            overlay: 'OFF'
+            skill_points: 'OFF'
+            cinematic: 'ON'
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
@@ -43,7 +65,7 @@ jobs:
       - name: Fetch pinned SDK
         run: python tools/fetch_sdk.py
       - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_WEAPON_XP=${{ matrix.xp }} -DBUILD_REVOLVERATOR=${{ matrix.revolverator }} -DBUILD_ARSENAL_COMPAT=${{ matrix.compat }} -DBUILD_ARSENAL_FILE_OVERLAY=${{ matrix.overlay }} -DBUILD_TESTING=ON
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_WEAPON_XP=${{ matrix.xp }} -DBUILD_REVOLVERATOR=${{ matrix.revolverator }} -DBUILD_ARSENAL_COMPAT=${{ matrix.compat }} -DBUILD_ARSENAL_FILE_OVERLAY=${{ matrix.overlay }} -DBUILD_SKILL_POINTS_RA=${{ matrix.skill_points }} -DBUILD_CINEMATIC_JOURNEYS=${{ matrix.cinematic }} -DBUILD_TESTING=ON
       - name: Build
         run: cmake --build build --config Release --parallel
       - name: Test

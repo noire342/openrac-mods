@@ -1,5 +1,19 @@
 # Changelog
 
+## Skill Points: RetroAchievements 0.1.2 / Cinematic Journeys 0.1.0
+
+- Publish both standalone modules, Windows installable ZIPs, corresponding
+  source archives, retained third-party notices and native validation receipts.
+- Extend repository discovery to four mods and add independent Windows/Linux
+  CI jobs for the two new modules.
+- Skill Points integrates 178 official rules into the original menu, accessible
+  below Options from a new campaign; optional Kerwan timed challenge defaults off.
+  Progress is offline and separate from memory cards and Weapon Experience.
+- Cinematic Journeys preserves the deliberate four-shoulder-plus-Start skip
+  chord and adds a configurable 5-second minimum interplanetary animation.
+- Preserve the native proof boundaries: Skill Points is NTSC-U; Cinematic
+  Journeys has a PAL adapter but its in-game evidence is NTSC-U only.
+
 ## Revolverator 0.2.0 preview.1 / Weapon Experience 0.6.3-arsenal
 
 - Install Revolverator as one normal native launcher package. Bundle utility

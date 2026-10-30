@@ -9,6 +9,11 @@ Maintained by **Noire** ([noire342](https://github.com/noire342)).
 - **Insomniac Games / Sony:** Ratchet & Clank, its characters, original art,
   animations, sound and the original drill model used as a restoration reference.
   Those assets remain the property of their respective owners.
+- **Gollawiz, zizom and Fridge:** the RetroAchievements R&C1
+  [achievement set 3070](https://retroachievements.org/game/3070), retained with
+  per-achievement author credits and source provenance in `skill-points-ra/data`.
+- **RetroAchievements/rcheevos contributors:** the pinned MIT-licensed rules
+  evaluator, with the original license retained in `skill-points-ra/vendor/rcheevos`.
 - **Tsuda Kageyu and HDE contributors:** MinHook 1.3.4, pinned unmodified source
   with its original BSD notices; used by the exact-build stock-client provider.
 - **Revolverator ammunition model:** generated with **AI assistance** from an

@@ -5,7 +5,7 @@ The SDK fetcher verifies the URL/SHA256 recorded in `sdk.lock`.
 
 ```sh
 python tools/fetch_sdk.py
-cmake -S . -B build -DBUILD_WEAPON_XP=ON -DBUILD_REVOLVERATOR=ON -DBUILD_ARSENAL_COMPAT=ON -DBUILD_ARSENAL_FILE_OVERLAY=ON -DBUILD_TESTING=ON
+cmake -S . -B build -DBUILD_WEAPON_XP=ON -DBUILD_REVOLVERATOR=ON -DBUILD_ARSENAL_COMPAT=ON -DBUILD_ARSENAL_FILE_OVERLAY=ON -DBUILD_SKILL_POINTS_RA=ON -DBUILD_CINEMATIC_JOURNEYS=ON -DBUILD_TESTING=ON
 cmake --build build --config Release --parallel
 ctest --test-dir build -C Release --output-on-failure
 ```
@@ -13,8 +13,14 @@ ctest --test-dir build -C Release --output-on-failure
 `BUILD_WEAPON_XP` builds the 0.6.3-arsenal companion; `BUILD_REVOLVERATOR` builds
 additive 0.2. `BUILD_ARSENAL_COMPAT` defaults to the Revolverator option and builds
 the provider on Windows x64, or only its portable core/tests on Linux.
-The combined suite contains **34 groups: 19 Revolverator, 13 XP, 1 hook provider, 1 file overlay**.
+The combined suite contains **41 groups: 19 Revolverator, 13 XP, 1 hook provider,
+1 file overlay, 5 skill points and 2 cinematics**.
 Disable individual options to build components separately.
+
+`BUILD_SKILL_POINTS_RA` and `BUILD_CINEMATIC_JOURNEYS` default on and are
+independent modules. Their folders also support standalone CMake builds using
+the pinned SDK. The vendored MIT rcheevos runtime and sanitized achievement
+definitions allow offline builds without account credentials or game files.
 
 Select another unpacked SDK with `-DOPENRAC_SDK=/path/to/sdk` or `OpenRACMod_DIR`.
 Windows uses Visual Studio 2022 or later. Linux exports the optional Revo
@@ -44,7 +50,7 @@ game-derived generated headers.
 
 The normal importer expects `revolverator-0.2.0-windows-x86_64.zip` and a release
 `SHA256SUMS` entry. Repository discovery is limited by `openrac-mods.json` to
-Weapon Experience/Revolverator. Explicit release-tag URLs select prereleases;
+the four public mods. Explicit release-tag URLs select prereleases;
 source builds and CI do not publish release assets.
 
 ## Artifact evidence

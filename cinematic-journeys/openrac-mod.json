@@ -1,0 +1,46 @@
+{
+  "format": 2,
+  "id": "cinematic-journeys",
+  "name": "Cinematic Journeys",
+  "version": "0.1.0",
+  "author": "noire342",
+  "description": "Protects movies and cutscenes from accidental skipping. Hold L1+L2+R1+R2 and press Start to skip deliberately. Gives the original interplanetary ship animation a configurable minimum duration.",
+  "license": "GPL-3.0-or-later",
+  "api": "1.1",
+  "games": {
+    "rac1": [
+      "pal",
+      "ntsc"
+    ]
+  },
+  "hooks": [
+    "rac1.pad.process_report"
+  ],
+  "load": {
+    "after": [
+      "button-swap",
+      "keyboard-mouse",
+      "lock-strafe"
+    ]
+  },
+  "settings": [
+    {
+      "key": "protect_scenes",
+      "name": "Proteggi filmati e cutscene",
+      "type": "bool",
+      "default": true,
+      "description": "Per saltare: tieni L1 + L2 + R1 + R2 e premi Start. I comandi normali restano disponibili nei menu e durante il gioco."
+    },
+    {
+      "key": "minimum_flight_seconds",
+      "name": "Durata minima del viaggio (secondi)",
+      "type": "float",
+      "default": 5.0,
+      "min": 0.0,
+      "max": 30.0,
+      "step": 1.0,
+      "description": "Tempo minimo dell'animazione originale tra pianeti. 0 disattiva il minimo. Dopo il minimo termina il passaggio di animazione in corso. La combinazione di skip permette di abbreviare il viaggio."
+    }
+  ],
+  "homepage": "https://github.com/noire342/openrac-mods/tree/main/cinematic-journeys"
+}

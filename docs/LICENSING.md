@@ -13,6 +13,9 @@ by this normal source commit; Git history and previous artifacts are not rewritt
 | [Historical arsenal engine bridge patch](arsenal-bridge/README.md) | Upstream GPL and file-specific notices; its exact base and GPL text are included |
 | Vendored MinHook 1.3.4 and HDE | Original BSD two-clause notices retained under `arsenal-compat/third_party/minhook/LICENSE.txt` and copied into the binary package |
 | Vendored OpenRAC JSON reader | GPL-3.0-or-later, OpenRAC contributors; exact provenance/retained notices in `revolverator/third_party/openrac/NOTICE.md` |
+| Vendored rcheevos evaluator | MIT, RetroAchievements.org; original text in `skill-points-ra/vendor/rcheevos/LICENSE` and `skill-points-ra/LICENSE.rcheevos` |
+| Skill Points API header/observer | Their explicit MIT notices are retained |
+| RetroAchievements definitions | Original authors and set provenance retained in `skill-points-ra/data`; not represented as newly authored achievement designs |
 | Original game art/code/assets | Not relicensed by this project; the player supplies them and original artwork is not published here |
 
 The SDK's MIT license is separate from the mod repository's GPL convention.

@@ -1,0 +1,11 @@
+{
+  "rcheevos": {
+    "repository": "https://github.com/RetroAchievements/rcheevos",
+    "commit": "bbc79b58a5a2a0b98dfbf2be6ca9e42c764661ce",
+    "license": "MIT"
+  },
+  "openrac_source_map": {
+    "repository": "https://github.com/OpenRAC/OpenRAC",
+    "commit": "2a457b30426ebf01caf40b2831f27ae647d7ad4a"
+  }
+}

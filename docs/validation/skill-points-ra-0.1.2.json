@@ -1,0 +1,160 @@
+{
+  "version": "0.1.2",
+  "game": "rac1-ntsc",
+  "disc": "SCUS_971.99",
+  "officialAchievementCount": 178,
+  "newSkillPoints": 148,
+  "originalSkillPoints": 30,
+  "points": 667,
+  "hostTestGroups": 5,
+  "hostTestsPassed": true,
+  "nativeLoadVerified": true,
+  "nativeUiVerified": true,
+  "controlledNativeUnlockVerified": 253912,
+  "controlledUnlockMethod": "Native Item_Give(Pyrocitor), isolated RAM/cards/profile; not a manual campaign unlock",
+  "weaponXpCoexistenceVerified": true,
+  "falseWeaponXpLevelEventsDuringUi": 0,
+  "nativeMenuEntryRouteVerified": "Pausa -> Premi (sotto Opzioni) -> Punti Stile",
+  "normalCampaignControllerNavigationVerified": true,
+  "pauseReopeningVerified": true,
+  "pauseReopeningVerifiedVersion": "0.1.1",
+  "kerwanTimeTrial": {
+    "id": 264462,
+    "defaultEnabled": false,
+    "nativeToggleOffVerified": true,
+    "nativeToggleOnVerified": true,
+    "defaultActiveCount": 177,
+    "defaultActivePoints": 657,
+    "previousUnlocksPreserved": true
+  },
+  "storyCompletionFlagDuringNativeProof": 0,
+  "qaPageOrSelectionWritesUsed": false,
+  "sourceArchiveBuildVerified": true,
+  "all178ManuallyCompleted": false,
+  "accountCredentialsIncluded": false,
+  "onlineUnlockSubmission": false,
+  "nativeLevelSmokesVerifiedVersion": "0.1.1",
+  "nativeLevelSmokes": [
+    {
+      "uiReady": true,
+      "errors": [],
+      "loaded": true,
+      "level": 0
+    },
+    {
+      "uiReady": true,
+      "errors": [],
+      "loaded": true,
+      "level": 1
+    },
+    {
+      "uiReady": true,
+      "errors": [],
+      "loaded": true,
+      "level": 2
+    },
+    {
+      "uiReady": true,
+      "errors": [],
+      "loaded": true,
+      "level": 3
+    },
+    {
+      "uiReady": true,
+      "errors": [],
+      "loaded": true,
+      "level": 4
+    },
+    {
+      "uiReady": true,
+      "errors": [],
+      "loaded": true,
+      "level": 5
+    },
+    {
+      "uiReady": true,
+      "errors": [],
+      "loaded": true,
+      "level": 6
+    },
+    {
+      "uiReady": true,
+      "errors": [],
+      "loaded": true,
+      "level": 7
+    },
+    {
+      "uiReady": true,
+      "errors": [],
+      "loaded": true,
+      "level": 8
+    },
+    {
+      "uiReady": true,
+      "errors": [],
+      "loaded": true,
+      "level": 9
+    },
+    {
+      "uiReady": true,
+      "errors": [],
+      "loaded": true,
+      "level": 10
+    },
+    {
+      "uiReady": true,
+      "errors": [],
+      "loaded": true,
+      "level": 11
+    },
+    {
+      "uiReady": true,
+      "errors": [],
+      "loaded": true,
+      "level": 12
+    },
+    {
+      "uiReady": true,
+      "errors": [],
+      "loaded": true,
+      "level": 13
+    },
+    {
+      "uiReady": true,
+      "errors": [],
+      "loaded": true,
+      "level": 14
+    },
+    {
+      "uiReady": true,
+      "errors": [],
+      "loaded": true,
+      "level": 15
+    },
+    {
+      "uiReady": true,
+      "errors": [],
+      "loaded": true,
+      "level": 16
+    },
+    {
+      "uiReady": true,
+      "errors": [],
+      "loaded": true,
+      "level": 17
+    },
+    {
+      "uiReady": true,
+      "errors": [],
+      "loaded": true,
+      "level": 18
+    }
+  ],
+  "evidence": {
+    "hostTests": "work/skill-points-ra/test-final.log",
+    "nativeUnlock": "work/skill-points-ra/qa-kerwan-off/data/openrac-rac1-ntsc.log",
+    "nativeToggleOn": "work/skill-points-ra/qa-kerwan-on/data/openrac-rac1-ntsc.log",
+    "uiPreview": "skill-points-ra-preview.png"
+  },
+  "nativeDllSha256": "559bd12508c634d8c6883ff9eee11a59101076bfdcecf59f6170d85a6bdd846c"
+}
