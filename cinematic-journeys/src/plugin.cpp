@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+#include <cstddef>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -19,10 +20,17 @@ void pad(void* context, int port, std::uint8_t* report, int size) {
 }  // namespace
 
 extern "C" {
-OPENRAC_MOD_DEFINE("cinematic-journeys", "0.1.0")
+OPENRAC_MOD_DEFINE("cinematic-journeys", "0.1.1")
 
 OPENRAC_MOD_EXPORT int openrac_mod_load(const openrac_api* api, openrac_mod* mod) {
+    session.reset();
+    if (!api || api->size < offsetof(openrac_api, loaded_level) + sizeof(api->loaded_level)) {
+        return 1;
+    }
     try {
+        if (!api->fail || !api->hook || !api->on_pad) {
+            throw std::runtime_error("Cinematic Journeys: missing hook/pad services");
+        }
         session = std::make_unique<cinematic::Runtime>(*api, mod, clock_source);
         session->load();
         void* original = nullptr;
@@ -45,7 +53,9 @@ OPENRAC_MOD_EXPORT int openrac_mod_load(const openrac_api* api, openrac_mod* mod
         }
         return 0;
     } catch (const std::exception& e) {
-        api->fail(mod, e.what());
+        if (api->fail) {
+            api->fail(mod, e.what());
+        }
         session.reset();
         return 1;
     }

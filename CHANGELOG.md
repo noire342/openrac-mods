@@ -1,5 +1,15 @@
 # Changelog
 
+## Skill Points 0.1.3 and Cinematic Journeys 0.1.1
+
+- Verify the exact official OpenRAC 0.10.0 client and all 19 Skill Points callback maps.
+- Separate the Skill Points runtime, bounded game memory, C service and DLL lifecycle.
+- Validate the API prefix and required services before registering hooks/callbacks.
+- Validate cinematic reports in both PS2 RAM and the mapped port arena; preserve normal pause.
+- Add lifecycle/failure regressions and SDK 1.10.1 Windows/Linux standalone build/package CI.
+- Make packaging independent of private QA folders and versions; preserve profile format/API v1.
+- Document reproducible checks, exact binary identities and native coverage limits.
+
 ## Skill Points: RetroAchievements 0.1.2 / Cinematic Journeys 0.1.0
 
 - Publish both standalone modules, Windows installable ZIPs, corresponding

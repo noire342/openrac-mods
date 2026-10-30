@@ -1,6 +1,13 @@
 # Validation
 
-## Standalone Skill Points and Cinematic Journeys
+## OpenRAC 0.10.0 standalone verification
+
+The current Skill Points 0.1.3 and Cinematic Journeys 0.1.1 receipt is
+[openrac-0.10.0.json](validation/openrac-0.10.0.json). It identifies the unchanged
+official installer, EXE, SDK, tested DLL hashes, host results and native scenarios.
+The former receipts below remain evidence for their original versions.
+
+## Original standalone Skill Points and Cinematic Journeys receipts
 
 - [Skill Points 0.1.2 receipt](validation/skill-points-ra-0.1.2.json): five host
   groups; Windows NTSC-U native load, normal initial pause route, controlled
@@ -17,7 +24,7 @@
 These are the original binary-specific native receipts. Publication adds clean
 source build/CI checks; it does not turn host tests into additional gameplay
 proof or certify every combination with the Revolverator preview.
-The combined clean Windows source build passes **41/41 host groups**; see the
+The original publication's combined Windows source build passed **41/41 host groups**; see the
 [publication source receipt](validation/skill-points-cinematics-publication.json).
 
 ## Current self-contained native package

@@ -1,4 +1,4 @@
-// Generated from OpenRAC 2a457b30426ebf01caf40b2831f27ae647d7ad4a, NTSC-U.
+// Generated from OpenRAC d015ea1c6925de90b4be91ddb349af83361d9d4b, NTSC-U.
 #pragma once
 #include <cstdint>
 namespace skillpoints {

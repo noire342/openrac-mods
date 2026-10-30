@@ -1,0 +1,60 @@
+
+[qa-points-kerwan-final]
+openrac   0.10.0, commit d015ea1c
+[info] [mod cinematic-journeys] trace pad=13c940 ship=0 busy=0 phase=0 level=-1 clock=84979.226
+[info] movie at sector 40165: skipped by --skip-movies (development probe)
+[info] [mod cinematic-journeys] trace pad=13c940 ship=4 busy=1 phase=2 level=-1 clock=84984.358
+[info] [mod skill-points-qa] QA achievement selection kerwan=1 active=178 points=667
+[info] now playing level 1
+[info] [mod cinematic-journeys] trace pad=13c940 ship=4 busy=0 phase=2 level=1 clock=84987.991
+[info] [mod skill-points-ra] Punto stile ottenuto: 253912 - Some Men Just Want To Watch The World Burn
+[info] [mod skill-points-qa] QA native pause visit=1 seventh_visible=1 story_completed=0
+[info] [mod skill-points-qa] QA native pause visit=2 seventh_visible=1 story_completed=0
+[info] [mod skill-points-qa] QA normal controller route reached Goodies; no page or selection writes
+[info] [mod skill-points-qa] QA normal controller route reached skill-point list; no page or selection writes
+[info] [mod skill-points-qa] QA native pause visit=3 seventh_visible=1 story_completed=0
+[info] [mod skill-points-qa] QA native pause visit=4 seventh_visible=1 story_completed=0
+[info] [mod skill-points-qa] QA native pause visit=5 seventh_visible=1 story_completed=0
+[info] 1800 frames after control: the run ends
+
+[qa-movie-start-final]
+openrac   0.10.0, commit d015ea1c
+[info] [mod cinematic-journeys] trace pad=13c940 ship=0 busy=0 phase=0 level=-1 clock=84914.764
+[info] movie at sector 40165: 512x416, 30/1 fps, audio channel 0
+[info] movie at sector 40165: played
+[info] [mod cinematic-journeys] trace pad=13c940 ship=4 busy=1 phase=2 level=-1 clock=84936.013
+[info] now playing level 1
+[info] [mod cinematic-journeys] trace pad=13c940 ship=4 busy=0 phase=2 level=1 clock=84939.658
+[info] 120 frames after control: the run ends
+
+[qa-movie-chord-final]
+openrac   0.10.0, commit d015ea1c
+[info] [mod cinematic-journeys] trace pad=13c940 ship=0 busy=0 phase=0 level=-1 clock=85023.895
+[info] movie at sector 40165: 512x416, 30/1 fps, audio channel 0
+[info] movie at sector 40165: Start pressed (pad 0xf0f7)
+[info] movie at sector 40165: skipped
+[info] [mod cinematic-journeys] trace pad=13c940 ship=4 busy=1 phase=2 level=-1 clock=85031.453
+[info] [mod cinematic-journeys] trace pad=13c940 ship=4 busy=0 phase=2 level=-1 clock=85031.588
+[info] now playing level 1
+[info] 120 frames after control: the run ends
+
+[qa-flight-complete]
+openrac   0.10.0, commit d015ea1c
+[info] [mod cinematic-journeys] trace pad=13c940 ship=0 busy=0 phase=0 level=-1 clock=85061.534
+[info] movie at sector 40165: skipped by --skip-movies (development probe)
+[info] [mod cinematic-journeys] trace pad=13c940 ship=4 busy=1 phase=0 level=-1 clock=85068.117
+[info] [mod cinematic-journeys] trace pad=13c940 ship=4 busy=1 phase=1 level=-1 clock=85072.871
+[info] [mod cinematic-journeys] trace pad=13c940 ship=4 busy=1 phase=0 level=-1 clock=85072.888
+[info] [mod cinematic-journeys] trace pad=13c940 ship=4 busy=1 phase=1 level=-1 clock=85076.505
+[info] [mod cinematic-journeys] trace pad=13c940 ship=4 busy=1 phase=2 level=-1 clock=85080.471
+[info] now playing level 2
+[info] [mod cinematic-journeys] trace pad=13c940 ship=8 busy=0 phase=2 level=2 clock=85085.563
+[info] [mod cinematic-qa] QA FIXTURE: requesting native planet 2 -> 3 transition; not manual map interaction
+[info] [mod cinematic-journeys] trace pad=13c940 ship=4 busy=1 phase=0 level=2 clock=85099.804
+[info] [mod cinematic-journeys] trace pad=13c940 ship=4 busy=1 phase=1 level=2 clock=85103.770
+[info] [mod cinematic-journeys] trace pad=13c940 ship=4 busy=1 phase=0 level=2 clock=85103.787
+[info] [mod cinematic-journeys] trace pad=13c940 ship=4 busy=1 phase=1 level=2 clock=85107.849
+[info] [mod cinematic-journeys] trace pad=13c940 ship=4 busy=1 phase=2 level=2 clock=85111.481
+[info] now playing level 3
+[info] [mod cinematic-journeys] trace pad=13c940 ship=8 busy=0 phase=2 level=3 clock=85116.245
+[info] 1800 frames after control: the run ends

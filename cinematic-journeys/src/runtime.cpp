@@ -2,35 +2,60 @@
 #include "runtime.hpp"
 
 #include <chrono>
+#include <cstddef>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <stdexcept>
 #include <string>
 
+#include "guest_memory.hpp"
+
 namespace cinematic {
+namespace {
+constexpr std::uint32_t guest_size = 0x02000000u;
+
+bool range(std::uint32_t address, std::size_t bytes) noexcept {
+    return address < guest_size && bytes <= guest_size - address;
+}
+
+const openrac_api& checked_api(const openrac_api& api) {
+    if (api.size < offsetof(openrac_api, loaded_level) + sizeof(api.loaded_level)
+        || api.api_major != 1 || api.api_minor < 1 || !api.game || !api.version || !api.memory
+        || !api.setting_bool || !api.setting_float || !api.function || !api.relocate_data
+        || !api.relocate_level_data || !api.loaded_level || !api.log) {
+        throw std::runtime_error("Cinematic Journeys: incomplete OpenRAC API 1.1 prefix");
+    }
+    return api;
+}
+}  // namespace
+
 double SteadyClock::seconds() const noexcept {
     return std::chrono::duration<double>(std::chrono::steady_clock::now().time_since_epoch())
         .count();
 }
 
 Runtime::Runtime(const openrac_api& api, openrac_mod* mod, const Clock& clock)
-    : m_api(api),
+    : m_api(checked_api(api)),
       m_mod(mod),
       m_clock(clock),
-      m_minimum(api.setting_float(mod, "minimum_flight_seconds")),
-      m_protect(api.setting_bool(mod, "protect_scenes") != 0) {}
+      m_minimum(m_api.setting_float(mod, "minimum_flight_seconds")),
+      m_protect(m_api.setting_bool(mod, "protect_scenes") != 0) {}
 
 template <class T>
 T Runtime::read(std::uint32_t at) const {
     T value{};
-    std::memcpy(&value, m_api.memory + at, sizeof value);
+    if (range(at, sizeof value)) {
+        std::memcpy(&value, m_api.memory + at, sizeof value);
+    }
     return value;
 }
 
 template <class T>
 void Runtime::write(std::uint32_t at, T value) {
-    std::memcpy(m_api.memory + at, &value, sizeof value);
+    if (range(at, sizeof value)) {
+        std::memcpy(m_api.memory + at, &value, sizeof value);
+    }
 }
 
 void Runtime::load() {
@@ -129,6 +154,13 @@ void Runtime::set_original(void* original) noexcept {
 }
 
 void Runtime::process(std::uint32_t state, std::uint32_t report, int size) {
+    if (!m_original) {
+        return;
+    }
+    if (state != m_disc->pad || size < 2 || !report_range(report, static_cast<std::size_t>(size))) {
+        m_original(state, report, size);
+        return;
+    }
     if (m_trace) {
         const int ship = read<std::int32_t>(m_disc->ship + 0x20);
         const int busy = read<std::int16_t>(m_disc->loader_busy);
@@ -153,10 +185,6 @@ void Runtime::process(std::uint32_t state, std::uint32_t report, int size) {
             m_trace_busy = busy;
             m_trace_phase = phase;
         }
-    }
-    if (state != m_disc->pad || size < 2) {
-        m_original(state, report, size);
-        return;
     }
     flight();
     auto* bytes = m_api.memory + report;

@@ -16,10 +16,10 @@ available through the individual releases:
 
 | Mod | Download | Behavior and scope |
 |---|---|---|
-| [Skill Points: RetroAchievements](skill-points-ra/README.md) | [0.1.2 Windows x64](https://github.com/noire342/openrac-mods/releases/tag/skill-points-ra-v0.1.2) | NTSC-U; 178 offline achievements integrated into Pause → Goodies → Skill Points; Kerwan timed challenge off by default, giving 177 active |
-| [Cinematic Journeys](cinematic-journeys/README.md) | [0.1.0 Windows x64](https://github.com/noire342/openrac-mods/releases/tag/cinematic-journeys-v0.1.0) | Protects cutscenes; deliberate skip with L1+L2+R1+R2+Start; configurable 5-second minimum flight; NTSC-U tested, PAL adapter included but not tested in-game |
+| [Skill Points: RetroAchievements](skill-points-ra/README.md) | [0.1.3 Windows x64](https://github.com/noire342/openrac-mods/releases/tag/skill-points-ra-v0.1.3) | NTSC-U; 178 offline achievements integrated into Pause → Goodies → Skill Points; Kerwan timed challenge off by default, giving 177 active |
+| [Cinematic Journeys](cinematic-journeys/README.md) | [0.1.1 Windows x64](https://github.com/noire342/openrac-mods/releases/tag/cinematic-journeys-v0.1.1) | Protects cutscenes; deliberate skip with L1+L2+R1+R2+Start; configurable 5-second minimum flight; NTSC-U tested, PAL adapter included but not tested in-game |
 
-These mods need no modified OpenRAC client. Skill Points works offline without
+These two standalone mods are verified on the official **OpenRAC 0.10.0 Windows NTSC-U** client. See [the exact compatibility evidence](docs/validation/openrac-0.10.0.json). They need no modified OpenRAC client. Skill Points works offline without
 an account or server submissions. It stores its own progress independently from
 the game's memory cards. Load it after other level-loading hooks, including XP,
 if managing `plugins.json` by hand. Full details and validation limits are in the
@@ -48,8 +48,8 @@ installable cards.
 |---|---|---|
 | [Revolverator](revolverator/README.md) |0.2.0 preview | Additional weapon, native inventory/API v2, automatic asset staging |
 | [Weapon Experience](weapon-xp/README.md) |0.6.3-arsenal | Optional matching API v4 progression companion |
-| [Skill Points: RetroAchievements](skill-points-ra/README.md) |0.1.2 | Native menu, offline rules and read-only/event C API v1 |
-| [Cinematic Journeys](cinematic-journeys/README.md) |0.1.0 | Cutscene protection and configurable original flight animation |
+| [Skill Points: RetroAchievements](skill-points-ra/README.md) |0.1.3 | Native menu, offline rules and read-only/event C API v1 |
+| [Cinematic Journeys](cinematic-journeys/README.md) |0.1.1 | Cutscene protection and configurable original flight animation |
 | [Arsenal compatibility](arsenal-compat/README.md) |0.1.0 | Private bundled native-hook utility |
 | [File overlay](arsenal-file-overlay/README.md) |0.1.0 | Private bundled read-only manifest alias utility |
 

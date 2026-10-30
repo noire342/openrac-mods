@@ -2,7 +2,7 @@
   "format": 2,
   "id": "cinematic-journeys",
   "name": "Cinematic Journeys",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "noire342",
   "description": "Protects movies and cutscenes from accidental skipping. Hold L1+L2+R1+R2 and press Start to skip deliberately. Gives the original interplanetary ship animation a configurable minimum duration.",
   "license": "GPL-3.0-or-later",

@@ -46,7 +46,7 @@ portable ZIP and helper scripts are historical development workflows.
 ## Skill Points: RetroAchievements
 
 Add the repository root in Mods or import
-`skill-points-ra-0.1.2-windows-x86_64.zip` from its release. Enable the mod and
+`skill-points-ra-0.1.3-windows-x86_64.zip` from its release. Enable the mod and
 use Pause → Goodies → Skill Points (Italian: Pausa → Premi → Punti stile).
 Goodies is available directly below Options from the beginning of the campaign.
 The Kerwan timed obstacle challenge defaults off; enable it in the mod settings
@@ -57,7 +57,7 @@ submitted to RetroAchievements. This release supports NTSC-U only.
 ## Cinematic Journeys
 
 Add the repository root in Mods or import
-`cinematic-journeys-0.1.0-windows-x86_64.zip`. Enable it and launch normally.
+`cinematic-journeys-0.1.1-windows-x86_64.zip`. Enable it and launch normally.
 Hold L1+L2+R1+R2 and press Start to skip deliberately. Ordinary menu/pause Start
 is retained. The flight minimum defaults to five seconds and can be changed
 from 0 to 30 in the launcher's mod settings. Development `--skip-movies` bypasses

@@ -78,3 +78,33 @@ jobs:
         with:
           name: test-results-${{ matrix.mod }}-${{ matrix.os }}
           path: build/Testing/Temporary/LastTest.log
+  standalone-current-sdk:
+    name: ${{ matrix.mod }} / SDK 1.10.1 / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-24.04]
+        mod: [skill-points-ra, cinematic-journeys]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Fetch standalone pinned SDK
+        run: python ${{ matrix.mod }}/tools/fetch_sdk.py
+      - name: Configure standalone
+        run: cmake -S ${{ matrix.mod }} -B build-current -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+      - name: Build
+        run: cmake --build build-current --config Release --parallel
+      - name: Test
+        run: ctest --test-dir build-current -C Release --output-on-failure
+      - name: Package from clean build
+        run: python ${{ matrix.mod }}/tools/package_delivery.py --build build-current --output dist-current
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: current-sdk-${{ matrix.mod }}-${{ matrix.os }}
+          path: |
+            build-current/Testing/Temporary/LastTest.log
+            dist-current/

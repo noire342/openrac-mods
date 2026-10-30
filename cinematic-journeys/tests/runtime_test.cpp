@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "check.hpp"
+#include "guest_memory.hpp"
 #include "runtime.hpp"
 using namespace cinematic;
 
@@ -52,7 +53,9 @@ void log(openrac_mod*, int, const char*) {}
 
 void original(std::uint32_t, std::uint32_t report, int) {
     ++calls;
-    seen = get<std::uint16_t>(report);
+    if (report <= ram.size() - 2) {
+        seen = get<std::uint16_t>(report);
+    }
 }
 
 void* function(const char*) {
@@ -98,12 +101,20 @@ std::uint16_t poll(Runtime& runtime, std::uint16_t raw, bool game = true, int po
 }  // namespace
 
 int main() {
+    CHECK(report_range(0xE00FFF00u, 18));  // the port's translated C stack
+    CHECK(report_range(0xE02FFF00u, 18));  // the port's guest statics
+    CHECK(!report_range(0xDFFFFFFFu, 18));
+    CHECK(!report_range(0xE0FFFFFFu, 18));
+    CHECK(!report_range(0xFFFFFFFFu, 18));
     for (const auto& version : discs) {
         disc = &version;
         level = 1;
         protect = true;
         duration = 5;
         openrac_api api{};
+        api.size = sizeof(api);
+        api.api_major = 1;
+        api.api_minor = 1;
         api.game = "rac1";
         api.version = disc->version;
         api.memory = ram.data();
@@ -117,7 +128,30 @@ int main() {
         FakeClock clock;
         Runtime runtime(api, nullptr, clock);
         runtime.load();
+        auto bad = api;
+        bad.size = 4;
+        bool refused = false;
+        try {
+            Runtime invalid(bad, nullptr, clock);
+        } catch (const std::exception&) {
+            refused = true;
+        }
+        CHECK(refused);
+        bad = api;
+        bad.setting_float = nullptr;
+        refused = false;
+        try {
+            Runtime invalid(bad, nullptr, clock);
+        } catch (const std::exception&) {
+            refused = true;
+        }
+        CHECK(refused);
         runtime.set_original(reinterpret_cast<void*>(original));
+        const auto before_calls = calls;
+        runtime.process(disc->pad, 0xffffffffu, 18);
+        runtime.process(disc->pad, 0x02000000u - 1, 18);
+        runtime.process(disc->pad, report_address, -1);
+        CHECK(calls == before_calls + 3);  // untouched forwarding, no out-of-bounds access
         mode(0);
         ship(8, 0, 0);
         poll(runtime, 0xfff7);

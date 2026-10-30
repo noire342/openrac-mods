@@ -10,7 +10,10 @@
 | `Menu` | Ordine 30 originali + 148 nuovi e navigazione circolare |
 | `NativeUi` | Collegamento ai pannelli e ai renderer originali |
 | `PauseAccess` | Visibilità e navigazione del pannello Premi già presente sotto Opzioni |
-| `Runtime` | Composizione delle dipendenze, ciclo del gioco e servizio C |
+| `GameMemory` (`game_memory.hpp`) | Letture degli operandi RA limitate alla RAM PS2 |
+| `Runtime` (`runtime.*`) | Composizione delle dipendenze e ciclo del gioco |
+| Servizio C (`service.*`) | Catalogo, totali ed eventi attraverso ABI v1 |
+| `plugin.cpp` | Validazione API, caricamento e inoltro degli hook |
 
 Il modello e la logica dei progressi non dipendono dall'SDK. `IMemory` consente test
 con memoria sintetica e un adattatore di gioco separato. L'API pubblica usa strutture
@@ -79,3 +82,8 @@ provenienza sono in `data/provenance.json`. Rcheevos e SDK hanno versioni fissat
 
 Per aggiornare il set occorre rieseguire generazione e test e verificare gli indirizzi
 sul port; il gioco non scarica aggiornamenti delle regole in modo automatico.
+
+La 0.1.3 verifica il prefisso API usato tramite `size`, versione e puntatori dei servizi;
+non confronta `sizeof(openrac_api)` dell’SDK corrente con un client precedente.
+SDK 1.10.1 compila ancora una DLL API 1.1. Il generatore del relay accetta
+`--source` e `--revision`: nessun percorso privato o checkout fratello è richiesto.

@@ -47,10 +47,34 @@ The two standalone modules use ordinary SDK hooks and do not require those utili
 
 | Module | Scope |
 |---|---|
-| Skill Points: RetroAchievements 0.1.2 | R&C1 NTSC-U (SCUS_971.99), generic mod API 1.1; offline sidecar profile; 178-rule snapshot from 2026-10-28 |
-| Cinematic Journeys 0.1.0 | PAL and NTSC-U adapters, generic mod API 1.1; native evidence on Windows NTSC-U only |
+| Skill Points: RetroAchievements 0.1.3 | R&C1 NTSC-U (SCUS_971.99), generic mod API 1.1; offline sidecar profile; 178-rule snapshot from 2026-10-28 |
+| Cinematic Journeys 0.1.1 | PAL and NTSC-U adapters, generic mod API 1.1; native evidence on Windows NTSC-U only |
 
 Their preserved native receipts use OpenRAC 0.9.0/reference commit `2a457b30`.
 They do not establish an exhaustive campaign or every combination with the current
 Revolverator preview. The Skill Points adapter must load after other
 `rac1.level.load_gameplay` hooks; see its [architecture](../skill-points-ra/docs/ARCHITECTURE.md).
+
+## OpenRAC 0.10.0 verification for the standalone mods
+
+Skill Points 0.1.3 and Cinematic Journeys 0.1.1 target the existing API 1.1
+prefix and build with pinned SDK 1.10.1. The official 0.10.0 client exposes
+API 1.10. The loader validates the services actually used, accepting a larger
+compatible API without depending on its optional tail.
+
+The checked release is [launcher-v0.10.0](https://github.com/OpenRAC/OpenRAC/releases/tag/launcher-v0.10.0),
+commit `d015ea1c6925de90b4be91ddb349af83361d9d4b`. Its unchanged Windows NTSC-U
+EXE has SHA-256 `f70a9f2bc6de39ed42b9f9f64fc5cea98ffad8b8bd7795c7adfb965a9875c95b`.
+The installer was extracted into an isolated directory; no replacement client was built.
+Machine-readable results are in [the receipt](validation/openrac-0.10.0.json).
+
+`tools/check_openrac_010.py --source /path/to/OpenRAC` checks the exact tag,
+all 19 Skill Points callback maps and both discs' hook signatures. Host tests
+cover both SDK 1.3 and SDK 1.10.1. Native NTSC scenarios use empty cards and a
+separate local achievement profile. The tested game's files are the player's own.
+
+This does not certify PAL gameplay, other native platforms, completion of every
+achievement, every story scene, online co-op, or the older Revolverator preview
+on 0.10.0. In particular, synchronized co-op `play_skip` requests and the command
+line `--skip-movies` bypass ordinary pad filtering. See each module's compatibility
+notes for scope and replay instructions.

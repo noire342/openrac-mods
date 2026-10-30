@@ -7,9 +7,16 @@ fotografato il 28 ottobre 2026: **178 obiettivi, 667 punti**. I 30 punti stile o
 corrispondono a 30 achievement del set; vengono mantenuti senza duplicati e affiancati
 da 148 nuove sfide.
 
+## OpenRAC 0.10.0
+
+La **0.1.3** è verificata sul client ufficiale Windows NTSC-U 0.10.0. Mantiene
+il profilo dei progressi e l’API C v1 della 0.1.2. Il codice separa ingresso della
+DLL, accesso alla memoria, ciclo di gioco e servizio pubblico; il caricamento
+rifiuta API incomplete prima di registrare callback. Vedi [compatibilità e prove](docs/COMPATIBILITY.md).
+
 ## Installazione e uso
 
-Importa `skill-points-ra-0.1.2-windows-x86_64.zip` dal menu **Mods** del launcher e attiva
+Importa `skill-points-ra-0.1.3-windows-x86_64.zip` dal menu **Mods** del launcher e attiva
 **Punti stile: RetroAchievements**. In gioco apri **Pausa → Premi → Punti stile**:
 la voce **Premi**, subito sotto **Opzioni**, è disponibile fin dall'inizio della partita.
 Non occorre completare la storia o sbloccare gli extra per consultare gli obiettivi.
@@ -83,7 +90,7 @@ sono separati e testabili. Vedi [API.md](docs/API.md) e
 ## Compilazione
 
 Il sorgente comprende il motore MIT rcheevos, fissato al commit
-`bbc79b58a5a2a0b98dfbf2be6ca9e42c764661ce`. L'SDK OpenRAC 1.3.0 viene verificato
+`bbc79b58a5a2a0b98dfbf2be6ca9e42c764661ce`. L'SDK OpenRAC 1.10.1 viene verificato
 tramite SHA-256 da `sdk.lock`.
 
 ```powershell

@@ -13,8 +13,8 @@ ctest --test-dir build -C Release --output-on-failure
 `BUILD_WEAPON_XP` builds the 0.6.3-arsenal companion; `BUILD_REVOLVERATOR` builds
 additive 0.2. `BUILD_ARSENAL_COMPAT` defaults to the Revolverator option and builds
 the provider on Windows x64, or only its portable core/tests on Linux.
-The combined suite contains **41 groups: 19 Revolverator, 13 XP, 1 hook provider,
-1 file overlay, 5 skill points and 2 cinematics**.
+The combined suite contains **42 groups: 19 Revolverator, 13 XP, 1 hook provider,
+1 file overlay, 5 skill points and 3 cinematics**.
 Disable individual options to build components separately.
 
 `BUILD_SKILL_POINTS_RA` and `BUILD_CINEMATIC_JOURNEYS` default on and are
@@ -59,3 +59,9 @@ Preview bundles are delivered through Releases after their own hash/native
 checks. A source build does not establish gameplay behavior. The stable XP 0.6.1
 archives and historical receipts remain unchanged; previous engine-bridge
 results are not silently transferred to the stock-client combination.
+
+The two standalone module SDK locks now pin 1.10.1. Their CMake defaults read
+those locks; the monorepo SDK 1.3 baseline remains supported. A separate CI matrix
+builds, tests and packages both standalone modules with 1.10.1 on Windows/Linux.
+Run `python tools/check_openrac_010.py --source /path/to/OpenRAC` to reproduce
+the exact release map/hook check without modifying the OpenRAC checkout.

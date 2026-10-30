@@ -1,0 +1,80 @@
+{
+  "schema": 1,
+  "verifiedDate": "2026-10-30",
+  "openrac": {
+    "tag": "launcher-v0.10.0",
+    "commit": "d015ea1c6925de90b4be91ddb349af83361d9d4b",
+    "version": "0.10.0",
+    "runtimeApi": "1.10",
+    "platform": "windows-x86_64",
+    "disc": "SCUS_971.99",
+    "exeSha256": "f70a9f2bc6de39ed42b9f9f64fc5cea98ffad8b8bd7795c7adfb965a9875c95b",
+    "installerMsiSha256": "c48e93652271c6ac5f5def411991ea67545d5fca331099441f2f343109029c23",
+    "unmodifiedOfficialExecutable": true
+  },
+  "sdk": {
+    "version": "1.10.1",
+    "archiveSha256": "5d7455a9c0e7bb6067ee514565cbce9abf12e132f9eb5053d8d3618c16084470",
+    "modTargetApi": "1.1"
+  },
+  "host": {
+    "currentSdkGroupsPassed": 8,
+    "baselineSdkVersion": "1.3.0",
+    "baselineCombinedGroupsPassed": 42,
+    "cleanStandaloneSourceBuilds": {
+      "skill-points-ra": 5,
+      "cinematic-journeys": 3
+    },
+    "all19CallbackMapsMatchRelease": true,
+    "palAndNtscHookSignaturesMatchRelease": true
+  },
+  "skillPoints": {
+    "version": "0.1.3",
+    "dllSha256": "34f2ed5699ab51cb101456f566d288fb0c71159bedc8727cfbb86ea60794c824",
+    "nativeLoaded": true,
+    "normalControllerPauseGoodiesSkillPointsRoute": true,
+    "qaPageOrSelectionWritesUsed": false,
+    "pauseVisits": 5,
+    "storyCompleted": false,
+    "kerwanOnCount": 178,
+    "kerwanOffCount": 177,
+    "defaultKerwanEnabled": false,
+    "controlledNativeUnlock": 253912,
+    "controlledUnlockMethod": "Original Item_Give(Pyrocitor), isolated RAM/cards/profile; not a manual campaign unlock",
+    "profileWritten": true,
+    "profileReloadVerifiedHost": true,
+    "publicCAbi": 1,
+    "newPanelsRegistered": false
+  },
+  "cinematicJourneys": {
+    "version": "0.1.1",
+    "dllSha256": "438f4418365165f6eff9ec451dc764a8827257aad991c420c606aed96428b3ab",
+    "nativeLoaded": true,
+    "movieSector": 40165,
+    "startOnlyBlocked": true,
+    "deliberateFullChordSkips": true,
+    "minimumFlightSeconds": 5,
+    "finalPassDelayedAtSeconds": [
+      3.966
+    ],
+    "arrivalPlanet3Verified": true,
+    "travelRequestedByFixture": true,
+    "manualMapNavigationVerified": false
+  },
+  "limits": {
+    "all178ManuallyCompleted": false,
+    "palNativeVerified": false,
+    "allStoryScenesVerified": false,
+    "onlineCoopVerified": false,
+    "otherPlatformsNativeVerified": false,
+    "revolverator010Verified": false,
+    "personalSavesUsed": false,
+    "accountCredentialsIncluded": false,
+    "onlineAchievementSubmission": false
+  },
+  "evidence": {
+    "summary": "openrac-0.10.0-native.txt",
+    "script": "tools/run_standalone_native.ps1",
+    "sourceContractCheck": "tools/check_openrac_010.py"
+  }
+}

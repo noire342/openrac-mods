@@ -1,6 +1,11 @@
 # Native integration evidence
 
-Reference checkout: OpenRAC 2a457b30426ebf01caf40b2831f27ae647d7ad4a.
+Initial implementation reference: OpenRAC 2a457b30426ebf01caf40b2831f27ae647d7ad4a.
+
+Current release verification: official `launcher-v0.10.0`, commit
+`d015ea1c6925de90b4be91ddb349af83361d9d4b`. See [compatibility](COMPATIBILITY.md)
+for exact client/SDK identity, current test cases and explicit limits. Historical
+0.9.0 receipts are retained as historical evidence, not relabelled as 0.10.0.
 
 The only game hook is the stable `rac1.pad.process_report`, `void(u32,u32,i32)`.
 SDK `on_pad` runs before `skip_after_mods`; the movie player reads on_pad reports directly, without Pad_ProcessReport. Ordinary menus/gameplay reach Pad_ProcessReport after automatic skip expansion. This allows removing unauthorized Start before automatic expansion and restoring it only for ordinary gameplay. Movie detection does not rely on guessing a game-mode value. Sources: `port/game/common/lib/pad.c`, `program/game_host.cpp`, `program/movie.cpp`, `frontend/input.cpp`.

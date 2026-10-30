@@ -1,4 +1,4 @@
-# Cinematic Journeys 0.1.0
+# Cinematic Journeys 0.1.1
 
 Mod indipendente per Ratchet & Clank / OpenRAC, PAL e NTSC-U.
 
@@ -13,17 +13,24 @@ Installa lo ZIP Windows dal menu Mods del launcher e abilita Cinematic Journeys.
 
 La protezione usa i pulsanti logici PS2: valgono anche le corrispondenti associazioni della tastiera. Il comando di sviluppo `--skip-movies` salta i filmati prima che il giocatore della mod riceva input e non e coperto. Altre mod che riscrivono i comandi dopo questa possono cambiare il risultato; mantieni Cinematic Journeys dopo le mod di rimappatura.
 
+## OpenRAC 0.10.0
+
+La 0.1.1 è verificata sul client ufficiale Windows NTSC-U 0.10.0. Mantiene API 1.1,
+con build e test anche su SDK 1.10.1. Aggiunge controlli dei servizi richiesti,
+dei report nel guest stack del port e del caricamento fallito. I tre gruppi di test
+coprono policy, runtime e ciclo di caricamento. [Compatibilità e riproduzione](docs/COMPATIBILITY.md).
+
 ## Struttura
 
 `policy.*` contiene regole e temporizzazione senza SDK; `discs.hpp` concentra le differenze PAL/NTSC; `runtime.*` adatta memoria, clock e ordine dei callback; `plugin.cpp` gestisce solo caricamento e callback C. Il clock viene iniettato, quindi i test non aspettano secondi reali. Nessuna dipendenza dalle altre mod di questa cartella di lavoro.
 
 ## Build
 
-SDK ufficiale OpenRAC mod SDK 1.3.0. Windows x64, CMake e Visual Studio:
+SDK ufficiale OpenRAC mod SDK 1.10.1. Windows x64, CMake e Visual Studio:
 
 ```powershell
 python tools/fetch_sdk.py
-cmake -S . -B build -DOPENRAC_SDK="C:/path/openrac-mod-sdk-1.3.0"
+cmake -S . -B build -DOPENRAC_SDK="C:/path/openrac-mod-sdk-1.10.1"
 cmake --build build --config Release
 ctest --test-dir build -C Release --output-on-failure
 ```
