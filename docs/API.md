@@ -70,6 +70,20 @@ client hash; it is not a general multi-mod hook-chain service. The complete
 [provider contract](../arsenal-compat/README.md) documents state, errors, teardown
 and whole-stock-save-wrapper semantics.
 
+## Private asset-file utility
+
+The MIT [file_overlay_api.h](../arsenal-file-overlay/include/file_overlay_api.h)
+exposes standalone install/remove/last_error/stats exports without requiring
+SDK mod registration. The normal weapon package loads it from its own DLL
+directory after staging absolute-path manifest aliases. The helper has no
+independent launcher entry in the repository index.
+
+`NativeAssetBundle` owns only a unique cache directory and known staged files.
+`NativeCompatibilityModules` owns private DLL handles/initialization;
+`NativeRuntimeHooks` owns its consumer claim and transaction. Teardown restores
+session state, removes native hooks, removes the file alias, releases helpers,
+then cleans owned staged files. Original asset manifests remain read-only.
+
 ## Composition
 
 Declare dependencies/load order in each consumer manifest. Restore a native

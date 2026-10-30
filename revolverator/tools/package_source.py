@@ -10,7 +10,7 @@ from pathlib import Path
 import zipfile
 
 ROOT_FILES = {'CMakeLists.txt', 'openrac-mod.json', 'README.md', 'LICENSE', 'COPYING'}
-ROOT_DIRS = {'src', 'include', 'docs', 'tests', 'tools', 'examples'}
+ROOT_DIRS = {'src', 'include', 'docs', 'tests', 'tools', 'examples', 'third_party'}
 SUFFIXES = {'.c', '.cpp', '.h', '.hpp', '.py', '.ps1', '.md', '.json', '.txt', '.cmake'}
 PRIVATE_ASSET_NAMES = {'revolverator_hd_icon_data.hpp'}
 

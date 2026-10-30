@@ -1,0 +1,167 @@
+{
+  "format": 1,
+  "date": "2026-10-30",
+  "scope": "Actual Windows NTSC-U self-contained native package on installed official OpenRAC 0.9.0, commit77a2f052",
+  "native_gameplay_verified": true,
+  "full_campaign_verified": false,
+  "runtime_sha256": "b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081",
+  "windows_dll_sha256": "ebe140838d24ebb4707b74fc06ad94a935c9ab135c885ad87a78d9f2081fdef5",
+  "compat_dll_sha256": "077a7306b71ac5f35776b74c261cceb1ff0c1144961a847696eabc961c71d55a",
+  "overlay_dll_sha256": "aec87cbfd6eb3133dbb51e62edbce7fae46081355dcd4b5b5aa458876860ca14",
+  "weapon_xp_dll_sha256": "68205f76fea997336d4ee01fcb7c2812a2fdd32b6d79d3b67cc51a8b162cb67c",
+  "installation": {
+    "standard_native_package": true,
+    "bundled_utilities": true,
+    "external_utility_mods": false,
+    "custom_levels_argument": false,
+    "external_asset_pack": false
+  },
+  "replacement_client_used": false,
+  "client_executable_included": false,
+  "original_files_unchanged": 61,
+  "starting_ammunition": 20,
+  "capacity": 20,
+  "commerce_checks_passed": 24,
+  "earned_xp": {
+    "revolverator": 39,
+    "walloper": 39,
+    "separate_totals": true,
+    "xp_seeded": false
+  },
+  "save_reload": {
+    "captured_ammo": 7,
+    "changed_while_pending": 3,
+    "restored_ammo": 7,
+    "sidecar_crc_and_native_fingerprint": true,
+    "original_walloper_owned": false
+  },
+  "menus": {
+    "native_grid": [
+      4,
+      5
+    ],
+    "weapons_visible": 16,
+    "separate_quick_keys": [
+      18,
+      65554
+    ],
+    "preview_and_cartridge_hud_inspected": true
+  },
+  "trial": {
+    "frames": 900,
+    "helper_plugins": false,
+    "no_card": true,
+    "control_frame": 521
+  },
+  "scenarios": {
+    "trial": {
+      "fixture": "qa-vendor-arsenal-native-package-smoke-01",
+      "frames": 900,
+      "log_sha256": "c1964123c63a5d1e87b73c999200138474a2dd7e4057f3a61a0286585e3aac9e",
+      "loaded_mods": [
+        {
+          "id": "weapon-xp",
+          "version": "0.6.3-arsenal"
+        },
+        {
+          "id": "revolverator",
+          "version": "0.2.0"
+        }
+      ],
+      "native_gameplay_verified": true
+    },
+    "vendor": {
+      "fixture": "qa-vendor-arsenal-native-package-vendor-01",
+      "frames": 2400,
+      "log_sha256": "f732175504d9c82a26e34d6329e8a1fe943db4cb0da9b08428421e7f30e15a13",
+      "loaded_mods": [
+        {
+          "id": "revolverator",
+          "version": "0.2.0"
+        },
+        {
+          "id": "arsenal-commerce-probe",
+          "version": "0.1.0"
+        }
+      ],
+      "native_gameplay_verified": true
+    },
+    "ammunition": {
+      "fixture": "qa-vendor-arsenal-native-package-ammunition-01",
+      "frames": 2400,
+      "log_sha256": "7fe5e85cdaf4b2856b9a04c7d22eec46aefaac8ad209bf6a46d8b2eeb2b83253",
+      "loaded_mods": [
+        {
+          "id": "revolverator",
+          "version": "0.2.0"
+        },
+        {
+          "id": "arsenal-commerce-probe",
+          "version": "0.1.0"
+        }
+      ],
+      "native_gameplay_verified": true
+    },
+    "earned_xp": {
+      "fixture": "qa-vendor-arsenal-native-package-xp-01",
+      "frames": 1800,
+      "log_sha256": "63b9e701901c5e394018af7374900db9656b462fdf52f7d9677ab47aa4814dcd",
+      "loaded_mods": [
+        {
+          "id": "weapon-xp",
+          "version": "0.6.3-arsenal"
+        },
+        {
+          "id": "revolverator",
+          "version": "0.2.0"
+        },
+        {
+          "id": "arsenal-xp-probe",
+          "version": "0.1.0"
+        }
+      ],
+      "native_gameplay_verified": true
+    },
+    "menus": {
+      "fixture": "qa-vendor-arsenal-native-package-menu-01",
+      "frames": 2400,
+      "log_sha256": "4efda62eca4f63c183b4bbdf9ed8cc4d508f3829708d890a90a386551e98e146",
+      "loaded_mods": [
+        {
+          "id": "weapon-xp",
+          "version": "0.6.3-arsenal"
+        },
+        {
+          "id": "revolverator",
+          "version": "0.2.0"
+        },
+        {
+          "id": "revolverator-probe",
+          "version": "0.1.0"
+        }
+      ],
+      "native_gameplay_verified": true
+    },
+    "save_reload": {
+      "fixture": "qa-vendor-arsenal-native-package-save-01",
+      "frames": 2200,
+      "log_sha256": "e2f4b169f0ee7498a1ab588183a86f778a334755272d40492308267d28780150",
+      "loaded_mods": [
+        {
+          "id": "revolverator",
+          "version": "0.2.0"
+        },
+        {
+          "id": "arsenal-save-probe",
+          "version": "0.1.0"
+        }
+      ],
+      "native_gameplay_verified": true
+    }
+  },
+  "limitations": [
+    "Not a complete campaign or all-boss/all-mod test.",
+    "PAL, other operating systems and other client executable hashes are unsupported.",
+    "New-game-plus and every save slot have not been exercised in this stock-client combination."
+  ]
+}

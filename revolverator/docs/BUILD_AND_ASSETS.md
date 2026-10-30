@@ -6,7 +6,7 @@ ISO. I sorgenti pubblicabili non includono il trapano o le texture originali.
 
 ## Plugin
 
-Dal checkout `rac1-mods`, con CMake, un compilatore C++17 e SDK OpenRAC 1.3:
+Dal checkout `rac1-mods`, con CMake, un compilatore C++20 e SDK OpenRAC 1.3:
 
 ```powershell
 cmake -S revolverator -B <build> -DOpenRACMod_DIR=<sdk>/cmake -DBUILD_TESTING=ON
@@ -20,19 +20,18 @@ coprono controller, presa/posa, munizioni, rotore, registro, sidecar, menu, alia
 e consumer XP; non sostituiscono una prova nel gioco. Su Linux il target usa
 `${CMAKE_DL_LIBS}` e un export esplicito per `openrac_revolverator_query`.
 
-## Client e provider richiesti
+## Client e utility integrate
 
-La 0.2 usa il client ufficiale OpenRAC Windows x64 NTSC-U invariato, base
-`77a2f052`, SHA256
-`b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081`.
-La mod Arsenal Compatibility 0.1.0 si carica per prima, risolve 30 funzioni via
-`api->function` e prepara detour disabilitati con MinHook 1.3.4. La loro
-attivazione richiede un consumer unico e un commit completo; gli altri 24 hook
-Revolverator rimangono registrati nell'SDK ufficiale.
+La mod usa il client ufficiale Windows x64 NTSC-U invariato (hash B7F3762A…94081).
+I due helper DLL sono inclusi nella directory del plugin e inizializzati dalla
+mod, senza card esterne. `NativeAssetBundle` legge 19 manifest originali e crea
+copie proprie con percorsi assoluti agli asset del pacchetto. L'alias esatto
+in sola lettura di KernelBase CreateFileW permette il caricamento senza cambiare
+`--levels`, aggiungere `--mods` o sostituire l'eseguibile.
 
-Non serve una patch engine, una ricompilazione del client o un EXE sostitutivo.
-La vecchia patch del bridge resta soltanto documentazione storica. Per XP
-opzionali usare il companion `weapon-xp 0.6.3-arsenal` con API v4.
+Il reader JSON upstream GPL rimane in `third_party/openrac` con NOTICE. Serializer,
+staging, discovery e cleanup sono adapter separati, testati con root esplicite.
+Gli XP opzionali richiedono il companion 0.6.3-arsenal/API v4.
 
 ## Asset aggiuntivi
 
@@ -65,17 +64,14 @@ locale configurare `REVOLVERATOR_HD_ICON_DIR`; senza di esso rimane il fallback
 nativo. Il clone 128×128 deve mantenere il footprint HUD 32×32. Vedi
 [contratto dell'icona](HD_ICON_INTEGRATION.md).
 
-## Preview portatile senza client
+## Pacchetto nativo del launcher
 
-`package_private_bundle.py` richiede `--compat-plugin` e i corrispondenti
-`--compat-source`; contiene plugin, sorgenti, script e asset companion.
-`--runtime` verifica in sola lettura un client ufficiale installato, ma non
-archivia mai l'EXE. `--bridge-patch`, se usato, è solo riferimento storico.
-Per XP indicare `--weapon-xp` e `--weapon-xp-source` corrispondenti.
+La release usa `revolverator-0.2.0-windows-x86_64.zip` e SHA256SUMS, con manifest,
+DLL principale, utility private, asset companion e notices. Il root index della
+repository elenca solo le due mod pubbliche. Le utility restano dipendenze
+interne del pacchetto, anche se i rispettivi sorgenti/test sono separati.
 
-`Avvia-Prova.cmd` usa una prova Novalis vuota e isolata con 20 cariche.
-L'avvio normale mantiene `.profile`; `-StartUnlocked` è opzionale, mentre il
-setting `start_unlocked` rimane disattivato per default. `-PrepareOnly` prepara
-manifest e percorsi senza avviare il gioco. Hash, sorgenti e ricevuta nativa
-devono riferirsi esattamente ai plugin distribuiti; la preparazione non è una
-prova nel gioco e la preview rimane distinta dalla versione definitiva.
+I corresponding sources comprendono il reader GPL, stager, helper e dipendenze
+MinHook; l'eventuale header HD usato dal binario deve essere fornito con i suoi
+input corrispondenti separatamente dal normale snapshot Git privo di art del gioco.
+I precedenti script di avvio e ZIP esterni sono workflow storici di sviluppo.

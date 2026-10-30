@@ -9,6 +9,8 @@
 #include "native_arsenal_save.hpp"
 #include "native_arsenal_xp.hpp"
 #include "native_runtime_hooks.hpp"
+#include "native_asset_bundle.hpp"
+#include "native_compatibility_modules.hpp"
 #include "revolverator_api.h"
 #include <memory>
 #include <exception>
@@ -105,8 +107,10 @@ struct Session {
   presentation.frame(f.equipped);
  }
 };
-std::unique_ptr<Session> session;
+std::unique_ptr<NativeAssetBundle> weapon_assets;
+std::unique_ptr<NativeCompatibilityModules> compatibility_modules;
 std::unique_ptr<NativeRuntimeHooks> runtime_hooks;
+std::unique_ptr<Session> session;
 using U32=unsigned;
 using Update=void(*)(U32);
 using Pad=void(*)(U32,U32,int);
@@ -510,6 +514,8 @@ extern "C" OPENRAC_MOD_EXPORT const revolverator_api_v1* openrac_revolverator_qu
 extern "C" OPENRAC_MOD_EXPORT int openrac_mod_load(const openrac_api* api,openrac_mod* mod){
  try{
   if(!api||!api->memory||!api->game||!api->version||std::strcmp(api->game,"rac1")||std::strcmp(api->version,"ntsc"))throw std::runtime_error("Revolverator 0.2.0 requires Ratchet & Clank NTSC-U and Arsenal Compatibility");
+  weapon_assets=std::make_unique<NativeAssetBundle>();
+  compatibility_modules=std::make_unique<NativeCompatibilityModules>(api,mod,weapon_assets->configuration());
   runtime_hooks=std::make_unique<NativeRuntimeHooks>(api,mod);
   session=std::make_unique<Session>(api,mod);
   hook("rac1.level.load_gameplay","u32(i32)",reinterpret_cast<void*>(load),reinterpret_cast<void**>(&load_original));
@@ -563,6 +569,6 @@ extern "C" OPENRAC_MOD_EXPORT int openrac_mod_load(const openrac_api* api,openra
   runtime_hooks->commit();
   api->log(mod,OPENRAC_LOG_INFO,"Revolverator 0.2.0: additive logical arsenal, independent Walloper, native menus and sidecar saves, copy-only API v2");
   return 0;
- }catch(const std::exception& e){if(api&&api->fail)api->fail(mod,e.what());session.reset();runtime_hooks.reset();return 1;}
+ }catch(const std::exception& e){if(api&&api->fail)api->fail(mod,e.what());session.reset();runtime_hooks.reset();compatibility_modules.reset();weapon_assets.reset();return 1;}
 }
-extern "C" OPENRAC_MOD_EXPORT void openrac_mod_unload(){session.reset();runtime_hooks.reset();}
+extern "C" OPENRAC_MOD_EXPORT void openrac_mod_unload(){session.reset();runtime_hooks.reset();compatibility_modules.reset();weapon_assets.reset();}

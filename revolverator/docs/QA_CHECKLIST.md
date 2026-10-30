@@ -8,7 +8,8 @@ la resa nel gioco.
 ## Client ufficiale e provider
 
 - [ ] EXE installato invariato, SHA256 stock noto; nessun EXE nello ZIP.
-- [ ] Arsenal Compatibility prima di XP/Revo; 30 binding preparati e commit completo.
+- [ ] Solo la card Revo, XP opzionale: utility caricate privatamente; 30 binding e commit completo.
+- [ ] Asset compresi, 19 manifest copiati in cache propria; originali immutati.
 - [ ] Build non supportata, firma errata o binding mancante rifiutati senza hook attivi.
 - [ ] Teardown possiede solo i propri detour; failure conserva moduli e diagnostica.
 - [ ] Save_Restore/NewGame verificati al confine completo dei wrapper stock.
@@ -68,6 +69,6 @@ la resa nel gioco.
 - [ ] HD e fallback mantengono il footprint nativo e la corretta identità.
 - [ ] Carica e XP nel riquadro esistente, senza coprire contatore o altri elementi.
 - [ ] Verificare 4:3, 16:9, 16:10, lingue, menu, viaggio e livelli con poca memoria.
-- [ ] ZIP preview 0.2 estratto e avviato con client ufficiale e provider compatibile e percorsi isolati.
+- [ ] ZIP nativo importato dal launcher, senza script o card utility esterne.
 - [ ] Nessuna ISO, RAM, campagna, sidecar o asset estratto nel pacchetto sorgente.
 - [ ] Ricevuta finale con hash e soli esiti osservati; nessuna pubblicazione automatica.

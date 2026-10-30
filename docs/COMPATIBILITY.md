@@ -1,40 +1,41 @@
-# Stock-client compatibility
+# Single-package stock-client compatibility
 
-The current additive preview uses the official **unchanged** OpenRAC Windows
-x64 R&C1 NTSC-U executable. No custom client build is required or shipped.
+The current native archive runs as one ordinary Revolverator mod in the official
+unchanged Windows x64 R&C1 NTSC-U client. Utility DLLs and assets are included
+privately in that package; they do not create extra launcher cards.
 
-| Component | Supported input |
+| Input/component | Requirement |
 |---|---|
-| Stock OpenRAC |0.9.0, commit `77a2f05257c5dfc2ab9b1ec52a84fc78e8f64225` |
-| Executable SHA256 | `b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081` |
-| Arsenal Compatibility |0.1.0, Windows x64, service API v1 |
-| Revolverator |0.2.0, generic mod API1.1, inventory API v2 |
-| Optional Weapon Experience |0.6.3-arsenal with API v4; stable 0.6.1 is not the matching companion |
+| Official client |0.9.0, commit `77a2f05257c5dfc2ab9b1ec52a84fc78e8f64225` |
+| EXE SHA256 | `b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081` |
+| Revolverator |0.2.0, generic mod API 1.1; public inventory API v2 |
+| Optional XP |0.6.3-arsenal with API v4; loaded before the weapon |
+| Bundled utility DLLs | arsenal_compat.dll 0.1.0 and arsenal_file_overlay.dll 0.1.0 |
 
-Load **arsenal-compat → optional weapon-xp → revolverator**. The Revo manifest
-lists only its 24 ordinary SDK hook requirements. Its 30 additional boundaries
-are declared separately under `extensions.noire342.arsenal.compatibilityHooks`
-and supplied by the compatibility provider's versioned API.
+The Revo manifest lists only 24 ordinary SDK hooks. Thirty extra boundaries stay
+under `extensions.noire342.arsenal.compatibilityHooks`; private bundled utilities
+are described separately by `bundledUtilities`. The consumer discovers its own
+DLL directory and uses `LoadLibraryExW` with restricted search flags. No global
+SDK table replacement or client file patch is performed.
 
-The [provider](../arsenal-compat/README.md) hashes the running executable,
-resolves all 30 names through `api->function` and checks executable main-module
-memory with `VirtualQuery`. It uses pinned MinHook 1.3.4 to prepare disabled
-in-memory detours. Claim/signature/duplicate checks precede one queued commit.
-An unsupported hash, missing symbol, incomplete transaction or backend failure
-prevents activation and produces diagnostics. There is no permissive bypass.
+At load, `NativeAssetBundle` finds the actual original `--levels` root, or the
+native `--data/port/ntsc` fallback. It reads 19 source manifests and stages unique
+owned copies with absolute paths to packaged classes 2017/32000/2016. Original
+Walloper 180 and native 225 remain present. The overlay redirects only exact
+configured read-only `OPEN_EXISTING` manifest opens through KernelBase CreateFileW;
+other paths and writes pass through. The map is immutable for worker threads.
 
-The executable on disk remains unchanged; in-memory detours belong to the
-provider and are removed on consumer teardown. The SDK table is not replaced.
-The official client and the player's extracted data remain local inputs.
-The preview ZIP contains mod DLLs, corresponding plugin sources, launcher
-scripts and companion assets, **no client executable, ISO or player save**.
+The hook provider verifies the EXE hash and executable function targets,
+prepares 30 disabled detours, then activates one complete consumer transaction.
+The overlay has the same exact-client gate. Failure produces diagnostics and
+owned cleanup; unsafe unload failures retain code/trampolines rather than leave
+dangling calls. Native saves and normal game progression remain the game's own.
 
-Save_Restore and NewGame hook the whole stock host wrappers, preserving their
-native trampolines. Native tests must exercise these wrapper semantics; older
-checks on a modified runtime do not certify the new boundary. Current and
-historical evidence are separated in [Validation](VALIDATION.md).
+The launcher repository index lists only two public mods. An explicit prerelease
+tag URL is required to select preview assets, whose filenames and hashes follow
+the stock launcher's native import convention. See [Installation](INSTALLATION.md).
 
-PAL and other native platforms/builds are outside this provider's support.
-Linux source builds test portable contracts and service exports only.
-The [old engine patch](arsenal-bridge/README.md) is retained for historical
-comparison; applying or compiling it is not part of current preview setup.
+PAL, other native platforms and different executable hashes are unsupported by
+the utility backend. Linux builds test portable adapters and service exports.
+The [former engine patch](arsenal-bridge/README.md) is historical reference;
+it is not required for this package.

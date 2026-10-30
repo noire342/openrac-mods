@@ -28,30 +28,28 @@ and hashes; it does not publish it. Inspect that allowlist after adding 0.2 file
 so registry, store, menu, XP adapter, headers and documentation are included.
 Reject external symbolic source paths and do not include local generated data.
 
-## Stock client, compatibility provider and companion
+## Single native launcher package
 
-The current preview uses the unchanged official Windows x64 NTSC-U client,
-commit `77a2f052`, SHA256
-`b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081`.
-The packager excludes every EXE; it does not bundle a replacement client.
-Arsenal Compatibility 0.1.0 is loaded before optional XP and Revolverator.
-Its versioned mod API supplies 30 exact-build boundaries; the consumer keeps
-its 24 ordinary SDK hooks. The SDK table and executable on disk stay unchanged.
-The previous engine patch, if included, is historical source reference only.
+The current release archive is `revolverator-0.2.0-windows-x86_64.zip`, installable
+through the normal launcher's preview release URL or local native ZIP import.
+The release must include SHA256SUMS. Root discovery lists only Weapon Experience
+and Revolverator; helper utilities are bundled privately, not separate cards.
 
-`--compat-plugin` supplies the built provider and `--compat-source` its complete
-corresponding source, including pinned MinHook 1.3.4 with BSD notices. An optional
-`--runtime` validates the installed stock EXE read-only without archiving it.
-`--weapon-xp` and `--weapon-xp-source` must identify the matching optional
-0.6.3-arsenal/API v4 companion. A previous XP binary without hit ownership is
-incompatible; running without XP is supported.
+`NativeAssetBundle` finds the original levels root at load, stages 19 read-only
+manifest copies and binds absolute paths to the packaged class assets. Utility
+DLLs load from the weapon's DLL directory. No client EXE, manual `--levels`,
+external PowerShell launcher or extra utility install is part of this flow.
 
-`Avvia-Prova.cmd` starts a separate empty Novalis trial with 20 rounds. The
-normal launcher reuses `.profile`; `start_unlocked` is off unless enabled.
-The manifest records exact plugin hashes, the expected installed client hash
-and `runtime_included=false`. Native verification requires a matching receipt;
-PrepareOnly success is not gameplay proof. Earlier modified-runtime results
-remain historical and do not automatically certify this stock-client boundary.
+The source bundle must include the GPL OpenRAC JSON reader/NOTICE, serializers,
+asset staging code, utility sources, exact MinHook version/notices and all inputs
+needed to reproduce the distributed binary. Game-derived generated art is kept
+out of the ordinary Git source snapshot and supplied separately with the exact
+binary where required. No ISO, private save or RAM dump belongs in either archive.
+
+The former `package_private_bundle.py`, Avvia-Prova scripts and outer ZIP are
+historical development tools. Their old validation does not certify the current
+automatically installed single package. Use a matching native receipt for each
+new set of plugin/utility hashes.
 
 ## Linux service export
 

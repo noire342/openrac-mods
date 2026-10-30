@@ -1,4 +1,4 @@
-# Arsenal Compatibility 0.1.0
+# Arsenal Compatibility 0.1.0 — private bundled utility
 
 Compatibility provider for the additive Revolverator on the **unchanged stock
 OpenRAC Windows x64 client**, R&C1 NTSC-U. The executable on disk is neither
@@ -13,7 +13,9 @@ platforms are not supported by this native provider.
 
 ## Loading and ownership
 
-Load order: **arsenal-compat, optional matching Weapon XP, Revolverator**.
+The native Revolverator package loads this utility privately; no additional
+launcher mod card is required. The standalone SDK wrapper remains available
+for development tests. Weapon XP, when used, loads before Revolverator.
 The provider preflights all 30 names through the stock SDK's `api->function`.
 Every target must be distinct executable `MEM_IMAGE` code inside the main module,
 checked with `VirtualQuery`; there are no hardcoded host addresses or offsets.

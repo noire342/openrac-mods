@@ -1,4 +1,35 @@
-# Verifica della preview con client ufficiale
+# Preview nativa installabile dal launcher
+
+La combinazione corrente è un singolo pacchetto Revolverator con asset e DLL
+utility private. Parte nel client ufficiale NTSC-U invariato usando i livelli
+originali; niente script di preparazione, asset pack esterno o card utility.
+La ricevuta pubblica `docs/validation/revolverator-0.2.0-native-package.json`
+contiene i sei scenari nuovi e gli hash esatti, separati dalle prove precedenti.
+
+| Scenario corrente | Evidenza |
+| --- | --- |
+| Smoke 900 frame | Solo mod di produzione Revo/XP, nessun helper; 20 cariche e controllo al frame 521 |
+| Menu 2.400 frame | 16 armi, griglia nativa 4×5, preferiti 18/65554 e preview/HUD reali; fase 18 terminata |
+| XP 1.800 frame | Presa/lancio/impatto/morte: Revo 39 indipendenti, poi Walloper 39; nessun XP imposto |
+| Save 2.200 frame | Card isolata reale: 7 snapshot→3 pending→7 reload, CRC/fingerprint validi, Walloper non posseduto |
+| Venditore/pickup 2×2.400 frame | 24 controlli nativi superati, capacità 20 e inventari indipendenti |
+
+Le fixture mirate includono probe QA dichiarati nella ricevuta; lo smoke non
+li usa. Gli helper non sono dipendenze installabili del pacchetto. Novalis
+carica 345 modelli e 61 input originali, incluso l'EXE, restano immutati.
+
+DLL Revo: `ebe140838d24ebb4707b74fc06ad94a935c9ab135c885ad87a78d9f2081fdef5`.
+Utility file: `aec87cbfd6eb3133dbb51e62edbce7fae46081355dcd4b5b5aa458876860ca14`.
+Utility hook: `077a7306b71ac5f35776b74c261cceb1ff0c1144961a847696eabc961c71d55a`.
+Client ufficiale: `b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081`.
+
+I 34 gruppi host Windows/Linux passano, ma restano distinti dalle osservazioni
+native. Campagna completa, tutte le boss fight/mod, NG+, ogni slot e sistemi
+non supportati non sono certificati. La preview rimane distinta dalla finale.
+
+---
+
+# Verifiche storiche con utility/card configurate manualmente
 
 Il percorso corrente usa il client Windows x64 NTSC-U ufficiale invariato,
 commit `77a2f052`, SHA256
@@ -57,9 +88,9 @@ pickup e UI sono stati riprovati con20.
 | XP guadagnati | Primo Birdbot: cattura 1, lancio 1, impatto 1, morte nativa; Revo 0→39, Walloper fermo a 0 |
 | Walloper normale dopo il Revo | Secondo Birdbot: morte nativa; Walloper 0→39, Revo rimasto 39 |
 | Munizioni e impostazioni della fixture XP | 10→9 cariche, capacità 10; moltiplicatori danni/munizioni 1 |
-| Commercio/pickup nativi con20 | 24 controlli: Hoven15.000→20; refill2→20 costa450; acquisto Walloper7.500 indipendente; pickup4→6,19→20 e pieno20 invariato |
+| Commercio/pickup nativi con20 | 24 controlli: Hoven15.000→20; refill2→20 costa450; acquisto Walloper7.500 indipendente; pickup4→6, 19→20 e pieno20 invariato |
 | HUD e menu finali Novalis | 2400 frame,16 armi nel pannello nativo4×5, icone Walloper/Revo distinte nei preferiti; cartuccia32px nell'HUD20/20+LV1 |
-| HUD nei livelli con poca memoria, senza XP | Rilgar (5), Nebula G34 (6) e Quartu (15): 2.400 frame ciascuno, arma impugnata completa a riposo e cartuccia 32px con 19/20; texel e CLUT del frame3 verificati esatti in RAM. Glifo arma 32px nei livelli5/6, 128px nel15; heap HUD residuo rispettivamente 3.456/624/12.304 byte, senza crash o errori nativi di allocazione. DLL `62cbd609ec86b2088888eef4c55b901e17b3107fa90f89e615b1816047b312cd`; ricevuta `work/arsenal-commerce-tools/packed-hud-native-62cbd-03.json`. Menu e anteprime non esercitati da questi tre smoke test |
+| HUD nei livelli con poca memoria, senza XP | Rilgar (5), Nebula G34 (6) e Quartu (15): 2.400 frame ciascuno, arma impugnata completa a riposo e cartuccia 32px con 19/20; texel e CLUT del frame3 verificati esatti in RAM. Glifo arma 32px nei livelli5/6, 128px nel15; heap HUD residuo rispettivamente 3.456/624/12.304 byte, senza crash o errori nativi di allocazione. DLL `62cbd609ec86b2088888eef4c55b901e17b3107fa90f89e 615b1816047b312cd`; ricevuta `work/arsenal-commerce-tools/packed-hud-native-62cbd-03.json`. Menu e anteprime non esercitati da questi tre smoke test |
 | Anteprima rotante | Punta e corpo assemblati a più angoli, sia Armi sia piccolo pannello Scelta Rapida; nessun taglio superiore |
 | Autosave duplicato | Richiesta con 7 cariche, RAM portata a 3 e seconda richiesta mentre pending; ricaricamento conserva 7 |
 | Consumer XP host | 658 controlli Windows e Linux, anche con ASan/UBSan: attribuzione, expiry, duplicati, frazioni, configurazione e danni opzionali |

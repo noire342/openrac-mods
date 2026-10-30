@@ -10,15 +10,18 @@ commercio e salvataggi hanno prove native; modello, anteprime e HUD sono stati
 verificati su Novalis nella combinazione riportata in NATIVE_VALIDATION.md.
 Non è una dichiarazione di compatibilità PAL o di campagna completa.
 
-## Prova rapida della preview
+## Installazione della preview
 
-Installa [OpenRAC 0.9.0 ufficiale](https://github.com/OpenRAC/OpenRAC/releases/tag/launcher-v0.9.0)
-e prepara i tuoi dati NTSC-U. Scarica
-[la preview.1](https://github.com/noire342/openrac-mods/releases/tag/revolverator-v0.2.0-preview.1),
-estrai lo ZIP esterno e avvia **`Avvia-Prova.cmd`**: Novalis isolato e 20 cariche.
-Usa lo script incluso; lo ZIP esterno non va importato nella pagina Mods.
-`Avvia-Revolverator.cmd` usa invece il profilo persistente copiato.
-La consegna non contiene un EXE sostitutivo o salvataggi del giocatore.
+Nel launcher ufficiale OpenRAC, pagina Mods, aggiungi questo indirizzo:
+[revolverator-v0.2.0-preview.1](https://github.com/noire342/openrac-mods/releases/tag/revolverator-v0.2.0-preview.1).
+Seleziona Revolverator, installa, abilita e avvia normalmente il gioco NTSC-U.
+Per provarla subito attiva **Revolverator sbloccato da subito** nelle impostazioni.
+
+L'archivio nativo è `revolverator-0.2.0-windows-x86_64.zip`, importabile anche
+come ZIP locale. Asset e utility sono nello stesso pacchetto: non servono
+card di supporto separate, script esterni o un client sostitutivo. L'indirizzo
+esplicito della release seleziona la preview; l'URL generico della repository
+segue le release stabili. L'indice espone solo Weapon Experience e Revolverator.
 
 ## Armi e menu
 
@@ -90,20 +93,18 @@ Il limite è livello 10; danni e munizioni aggiuntivi restano disattivati di def
 - Plugin nativo compilato con SDK OpenRAC 1.3, ABI richiesta 1.1.
 - Client ufficiale OpenRAC Windows x64 NTSC-U invariato: commit `77a2f052`,
   SHA256 `b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081`.
-- Mod **Arsenal Compatibility 0.1.0**, caricata prima di XP e Revolverator:
-  risolve 30 funzioni tramite l'SDK e attiva i propri detour soltanto dopo un
-  commit completo. Non serve sostituire o compilare l'eseguibile.
-- Asset aggiuntivi del trapano e della cartuccia ricostruiti localmente.
+- Utility compatibilità e file alias incluse privatamente nel pacchetto:
+  caricamento automatico dalla cartella DLL della mod; niente card aggiuntive.
+  I 30 hook restano una transazione tipizzata completa, mentre l'SDK è invariato.
+- Asset del trapano e della cartuccia inclusi nello ZIP nativo; la ricostruzione
+  locale serve soltanto per una build dai sorgenti.
 - Weapon XP API v4 soltanto se si vuole la progressione opzionale.
 
-La consegna 0.2 è una preview portatile senza client EXE, con sessione separata; l'installazione ufficiale rimane intatta. `Avvia-Prova.cmd` avvia una
-prova isolata su Novalis con 20 munizioni. La preview è distinta dalla versione
-definitiva. ISO, asset estratti, RAM e salvataggi non fanno parte dei sorgenti
-pubblici.
-
-Il nuovo percorso con client ufficiale ha una ricevuta propria: le prove sul
-precedente runtime modificato restano identificate come storiche. Vedi il
-[provider e il suo contratto](../arsenal-compat/README.md).
+La consegna 0.2 è un normale pacchetto nativo del launcher: legge i manifest
+originali, crea copie temporanee proprie e carica gli asset inclusi tramite
+utility private. La ricevuta corrente copre sei scenari con questa installazione;
+le prove sul vecchio runtime o sulle card di supporto restano storiche.
+ISO, salvataggi e RAM non fanno parte dei sorgenti pubblici.
 
 ## Documentazione
 

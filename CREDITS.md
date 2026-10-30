@@ -35,3 +35,6 @@ OpenRAC SDK files remain MIT. The unchanged upstream `tools/fetch_sdk.py` remain
 GPL-3.0-or-later, Copyright (c) 2026 the OpenRAC contributors. Engine bridge changes
 keep upstream GPL/file-specific notices, and original game assets keep their own
 rights. See [licensing scope](docs/LICENSING.md).
+
+The vendored OpenRAC JSON reader retains its upstream GPL notice and contributor
+copyright; the project staging adapter/serializer are separate authored code.

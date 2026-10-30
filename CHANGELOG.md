@@ -2,6 +2,14 @@
 
 ## Revolverator 0.2.0 preview.1 / Weapon Experience 0.6.3-arsenal
 
+- Install Revolverator as one normal native launcher package. Bundle utility
+  DLLs privately, stage 19 original manifests read-only and load packaged class
+  assets automatically; no external launcher or extra utility cards.
+- Limit repository discovery to Weapon Experience/Revolverator through the root
+  index, and document the explicit preview release URL for prerelease selection.
+- Extend the combined host matrix to 34 groups with asset staging and file-open
+  policy/parser tests. Keep earlier manual/helper proofs historical.
+
 - Record six stock-client native scenarios: real trial, 24 commerce checks,
   earned independent 39/39 XP, 7→3-pending→7 reload and native 16-entry menus.
   The 61 original inputs, including the official client, remain unchanged.

@@ -1,0 +1,15 @@
+{
+  "format": 2,
+  "id": "arsenal-file-overlay",
+  "name": "Arsenal File Overlay POC",
+  "version": "0.1.0",
+  "author": "noire342",
+  "license": "GPL-3.0-or-later",
+  "api": "1.1",
+  "description": "Experimental exact-build read-only manifest alias utility for the unchanged official Windows x64 NTSC-U client. Exactly19 full-path originals map to staged copies. It does not stage assets, change files, or implement weapon policy.",
+  "games": {"rac1": ["ntsc"]},
+  "hooks": [],
+  "settings": [],
+  "load": {"before": ["arsenal-compat", "weapon-xp", "revolverator"]},
+  "plugin": {"windows-x86_64": "lib/windows-x86_64/arsenal_file_overlay.dll"}
+}

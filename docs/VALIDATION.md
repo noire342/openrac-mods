@@ -1,6 +1,43 @@
 # Validation
 
-## Current stock-client preview
+## Current self-contained native package
+
+The [native receipt](validation/revolverator-0.2.0-native-package.json) records
+six new scenarios on the unchanged official Windows NTSC-U client. The weapon
+package discovers/stages its own assets and loads utility DLLs privately.
+Original levels are used; no custom `--levels`, external asset pack, replacement
+client, utility mod cards or preparation launcher script is required.
+
+| Current native scenario | Observed scope |
+|---|---|
+| Smoke, 900 frames | Only Revolverator and optional XP as production mod entries; no QA helper, 20 starting rounds, control at 521 |
+| Vendor/pickups, 2×2,400 frames | 24 commerce checks; Hoven price/refill, independent Walloper, ordinary pickup cap 20 |
+| Earned XP, 1,800 frames | Actual capture/throw/impact/death; Revo 0→39 while Walloper unchanged, then native Walloper 0→39 separately; no XP seeding |
+| Save/reload, 2,200 frames | Real isolated card: snapshot 7, RAM 3 while pending, reload 7; sidecar CRC/native fingerprint validated, original Walloper remains unowned |
+| Menus, 2,400 frames | 16 weapons in native 4×5 grid, quick keys 18/65554 distinct; drill/cartridge preview and HUD inspected, phase 18 completed |
+
+The smoke has no instrumentation helper. Other targeted fixtures list their QA
+probe modules in the receipt; those probes are not production dependencies.
+Novalis loads 345 models, and 61 original inputs including the client remain
+unchanged. The current exact hashes are:
+
+- Revolverator: `ebe140838d24ebb4707b74fc06ad94a935c9ab135c885ad87a78d9f2081fdef5`.
+- Private hook utility: `077a7306b71ac5f35776b74c261cceb1ff0c1144961a847696eabc961c71d55a`.
+- Private file alias utility: `aec87cbfd6eb3133dbb51e62edbce7fae46081355dcd4b5b5aa458876860ca14`.
+- Optional XP: `68205f76fea997336d4ee01fcb7c2812a2fdd32b6d79d3b67cc51a8b162cb67c`.
+- Official EXE: `b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081`.
+
+The current source matrix passes 34/34 groups on Windows and Linux:
+19 Revolverator, 13 XP, 1 hook provider, 1 file-overlay group. The new staging group
+checks serialization, argument precedence, source immutability and owned cache
+cleanup; file-overlay policy/parser tests add 1,865 checks. The separate hook
+provider has 5,158 checks. [Source evidence](validation/revolverator-0.2.0-native-package-source.json)
+and native scenarios are distinct. Neither establishes complete campaigns,
+all bosses/mods, NG+, every save slot, PAL or native Linux/macOS gameplay.
+
+---
+
+## Previous stock-client manual/helper setup — historical
 
 The current path uses the unchanged official Windows x64 NTSC-U client,
 commit `77a2f052`, SHA256
@@ -58,7 +95,7 @@ records 30/30 host groups for that source state.
 | Native saves | Independent custom sidecars, successful save/load and duplicate autosave behavior in the isolated fixtures described by the detailed record |
 
 The limited-memory runs used DLL SHA256
-`62cbd609ec86b2088888eef4c55b901e17b3107fa90f89e615b1816047b312cd`
+`62cbd609ec86b2088888eef4c55b901e17b3107fa90f89e 615b1816047b312cd`
 and runtime SHA256
 `fc717cd0526ca1977895f3baf8e86186adcc5bfd41d0d75b5622148f0e689f9b`.
 The weapon glyph was 32px on Rilgar/Nebula and 128px on Quartu; remaining HUD heap

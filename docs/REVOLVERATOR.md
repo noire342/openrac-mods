@@ -32,10 +32,10 @@ at the same time. No extra inventory panel is introduced.
 ## Runtime, progression and saves
 
 The [unchanged official Windows x64 NTSC-U client](COMPATIBILITY.md) is used
-with Arsenal Compatibility 0.1.0. The provider supplies 30 typed in-memory
+with privately bundled utility DLLs. The provider supplies 30 typed in-memory
 boundaries through a versioned mod API; Revolverator retains 24 ordinary SDK
 hooks. No custom executable or engine patch is required. The [asset builders](../revolverator/docs/BUILD_AND_ASSETS.md)
-create local extended manifests while preserving native class180.
+create local extended manifests while preserving native class 180.
 
 Optional Weapon Experience integration requires API v4; the matching source
 here is 0.6.3-arsenal. Custom hits are excluded from Walloper awards, and the
@@ -62,8 +62,10 @@ and the authored cartridge data. Optional 128px private glyphs fall back to 32px
 when presentation memory is limited. Original drill art and the optional HD
 header remain local outputs and are excluded from public source and CI artifacts.
 
-The [preview.1 release](https://github.com/noire342/openrac-mods/releases/tag/revolverator-v0.2.0-preview.1)
-contains the outer portable ZIP: extract it and run `Avvia-Prova.cmd`.
+The native [preview.1 release](https://github.com/noire342/openrac-mods/releases/tag/revolverator-v0.2.0-preview.1)
+uses `revolverator-0.2.0-windows-x86_64.zip`: paste the release-tag URL into the
+normal Mods page or import this native ZIP. Assets and utility DLLs load
+automatically from the installed weapon package.
 The [stock native receipt](validation/revolverator-0.2.0-stock-native.json) records
 trial, commerce, earned XP, save/reload and native menu checks. This is not a final release.
 PAL, a full campaign, every capture target/boss, interruption and mod combination

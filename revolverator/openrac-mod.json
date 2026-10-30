@@ -6,7 +6,7 @@
   "author": "noire342",
   "license": "GPL-3.0-or-later",
   "api": "1.1",
-  "description": "Restores the cut Revolverator as an additional weapon while preserving the original Walloper. Integrated native inventory, quick select, twenty rounds, Hoven vendor stock and independent save data. Requires the Arsenal Compatibility mod and companion graphics pack on the official Windows client; supports optional Weapon XP API v4.",
+  "description": "Restores the cut Revolverator as an additional weapon on the official Windows NTSC-U client, preserving the original Walloper. Includes native menus, quick select, twenty rounds, Hoven vendor stock, independent saves and bundled compatibility/asset-loading utilities. Optional Weapon XP API v4.",
   "extensions": {
     "noire342.arsenal": {
       "version": 1,
@@ -62,6 +62,10 @@
         "rac1.save.new_game_plus",
         "rac1.save.serialize",
         "rac1.save.update_state"
+      ],
+      "bundledUtilities": [
+        "arsenal_compat.dll",
+        "arsenal_file_overlay.dll"
       ]
     }
   },
@@ -98,7 +102,6 @@
   ],
   "load": {
     "after": [
-      "arsenal-compat",
       "weapon-xp"
     ]
   },
@@ -127,12 +130,6 @@
       "name": "Diagnostic logging",
       "type": "bool",
       "default": false
-    }
-  ],
-  "requires": [
-    {
-      "id": "arsenal-compat",
-      "version": ">=0.1.0"
     }
   ]
 }
