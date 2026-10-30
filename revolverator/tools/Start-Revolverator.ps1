@@ -21,7 +21,7 @@ function Write-RevolveratorUtf8([string]$Path,[string]$Text) {
 }
 $revBundle = [IO.Path]::GetFullPath($PSScriptRoot)
 $revOriginalLocal = $env:LOCALAPPDATA
-if (-not $Runtime) { $Runtime = Join-Path $revBundle 'runtime\openrac-rac1-ntsc.exe' }
+if (-not $Runtime) { $Runtime = Join-Path $env:LOCALAPPDATA 'OpenRAC Launcher\openrac\port\build\release\openrac-rac1-ntsc.exe' }
 if (-not $InstalledData) { $InstalledData = Join-Path $env:USERPROFILE 'OpenRAC\active\rac1\data' }
 if (-not $Settings) { $Settings = Join-Path $env:LOCALAPPDATA 'openrac\settings\rac1-ntsc.ini' }
 if (-not $SessionRoot) { $SessionRoot = Join-Path $revBundle ('.sessions\' + [DateTime]::UtcNow.ToString('yyyyMMddTHHmmssfffZ') + '-' + [Guid]::NewGuid().ToString('N').Substring(0,8)) }
@@ -58,6 +58,16 @@ if ($Trial -and ($SessionRoot.Equals($revProfile,[StringComparison]::OrdinalIgno
 $revDelivery = Get-Content -LiteralPath $revDeliveryPath -Raw | ConvertFrom-Json
 if ($revDelivery.format -ne 1 -or $revDelivery.kind -notin @('revolverator-preview-bundle','revolverator-private-test-bundle')) { throw 'Unsupported delivery format.' }
 if ($revDelivery.game -ne 'rac1' -or $revDelivery.disc -ne 'ntsc') { throw 'This delivery supports R&C1 NTSC-U only.' }
+if ($revDelivery.runtime_included -ne $false -or -not $revDelivery.compat_included) {
+    throw 'This launcher requires the standalone arsenal-compat preview bundle and an installed OpenRAC client.'
+}
+# The compatibility provider is verified against exact installed builds. It
+# changes only the running process; this script never patches a client file.
+$revSupportedRuntimeHashes = @('B7F3762AA7076F0D93CAD4033B49B4E966975A17885A05D70F61C9FE8DF94081')
+$revRuntimeHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $Runtime).Hash.ToUpperInvariant()
+if ($revSupportedRuntimeHashes -notcontains $revRuntimeHash) {
+    throw "Unsupported installed OpenRAC client SHA256: $revRuntimeHash. No profile or game file was changed. Use a verified NTSC-U build; -Runtime selects its existing executable."
+}
 foreach ($revEntry in $revDelivery.files.PSObject.Properties) {
     $revRelative = $revEntry.Name.Replace('\','/')
     if ([IO.Path]::IsPathRooted($revRelative) -or $revRelative.Split('/') -contains '..') { throw 'Unsafe delivery path.' }
@@ -73,6 +83,12 @@ if ($revPluginManifest.format -ne 2 -or $revPluginManifest.id -ne 'revolverator'
 if (-not $revPluginManifest.plugin.'windows-x86_64') { throw 'This bundle has no Windows x86-64 plugin.' }
 if ($revUnlock -and -not @($revPluginManifest.settings | Where-Object { $_.key -eq 'start_unlocked' }).Count) {
     throw 'This mod build does not support the starting-weapon setting required for this launch.'
+}
+$revCompat = Join-Path $revBundle 'plugin\arsenal-compat'
+$revCompatManifest = Get-Content -LiteralPath (Join-Path $revCompat 'openrac-mod.json') -Raw | ConvertFrom-Json
+if ($revCompatManifest.format -ne 2 -or $revCompatManifest.id -ne 'arsenal-compat' -or
+    $revCompatManifest.version -ne '0.1.0' -or -not $revCompatManifest.plugin.'windows-x86_64') {
+    throw 'The bundled arsenal-compat provider is invalid.'
 }
 $revXP = Join-Path $revBundle 'plugin\weapon-xp'
 $revUseXP = [bool]$revDelivery.weapon_xp_included -and -not $WithoutWeaponXP
@@ -226,7 +242,8 @@ foreach ($revSourceManifest in $revSourceHashes.Keys) {
     }
 }
 Copy-Item -LiteralPath $revPlugin -Destination (Join-Path $revPlugins 'revolverator') -Recurse
-$revModList = @()
+Copy-Item -LiteralPath $revCompat -Destination (Join-Path $revPlugins 'arsenal-compat') -Recurse
+$revModList = @([ordered]@{id='arsenal-compat';enabled=$true;settings=@{}})
 if ($revUseXP) {
     Copy-Item -LiteralPath $revXP -Destination (Join-Path $revPlugins 'weapon-xp') -Recurse
     $revModList += [ordered]@{id='weapon-xp';enabled=$true;settings=@{scale_damage=$false;scale_capacity=$false}}
@@ -244,7 +261,8 @@ $revReceipt = [ordered]@{format=1;private=$true;prepared=[DateTime]::UtcNow.ToSt
     mode=$(if ($Trial) {'trial'} else {'persistent'});start_unlocked=$revUnlock;no_card=[bool]$Trial;
     session=$SessionRoot;exe=$Runtime;arguments=$revArguments;environment=$revEnvironment;manifests=$revManifests;extended_levels=$revAdded;
     extended_classes=@(2017,32000,2016);native_walloper_preserved=$true;
-    runtime_sha256=(Get-FileHash -Algorithm SHA256 -LiteralPath $Runtime).Hash.ToLowerInvariant();
+    runtime_sha256=$revRuntimeHash.ToLowerInvariant();runtime_included=$false;installed_runtime_verified=$true;
+    compat_enabled=$true;compat_version=$revCompatManifest.version;
     profile=$(if ($Trial) {$null} else {$revProfile});profile_created=$revProfileCreated;cards=$revCards;mod_data=$revModData;
     original_manifests_unchanged=$true;user_saves_copied=[bool]$revProfileInfo.user_saves_copied;
     original_inputs_unchanged=$true;weapon_xp_enabled=$revUseXP;other_installed_mods_copied=$false;

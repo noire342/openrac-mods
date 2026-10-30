@@ -1,0 +1,58 @@
+{
+  "scope": "Stock-client preview source builds; not a complete native gameplay certificate",
+  "date": "2026-10-30",
+  "components": {
+    "revolverator": "0.2.0",
+    "weapon_xp": "0.6.3-arsenal",
+    "arsenal_compat": "0.1.0",
+    "openrac_mod_sdk": "1.3.0"
+  },
+  "client": {
+    "kind": "unchanged installed official executable; not archived",
+    "commit": "77a2f05257c5dfc2ab9b1ec52a84fc78e8f64225",
+    "sha256": "b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081"
+  },
+  "host_checks": {
+    "windows": {
+      "configuration": "Release x64 / MSVC",
+      "build": "PASS",
+      "groups_passed": 32,
+      "groups_failed": 0
+    },
+    "linux": {
+      "configuration": "Release x86_64 / GNU13.3.0 in WSL",
+      "build": "PASS",
+      "groups_passed": 32,
+      "groups_failed": 0
+    },
+    "group_split": {
+      "revolverator": 18,
+      "weapon_xp": 13,
+      "arsenal_compat": 1
+    },
+    "provider_checks": 5158,
+    "elf_service": {
+      "result": "PASS",
+      "exports": [
+        "openrac_mod_load",
+        "openrac_mod_query",
+        "openrac_mod_unload",
+        "openrac_revolverator_query"
+      ],
+      "query_before_session": "null",
+      "version": "0.2.0",
+      "generic_api": [
+        1,
+        1
+      ]
+    }
+  },
+  "source_boundary": {
+    "game_art_and_private_hd_header": "excluded",
+    "authored_ammunition_hud_data": "included",
+    "client_executable_saves_and_RAM": "excluded",
+    "minhook": "exact unmodified v1.3.4 selected source with BSD notices and hash inventory",
+    "interop_headers": "explicit MIT; implementations GPL-3.0-or-later"
+  },
+  "native_evidence": "Separate binary-specific receipt required. Initial stock pass-through fixture is documented in ../VALIDATION.md; older modified-runtime results remain historical."
+}

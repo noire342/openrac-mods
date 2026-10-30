@@ -28,25 +28,30 @@ and hashes; it does not publish it. Inspect that allowlist after adding 0.2 file
 so registry, store, menu, XP adapter, headers and documentation are included.
 Reject external symbolic source paths and do not include local generated data.
 
-## Runtime and companion
+## Stock client, compatibility provider and companion
 
-The additive inventory requires the dedicated runtime bridge based on
-`77a2f052`, with 30 typed hooks. The existing generic mod ABI remains 1.1; the
-extra hook IDs still require that runtime. The corresponding bridge patch and base are documented in
-[`docs/arsenal-bridge`](../../docs/arsenal-bridge/README.md). Do not claim an ordinary stock
-OpenRAC executable has these hooks.
+The current preview uses the unchanged official Windows x64 NTSC-U client,
+commit `77a2f052`, SHA256
+`b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081`.
+The packager excludes every EXE; it does not bundle a replacement client.
+Arsenal Compatibility 0.1.0 is loaded before optional XP and Revolverator.
+Its versioned mod API supplies 30 exact-build boundaries; the consumer keeps
+its 24 ordinary SDK hooks. The SDK table and executable on disk stay unchanged.
+The previous engine patch, if included, is historical source reference only.
 
-Weapon XP is optional. The matching preview companion is
-`0.6.3-arsenal` provider with API v4 ownership filters and an optional acquisition
-presentation tail. Without XP the weapon works normally; an installed provider
-without the ownership filter is incompatible.
+`--compat-plugin` supplies the built provider and `--compat-source` its complete
+corresponding source, including pinned MinHook 1.3.4 with BSD notices. An optional
+`--runtime` validates the installed stock EXE read-only without archiving it.
+`--weapon-xp` and `--weapon-xp-source` must identify the matching optional
+0.6.3-arsenal/API v4 companion. A previous XP binary without hit ownership is
+incompatible; running without XP is supported.
 
-The portable preview bundle is prepared separately after integration QA. It
-uses isolated paths and leaves the official installation intact. It is not a
-new standard launcher import format. Its manifest pins runtime, plugin, graphics
-and companion hashes. `Avvia-Prova.cmd` starts an empty isolated Novalis trial
-with the weapon and 20 rounds. The normal launcher uses persistent `.profile`
-state; `start_unlocked` stays off unless explicitly enabled.
+`Avvia-Prova.cmd` starts a separate empty Novalis trial with 20 rounds. The
+normal launcher reuses `.profile`; `start_unlocked` is off unless enabled.
+The manifest records exact plugin hashes, the expected installed client hash
+and `runtime_included=false`. Native verification requires a matching receipt;
+PrepareOnly success is not gameplay proof. Earlier modified-runtime results
+remain historical and do not automatically certify this stock-client boundary.
 
 ## Linux service export
 

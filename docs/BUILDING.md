@@ -1,49 +1,50 @@
-# Build development source
+# Build preview source
 
 Requirements: CMake 3.20+, Python 3, a C++17 compiler and pinned OpenRAC mod SDK 1.3.0.
-The SDK is downloaded separately; its fetcher verifies the URL/SHA256 in `sdk.lock`.
+The SDK fetcher verifies the URL/SHA256 recorded in `sdk.lock`.
 
 ```sh
 python tools/fetch_sdk.py
-cmake -S . -B build -DBUILD_WEAPON_XP=ON -DBUILD_REVOLVERATOR=ON -DBUILD_TESTING=ON
+cmake -S . -B build -DBUILD_WEAPON_XP=ON -DBUILD_REVOLVERATOR=ON -DBUILD_ARSENAL_COMPAT=ON -DBUILD_TESTING=ON
 cmake --build build --config Release --parallel
 ctest --test-dir build -C Release --output-on-failure
 ```
 
-`BUILD_WEAPON_XP` builds the 0.6.3-arsenal development companion. `BUILD_REVOLVERATOR`
-builds the additive 0.2 source and defaults off unless selected. The test suite
-contains 17 Revolverator and 13 Weapon Experience host groups. Build either mod
-separately by disabling the other option.
+`BUILD_WEAPON_XP` builds the 0.6.3-arsenal companion; `BUILD_REVOLVERATOR` builds
+additive 0.2. `BUILD_ARSENAL_COMPAT` defaults to the Revolverator option and builds
+the provider on Windows x64, or only its portable core/tests on Linux.
+The combined suite contains **32 groups: 18 Revolverator, 13 XP, 1 provider**.
+Disable individual options to build components separately.
 
-An unpacked SDK can be selected with `-DOPENRAC_SDK=/path/to/openrac-mod-sdk-1.3.0`
-or an explicit `OpenRACMod_DIR`. On Windows use Visual Studio 2022 or later.
-On Linux the optional service symbol is exported explicitly and the consumer
-links `${CMAKE_DL_LIBS}`. The workflow builds/tests both modules on Windows and
-Ubuntu and uploads test logs; it does not create a stable release.
+Select another unpacked SDK with `-DOPENRAC_SDK=/path/to/sdk` or `OpenRACMod_DIR`.
+Windows uses Visual Studio 2022 or later. Linux exports the optional Revo
+service explicitly and links `${CMAKE_DL_LIBS}`. CI builds/tests both systems;
+its success does not create a stable release or prove native Linux gameplay.
 
-## Native gameplay requirements
+## Native gameplay inputs
 
-Host builds need no game assets or modified executable. Running Revolverator 0.2
-requires R&C1 NTSC-U data and the matching [arsenal bridge](arsenal-bridge/README.md),
-which adds 30 typed native hook boundaries on the pinned OpenRAC base. Build that
-runtime separately from your own disc and keep the official installation intact.
-Weapon Experience by itself does not require this new bridge.
+The Windows preview uses the [unchanged official stock client](COMPATIBILITY.md)
+with **Arsenal Compatibility 0.1.0 loaded first**. No executable patch or custom
+engine build is required. The supported SHA256 is
+`b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081`.
+The provider vendors exact MinHook 1.3.4 source and retains BSD notices.
+Host builds need no client executable or game assets.
 
-The [local asset workflow](../revolverator/docs/BUILD_AND_ASSETS.md) constructs
-the original drill and authored ammunition locally, then extends native level
-manifests with 2017/32000/2016 while preserving 180. Original game art and the
-optional `revolverator_hd_icon_data.hpp` are not published. The authored
-`ammunition_icon_data.hpp` is included so public builds retain the cartridge HUD.
+The [asset workflow](../revolverator/docs/BUILD_AND_ASSETS.md) generates the
+original drill locally from the player's extraction and extends manifests
+with 2017/32000/2016 while preserving native 180. Original game art and optional
+`revolverator_hd_icon_data.hpp` remain excluded from Git/CI. The authored
+`ammunition_icon_data.hpp` is included for the cartridge HUD.
 
-When packaging the optional companion, point `--weapon-xp-source` to this
-repository's `weapon-xp` directory and provide its matching built package.
-`--engine-source` points to the separately patched OpenRAC checkout. The private
-bundle helper's `--runtime` and `--bridge-patch` refer to those exact local inputs.
+For a portable preview use `--compat-plugin` and `--compat-source` with the
+matching built provider/source. `--runtime` can verify an installed stock
+client read-only; it is never archived. XP is optional: `--weapon-xp` and
+`--weapon-xp-source` must identify the matching API v4 companion. An optional
+`--bridge-patch` is historical reference only. See [packaging](../revolverator/docs/PACKAGING.md).
 
-## Preview artifacts
+## Artifact evidence
 
-This source builds the additive preview. Public preview bundles are delivered
-separately through Releases after artifact and native-session checks; a host
-build alone does not establish gameplay behavior. The published Weapon
-Experience 0.6.1 stable archives and historical validation receipts remain
-unchanged. The preview is separate from the final stable release.
+Preview bundles are delivered through Releases after their own hash/native
+checks. A source build does not establish gameplay behavior. The stable XP 0.6.1
+archives and historical receipts remain unchanged; previous engine-bridge
+results are not silently transferred to the stock-client combination.

@@ -56,6 +56,20 @@ Optional damage and ammunition bonuses are off by default. Configuration edits
 are session-only and preserve earned XP. Never retain service pointers after
 provider shutdown, and coordinate shared event consumers.
 
+## Arsenal Compatibility API v1
+
+The MIT [arsenal_hooks_api.h](../arsenal-compat/include/arsenal_hooks_api.h) exposes
+`openrac_arsenal_hooks_query(1)` from an already loaded provider. Its table has
+claim/bind/commit/rollback/diagnostics and pure `owns_id` discovery. Exactly one
+consumer prepares all 30 typed bindings before activation. Other hook IDs remain
+with the original SDK `api->hook`; the SDK table is never replaced.
+
+`NativeRuntimeHooks` owns the Revo claim and rolls it back before unload or on
+initialization failure. The compatibility mod requires the exact stock Windows
+client hash; it is not a general multi-mod hook-chain service. The complete
+[provider contract](../arsenal-compat/README.md) documents state, errors, teardown
+and whole-stock-save-wrapper semantics.
+
 ## Composition
 
 Declare dependencies/load order in each consumer manifest. Restore a native

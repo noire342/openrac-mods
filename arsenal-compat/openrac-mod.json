@@ -1,0 +1,23 @@
+{
+  "format": 2,
+  "id": "arsenal-compat",
+  "name": "Arsenal Compatibility",
+  "version": "0.1.0",
+  "author": "noire342",
+  "license": "GPL-3.0-or-later",
+  "api": "1.1",
+  "description": "Exact-build Windows x64 compatibility provider for additive arsenal mods on the unchanged stock OpenRAC NTSC-U executable. Load before Revolverator. Fails closed on other builds; no game behavior is enabled without a complete consumer transaction.",
+  "games": {"rac1": ["ntsc"]},
+  "hooks": [],
+  "settings": [],
+  "plugin": {"windows-x86_64": "lib/windows-x86_64/arsenal_compat.dll"},
+  "extensions": {
+    "noire342.arsenalHooks": {
+      "query": "openrac_arsenal_hooks_query",
+      "apiVersion": 1,
+      "requiredExecutableSha256": "b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081",
+      "consumerLimit": 1,
+      "hookCount": 30
+    }
+  }
+}

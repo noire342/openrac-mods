@@ -1,6 +1,17 @@
 # Changelog
 
-## Revolverator 0.2.0 preview / Weapon Experience 0.6.3-arsenal
+## Revolverator 0.2.0 preview.1 / Weapon Experience 0.6.3-arsenal
+
+- Record six stock-client native scenarios: real trial, 24 commerce checks,
+  earned independent 39/39 XP, 7→3-pending→7 reload and native 16-entry menus.
+  The 61 original inputs, including the official client, remain unchanged.
+- Run the additive preview on the unchanged official Windows client using the
+  new Arsenal Compatibility 0.1.0 mod. No client EXE is shipped or replaced;
+  the previous engine patch remains historical source reference only.
+- Keep24 stock SDK hooks separate from30 exact-build compatibility boundaries.
+  Add versioned claim/bind/commit/rollback/diagnostic APIs with owned teardown.
+- Expand the combined Windows/Linux host matrix to 32 groups including the
+  runtime consumer adapter and portable compatibility provider contracts.
 
 - Revolverator 0.2 is additive: original Walloper preserved, logical
   key 65554, independent 20-round inventory/XP/favourites and fingerprinted sidecars.

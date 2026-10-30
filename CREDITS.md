@@ -9,6 +9,8 @@ Maintained by **Noire** ([noire342](https://github.com/noire342)).
 - **Insomniac Games / Sony:** Ratchet & Clank, its characters, original art,
   animations, sound and the original drill model used as a restoration reference.
   Those assets remain the property of their respective owners.
+- **Tsuda Kageyu and HDE contributors:** MinHook 1.3.4, pinned unmodified source
+  with its original BSD notices; used by the exact-build stock-client provider.
 - **Revolverator ammunition model:** generated with **AI assistance** from an
   original procedural mesh and texture recipe. It is new mod art; it is not an
   extracted game asset or an original Insomniac design.
@@ -27,8 +29,8 @@ The optional local HUD-upscaling workflow uses
 Its runtime/model files and game-derived output are not vendored here.
 
 Source files retain their own SPDX/copyright notices. Mod implementation code
-is GPL-3.0-or-later, Copyright (c) 2026 noire342. The Weapon Experience interop
-header and intentionally MIT client examples retain their MIT notices. Downloaded
+is GPL-3.0-or-later, Copyright (c) 2026 noire342. The Weapon Experience and Arsenal Compatibility interop
+headers and intentionally MIT client examples retain their MIT notices. Downloaded
 OpenRAC SDK files remain MIT. The unchanged upstream `tools/fetch_sdk.py` remains
 GPL-3.0-or-later, Copyright (c) 2026 the OpenRAC contributors. Engine bridge changes
 keep upstream GPL/file-specific notices, and original game assets keep their own

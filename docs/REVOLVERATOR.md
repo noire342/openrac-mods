@@ -31,10 +31,11 @@ at the same time. No extra inventory panel is introduced.
 
 ## Runtime, progression and saves
 
-The [GPL arsenal bridge patch](arsenal-bridge/README.md) on OpenRAC base
-`77a2f05257c5dfc2ab9b1ec52a84fc78e8f64225` is required. A DLL and ordinary model
-replacement pack alone are insufficient. The [asset builders](../revolverator/docs/BUILD_AND_ASSETS.md)
-create local extended manifests while preserving native class 180.
+The [unchanged official Windows x64 NTSC-U client](COMPATIBILITY.md) is used
+with Arsenal Compatibility 0.1.0. The provider supplies 30 typed in-memory
+boundaries through a versioned mod API; Revolverator retains 24 ordinary SDK
+hooks. No custom executable or engine patch is required. The [asset builders](../revolverator/docs/BUILD_AND_ASSETS.md)
+create local extended manifests while preserving native class180.
 
 Optional Weapon Experience integration requires API v4; the matching source
 here is 0.6.3-arsenal. Custom hits are excluded from Walloper awards, and the
@@ -50,7 +51,8 @@ progress, quick slots and controlled grant operations.
 
 ## Verified scope and development status
 
-[Native evidence](../revolverator/docs/NATIVE_VALIDATION.md) distinguishes real
+[Native evidence](../revolverator/docs/NATIVE_VALIDATION.md) separates current
+stock-client checks from historical modified-runtime results for real
 combat XP, vendor/pickup checks, save round trips, menus and the limited-memory
 HUD runs on Rilgar, Nebula G34 and Quartu. The last three are standalone gameplay
 smokes, not full level completion or packed-level menu coverage.
@@ -60,8 +62,10 @@ and the authored cartridge data. Optional 128px private glyphs fall back to 32px
 when presentation memory is limited. Original drill art and the optional HD
 header remain local outputs and are excluded from public source and CI artifacts.
 
-Preview packages and exact setup instructions are published separately through
-[Releases](https://github.com/noire342/openrac-mods/releases). This is not a final release.
+The [preview.1 release](https://github.com/noire342/openrac-mods/releases/tag/revolverator-v0.2.0-preview.1)
+contains the outer portable ZIP: extract it and run `Avvia-Prova.cmd`.
+The [stock native receipt](validation/revolverator-0.2.0-stock-native.json) records
+trial, commerce, earned XP, save/reload and native menu checks. This is not a final release.
 PAL, a full campaign, every capture target/boss, interruption and mod combination
 remain outside the verified scope. Historical 0.1 replacement behavior and its
 10-charge evidence are not the behavior of the 0.2 source.

@@ -5,6 +5,14 @@ Questa lista serve a chiudere la consegna concreta: ogni prova deve identificare
 runtime, DLL, companion e asset usati. Il superamento dei test host non approva
 la resa nel gioco.
 
+## Client ufficiale e provider
+
+- [ ] EXE installato invariato, SHA256 stock noto; nessun EXE nello ZIP.
+- [ ] Arsenal Compatibility prima di XP/Revo; 30 binding preparati e commit completo.
+- [ ] Build non supportata, firma errata o binding mancante rifiutati senza hook attivi.
+- [ ] Teardown possiede solo i propri detour; failure conserva moduli e diagnostica.
+- [ ] Save_Restore/NewGame verificati al confine completo dei wrapper stock.
+
 ## Inventario e menu
 
 - [ ] Partita nuova: nessuna delle due armi assegnata dalla sola inizializzazione.
@@ -60,6 +68,6 @@ la resa nel gioco.
 - [ ] HD e fallback mantengono il footprint nativo e la corretta identità.
 - [ ] Carica e XP nel riquadro esistente, senza coprire contatore o altri elementi.
 - [ ] Verificare 4:3, 16:9, 16:10, lingue, menu, viaggio e livelli con poca memoria.
-- [ ] ZIP privato 0.2 estratto e avviato con runtime compatibile e percorsi isolati.
+- [ ] ZIP preview 0.2 estratto e avviato con client ufficiale e provider compatibile e percorsi isolati.
 - [ ] Nessuna ISO, RAM, campagna, sidecar o asset estratto nel pacchetto sorgente.
 - [ ] Ricevuta finale con hash e soli esiti osservati; nessuna pubblicazione automatica.

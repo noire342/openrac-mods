@@ -1,4 +1,48 @@
-# Verifica della build aggiuntiva 0.2
+# Verifica della preview con client ufficiale
+
+Il percorso corrente usa il client Windows x64 NTSC-U ufficiale invariato,
+commit `77a2f052`, SHA256
+`b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081`,
+con Arsenal Compatibility 0.1.0. La DLL provider è
+`077a7306b71ac5f35776b74c261cceb1ff0c1144961a847696eabc961c71d55a`.
+
+## Prime verifiche native sul client invariato
+
+La fixture `qa-vendor-arsenal-stock-pass-01` ha completato 1.800 frame senza
+errori nativi, con provider e consumer di pass-through. Sono stati verificati
+hash del client, risoluzione/eseguibilità dei 30 target e commit dei 30 detour.
+Le chiamate osservate includono NewGame 1, Restore 2, RestoreData 42 e
+UpdateState 1.056. Menu, venditore e pickup non sono stati esercitati da questa
+fixture: la registrazione di 30 hook non equivale a 30 percorsi eseguiti.
+Questa è una prova del confine provider; non certifica gameplay Revolverator,
+XP guadagnati, salvataggi completi o resa grafica della nuova combinazione.
+
+## Ricevuta finale nativa sul client stock
+
+La ricevuta pubblica `docs/validation/revolverator-0.2.0-stock-native.json`
+registra sei scenari con la DLL Revolverator
+`ca5d978e86bcd06e0d253b5c5f01a324bda7192871f72e489626f55e8a88f28c`,
+provider `077a7306...c71d55a`, client ufficiale B7F3762A…94081 e, dove attivo,
+Weapon XP `68205f76fea997336d4ee01fcb7c2812a2fdd32b6d79d3b67cc51a8b162cb67c`.
+
+| Scenario | Esito osservato |
+| --- | --- |
+| Trial 720 frame | Avvio incluso, nessun helper; Novalis isolato e 20 cariche |
+| Venditore/pickup 2×2.400 frame | 24 controlli, acquisto/rifornimento e Walloper indipendente, cap 20 |
+| XP guadagnati 1.800 frame | Presa/lancio/impatto e morte reali: Revo 39 con Walloper invariato, poi Walloper 39 separati; nessun XP assegnato dal probe |
+| Salvataggio 2.200 frame | Card isolata reale: snapshot 7, RAM 3 mentre pending, reload 7; CRC/fingerprint validi e Walloper originale ancora non posseduto |
+| Menu 2.400 frame | 16 armi, griglia nativa 4×5, preferiti 18/65554; schermate 1080/1560 con trivella assemblata e cartuccia |
+
+I file originali verificati immutati sono 61, compreso il client installato.
+I 32 gruppi host Windows/Linux passano; il provider comprende 5.158 controlli
+con backend fittizio. Questi test restano distinti dalle prove native sopra.
+Non sono certificati campagna completa, tutte le boss fight/mod, NG+, ogni slot,
+PAL, altri sistemi operativi o hash del client diversi. La preview pubblica
+resta separata dalla versione definitiva.
+
+---
+
+# Verifiche storiche della 0.2 con runtime modificato
 
 R&C1 NTSC-U, Windows x64, runtime locale basato su OpenRAC `77a2f052` con 30 hook
 aggiuntivi. Weapon XP opzionale: build privata `0.6.3-arsenal`. Le prove sotto

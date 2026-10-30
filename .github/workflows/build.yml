@@ -12,14 +12,20 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-24.04]
-        mod: [weapon-xp, revolverator]
+        mod: [weapon-xp, revolverator, arsenal-compat]
         include:
           - mod: weapon-xp
             xp: 'ON'
             revolverator: 'OFF'
+            compat: 'OFF'
           - mod: revolverator
             xp: 'OFF'
             revolverator: 'ON'
+            compat: 'ON'
+          - mod: arsenal-compat
+            xp: 'OFF'
+            revolverator: 'OFF'
+            compat: 'ON'
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
@@ -29,7 +35,7 @@ jobs:
       - name: Fetch pinned SDK
         run: python tools/fetch_sdk.py
       - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_WEAPON_XP=${{ matrix.xp }} -DBUILD_REVOLVERATOR=${{ matrix.revolverator }} -DBUILD_TESTING=ON
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_WEAPON_XP=${{ matrix.xp }} -DBUILD_REVOLVERATOR=${{ matrix.revolverator }} -DBUILD_ARSENAL_COMPAT=${{ matrix.compat }} -DBUILD_TESTING=ON
       - name: Build
         run: cmake --build build --config Release --parallel
       - name: Test

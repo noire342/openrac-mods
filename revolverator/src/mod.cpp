@@ -8,6 +8,7 @@
 #include "native_weapon_menu.hpp"
 #include "native_arsenal_save.hpp"
 #include "native_arsenal_xp.hpp"
+#include "native_runtime_hooks.hpp"
 #include "revolverator_api.h"
 #include <memory>
 #include <exception>
@@ -105,6 +106,7 @@ struct Session {
  }
 };
 std::unique_ptr<Session> session;
+std::unique_ptr<NativeRuntimeHooks> runtime_hooks;
 using U32=unsigned;
 using Update=void(*)(U32);
 using Pad=void(*)(U32,U32,int);
@@ -134,8 +136,8 @@ template<int Index>struct EnemyHook{
  static void update(U32 moby){if(!session||!session->world.frozen(moby))original(moby);}
 };
 void hook(const char* id,const char* signature,void* replacement,void** original){
- const int r=session->api->hook(session->mod,id,signature,replacement,original);
- if(r!=OPENRAC_HOOK_OK)throw std::runtime_error(std::string("Revolverator 0.2.0 requires the additive-arsenal OpenRAC bridge; hook ")+id+" unavailable or incompatible ("+std::to_string(r)+")");
+ const int r=runtime_hooks->bind(id,signature,replacement,original);
+ if(r!=OPENRAC_HOOK_OK)throw std::runtime_error(std::string("Revolverator hook ")+id+" unavailable or incompatible ("+std::to_string(r)+"): "+runtime_hooks->diagnostic());
 }
 template<int Index>void enemy(const char* id){hook(id,"void(u32)",reinterpret_cast<void*>(&EnemyHook<Index>::update),reinterpret_cast<void**>(&EnemyHook<Index>::original));}
 template<int Index,int(NativeWeaponMenu::*Method)(unsigned,NativeWeaponMenu::Call)>struct MenuHook {
@@ -507,7 +509,8 @@ extern "C" OPENRAC_MOD_EXPORT const revolverator_api_v1* openrac_revolverator_qu
 }
 extern "C" OPENRAC_MOD_EXPORT int openrac_mod_load(const openrac_api* api,openrac_mod* mod){
  try{
-  if(!api||!api->memory||!api->game||!api->version||std::strcmp(api->game,"rac1")||std::strcmp(api->version,"ntsc"))throw std::runtime_error("Revolverator 0.2.0 requires Ratchet & Clank NTSC-U and the additive-arsenal OpenRAC bridge");
+  if(!api||!api->memory||!api->game||!api->version||std::strcmp(api->game,"rac1")||std::strcmp(api->version,"ntsc"))throw std::runtime_error("Revolverator 0.2.0 requires Ratchet & Clank NTSC-U and Arsenal Compatibility");
+  runtime_hooks=std::make_unique<NativeRuntimeHooks>(api,mod);
   session=std::make_unique<Session>(api,mod);
   hook("rac1.level.load_gameplay","u32(i32)",reinterpret_cast<void*>(load),reinterpret_cast<void**>(&load_original));
   hook("rac1.pad.process_report","void(u32,u32,i32)",reinterpret_cast<void*>(pad),reinterpret_cast<void**>(&pad_original));
@@ -557,8 +560,9 @@ extern "C" OPENRAC_MOD_EXPORT int openrac_mod_load(const openrac_api* api,openra
   session->xp.frame();
   if(!session->xp.compatible())throw std::runtime_error("Revolverator 0.2.0 requires Weapon XP API v4 when Weapon XP is enabled; update both mod packages");
   if(api->on_frame(mod,+[](void*){if(session)session->frame();},nullptr))throw std::runtime_error("Frame registration failed");
+  runtime_hooks->commit();
   api->log(mod,OPENRAC_LOG_INFO,"Revolverator 0.2.0: additive logical arsenal, independent Walloper, native menus and sidecar saves, copy-only API v2");
   return 0;
- }catch(const std::exception& e){if(api&&api->fail)api->fail(mod,e.what());session.reset();return 1;}
+ }catch(const std::exception& e){if(api&&api->fail)api->fail(mod,e.what());session.reset();runtime_hooks.reset();return 1;}
 }
-extern "C" OPENRAC_MOD_EXPORT void openrac_mod_unload(){session.reset();}
+extern "C" OPENRAC_MOD_EXPORT void openrac_mod_unload(){session.reset();runtime_hooks.reset();}

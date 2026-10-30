@@ -1,0 +1,28 @@
+{
+  "scope": "Host build/tests and unloaded DLL ABI only; no native game-session proof",
+  "date": "2026-10-30",
+  "mod_id": "arsenal-compat",
+  "version": "0.1.0",
+  "api_version": 1,
+  "dll_sha256": "077a7306b71ac5f35776b74c261cceb1ff0c1144961a847696eabc961c71d55a",
+  "supported_executable_sha256": "b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081",
+  "host_tests": {
+    "windows": {
+      "status": "PASS",
+      "checks": 5158
+    },
+    "linux": {
+      "status": "PASS",
+      "checks": 5158
+    }
+  },
+  "unloaded_service_query": "null for0,1,2,UINT32_MAX",
+  "loader_identity": "arsenal-compat0.1.0 / generic mod API1.1",
+  "minhook": {
+    "version": "1.3.4",
+    "commit": "c3fcafdc10146beb5919319d0683e44e3c30d537",
+    "archive_sha256": "cdcb160f734d81bd4d235dfea79e3f5a661c8ef0ab74fa814272aa5449069034",
+    "source": "unmodified selected upstream source; BSD notices retained"
+  },
+  "native_gameplay": "Not tested by this component; parent owns stock-client integration QA."
+}

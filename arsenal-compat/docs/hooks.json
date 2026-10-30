@@ -1,0 +1,302 @@
+[
+  {
+    "id": "rac1.menu.item_grid.update",
+    "name": "Menu_ItemGrid_Update",
+    "signature": "i32(u32)",
+    "ntsc": "FUN_0021b858",
+    "pal": "func_0021C840",
+    "pair_status": "differs",
+    "pal_source": "src/game/pause.c",
+    "about": "Updates native item-grid focus and selection; the result is a menu action, not a void callback."
+  },
+  {
+    "id": "rac1.menu.item_grid.draw",
+    "name": "Menu_ItemGrid_Draw",
+    "signature": "i32(u32)",
+    "ntsc": "FUN_0021d948",
+    "pal": "func_0021E950",
+    "pair_status": "match",
+    "pal_source": "src/game/pause.c",
+    "about": "Draws the native item grid; preserve its returned render-pass flags."
+  },
+  {
+    "id": "rac1.menu.item_slots.update",
+    "name": "Menu_ItemSlots_Update",
+    "signature": "i32(u32)",
+    "ntsc": "FUN_0021c7a0",
+    "pal": "func_0021D7A0",
+    "pair_status": "match",
+    "pal_source": "src/game/pause.c",
+    "about": "Assigns the highlighted inventory entry to an eight-slot quick-select position."
+  },
+  {
+    "id": "rac1.menu.quick_select.draw",
+    "name": "Menu_QuickSelect_Draw",
+    "signature": "i32(u32)",
+    "ntsc": "FUN_00220b20",
+    "pal": "func_00221B58",
+    "pair_status": "match",
+    "pal_source": "src/game/pause.c",
+    "about": "Draws the pause quick-select ring; preserve its render-pass flags."
+  },
+  {
+    "id": "rac1.menu.quick_select.load",
+    "name": "Menu_QuickSelect_Load",
+    "signature": "i32(u32)",
+    "ntsc": "FUN_0021c9c8",
+    "pal": "func_0021D9C8",
+    "pair_status": "match",
+    "pal_source": "src/game/pause.c",
+    "about": "Copies the saved eight quick-select entries into the native editor."
+  },
+  {
+    "id": "rac1.menu.quick_select.store",
+    "name": "Menu_QuickSelect_Store",
+    "signature": "i32(u32)",
+    "ntsc": "FUN_0021ca60",
+    "pal": "func_0021DA60",
+    "pair_status": "match",
+    "pal_source": "src/game/pause.c",
+    "about": "Commits the native editor entries to the saved quick-select array."
+  },
+  {
+    "id": "rac1.menu.item_text.draw",
+    "name": "Menu_ItemText_Draw",
+    "signature": "i32(u32)",
+    "ntsc": "FUN_0021a328",
+    "pal": "func_0021B298",
+    "pair_status": "differs",
+    "pal_source": "src/game/pause.c",
+    "about": "Draws configured native menu text, including selected item names and descriptions."
+  },
+  {
+    "id": "rac1.menu.item_ammo.draw",
+    "name": "Menu_ItemAmmo_Draw",
+    "signature": "i32(i32)",
+    "ntsc": "FUN_0021f158",
+    "pal": "func_00220160",
+    "pair_status": "match",
+    "pal_source": "src/game/pause.c",
+    "about": "Draws the selected inventory item ammunition using the native panel."
+  },
+  {
+    "id": "rac1.menu.preview.bind",
+    "name": "Menu_Preview_Bind",
+    "signature": "i32(u32)",
+    "ntsc": "FUN_0021e230",
+    "pal": "func_0021F238",
+    "pair_status": "match",
+    "pal_source": "src/game/pause.c",
+    "about": "Binds the selected item and its attachments to the native preview."
+  },
+  {
+    "id": "rac1.menu.preview.update",
+    "name": "Menu_Preview_Update",
+    "signature": "i32(u32)",
+    "ntsc": "FUN_0021df98",
+    "pal": "func_0021EFA0",
+    "pair_status": "match",
+    "pal_source": "src/game/pause.c",
+    "about": "Creates or replaces the selected native inventory preview moby."
+  },
+  {
+    "id": "rac1.menu.preview.draw_available",
+    "name": "Menu_Preview_DrawAvailable",
+    "signature": "i32(u32)",
+    "ntsc": "FUN_0021e608",
+    "pal": "func_0021F610",
+    "pair_status": "match",
+    "pal_source": "src/game/pause.c",
+    "about": "Draws owned selected-item preview mobys and returns render-pass flags."
+  },
+  {
+    "id": "rac1.menu.preview.draw_selected",
+    "name": "Menu_Preview_DrawSelected",
+    "signature": "i32(u32)",
+    "ntsc": "FUN_0021e110",
+    "pal": "func_0021F118",
+    "pair_status": "match",
+    "pal_source": "src/game/pause.c",
+    "about": "Draws the selected-item preview or its native missing-item message."
+  },
+  {
+    "id": "rac1.menu.equipped_preview.update",
+    "name": "Menu_EquippedPreview_Update",
+    "signature": "i32(u32)",
+    "ntsc": "FUN_00224368",
+    "pal": "func_002255F8",
+    "pair_status": "match",
+    "pal_source": "src/game/pause.c",
+    "about": "Loads the native equipped hand-gadget preview."
+  },
+  {
+    "id": "rac1.menu.equipped_preview.draw",
+    "name": "Menu_EquippedPreview_Draw",
+    "signature": "i32(u32)",
+    "ntsc": "FUN_0021ddf8",
+    "pal": "func_0021EE00",
+    "pair_status": "match",
+    "pal_source": "src/game/pause.c",
+    "about": "Draws the native equipped-character preview objects."
+  },
+  {
+    "id": "rac1.menu.preview.pose",
+    "name": "Menu_Preview_Pose",
+    "signature": "void(u32)",
+    "ntsc": "FUN_00224b70",
+    "pal": "func_00225E00",
+    "pair_status": "match",
+    "pal_source": "src/game/pause.c",
+    "about": "Evaluates the class-specific native inventory preview pose and bindings."
+  },
+  {
+    "id": "rac1.hud.quick_select.init",
+    "name": "Hud_QuickSelect_Init",
+    "signature": "void(u32)",
+    "ntsc": "FUN_L00_00237ae8",
+    "pal": "func_L00_00238478",
+    "pair_status": "match",
+    "pal_source": "src/overlays/shared/hud_00235960.c",
+    "about": "Initializes the gameplay HUD eight-slot item selector."
+  },
+  {
+    "id": "rac1.hud.quick_select.update",
+    "name": "Hud_QuickSelect_Update",
+    "signature": "void(u32)",
+    "ntsc": "FUN_L00_00237ba0",
+    "pal": "func_L00_00238530",
+    "pair_status": "match",
+    "pal_source": "src/overlays/shared/hud_00235960.c",
+    "about": "Updates gameplay quick-select focus, visibility and chosen item."
+  },
+  {
+    "id": "rac1.hud.quick_select.draw",
+    "name": "Hud_QuickSelect_Draw",
+    "signature": "i32(u32)",
+    "ntsc": "FUN_L00_002382a0",
+    "pal": "func_L00_00238C30",
+    "pair_status": "match",
+    "pal_source": "src/overlays/shared/hud_00235960.c",
+    "about": "Draws the gameplay quick-select icons; preserve the native return value."
+  },
+  {
+    "id": "rac1.vendor.menu_update",
+    "name": "Vendor_MenuUpdate",
+    "signature": "void()",
+    "ntsc": "FUN_L00_0029ba78",
+    "pal": "func_L00_0029CDE0",
+    "pair_status": "differs",
+    "pal_source": "src/overlays/shared/update_0029B6A0.c",
+    "about": "Updates the modal Gadgetron purchase and ammunition state machine."
+  },
+  {
+    "id": "rac1.vendor.initialize_selected",
+    "name": "Vendor_InitializeSelected",
+    "signature": "void()",
+    "ntsc": "FUN_L00_0029b680",
+    "pal": "func_L00_0029C9E8",
+    "pair_status": "match",
+    "pal_source": "src/overlays/shared/update_0029B6A0.c",
+    "about": "Initializes native mobys and metadata for the selected vendor row."
+  },
+  {
+    "id": "rac1.ammo.choose_drop",
+    "name": "Ammo_ChooseDrop",
+    "signature": "i32(u32,u32)",
+    "ntsc": "FUN_L00_00257218",
+    "pal": "func_L00_00258250",
+    "pair_status": "match",
+    "pal_source": "src/overlays/shared/mobyproc_00251A78.c",
+    "about": "Chooses the native ammunition item through out_item and returns the native pickup count."
+  },
+  {
+    "id": "rac1.ammo.spawn_drop",
+    "name": "Ammo_SpawnDrop",
+    "signature": "u32(u32,i32,i32,i32)",
+    "ntsc": "FUN_L00_002c52a8",
+    "pal": "func_L00_002C6608",
+    "pair_status": "match",
+    "pal_source": "src/overlays/shared/vendor_002C12B0.c",
+    "about": "Creates the native item ammunition pickup, retaining the original physics and collection."
+  },
+  {
+    "id": "rac1.save.prepare",
+    "name": "Save_Prepare",
+    "signature": "void(i32,i32)",
+    "ntsc": "FUN_002269c0",
+    "pal": "func_00227C78",
+    "pair_status": "differs",
+    "pal_source": "src/game/pause.c",
+    "about": "Serializes current native save state and queues a full memory-card write."
+  },
+  {
+    "id": "rac1.save.request_autosave",
+    "name": "Save_RequestAutosave",
+    "signature": "i32(i32,i32)",
+    "ntsc": "FUN_0020b178",
+    "pal": "func_0020BFC8",
+    "pair_status": "differs",
+    "pal_source": "src/game/memcard.c",
+    "about": "Serializes the native autosave packets and requests their memory-card update."
+  },
+  {
+    "id": "rac1.save.restore",
+    "name": "Save_Restore",
+    "signature": "void(u32)",
+    "ntsc": "FUN_00209298",
+    "pal": "func_00209CE8",
+    "pair_status": "match",
+    "pal_source": "src/game/memcard.c",
+    "about": "Restores an in-memory whole native save; also used by default-state initialization."
+  },
+  {
+    "id": "rac1.save.restore_data",
+    "name": "Save_RestoreData",
+    "signature": "i32(u32,i32,u32)",
+    "ntsc": "FUN_0020af20",
+    "pal": "func_0020BD70",
+    "pair_status": "differs",
+    "pal_source": "src/game/memcard.c",
+    "about": "Restores a checksummed native save packet; file load invokes this directly."
+  },
+  {
+    "id": "rac1.save.new_game",
+    "name": "Save_NewGame",
+    "signature": "void()",
+    "ntsc": "FUN_00209370",
+    "pal": "func_00209DC0",
+    "pair_status": "differs",
+    "pal_source": "src/game/memcard.c",
+    "about": "Restores the disc default game state and selects level zero."
+  },
+  {
+    "id": "rac1.save.new_game_plus",
+    "name": "Save_NewGamePlus",
+    "signature": "void(i32)",
+    "ntsc": "FUN_00226b08",
+    "pal": "func_00227DB0",
+    "pair_status": "differs",
+    "pal_source": "src/game/pause.c",
+    "about": "Starts the native new-game-plus state reset while preserving carried progress."
+  },
+  {
+    "id": "rac1.save.serialize",
+    "name": "Save_Serialize",
+    "signature": "void(u32)",
+    "ntsc": "FUN_0020abb0",
+    "pal": "func_0020BA00",
+    "pair_status": "match",
+    "pal_source": "src/game/memcard.c",
+    "about": "Serializes the whole native save without starting memory-card IO."
+  },
+  {
+    "id": "rac1.save.update_state",
+    "name": "Save_UpdateState",
+    "signature": "void()",
+    "ntsc": "FUN_002093d8",
+    "pal": "func_00209E68",
+    "pair_status": "differs",
+    "pal_source": "src/game/memcard.c",
+    "about": "Advances the native memory-card IO state machine, including ordinary save-file loads."
+  }
+]

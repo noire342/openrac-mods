@@ -45,6 +45,9 @@ bindings are sanitized while serializing, then RAM is restored. The sidecar
 retains custom records and logical bindings. No global item count, descriptor
 array bound or native save packet format is rewritten.
 
-These contexts require the dedicated 30-hook OpenRAC bridge. Menu functionality
-has native fixture evidence; final icon/model rendering remains under graphical
-QA. See [NATIVE_VALIDATION.md](NATIVE_VALIDATION.md).
+These contexts use Arsenal Compatibility 0.1.0 on the unchanged official client.
+`NativeRuntimeHooks` owns the single-consumer transaction and delegates ordinary
+hooks to the original SDK table. The 30 additional boundaries are supplied by
+the provider; no custom client executable is required. Historical modified-runtime
+menu evidence and current stock-client checks are separated in
+[NATIVE_VALIDATION.md](NATIVE_VALIDATION.md).

@@ -20,23 +20,19 @@ coprono controller, presa/posa, munizioni, rotore, registro, sidecar, menu, alia
 e consumer XP; non sostituiscono una prova nel gioco. Su Linux il target usa
 `${CMAKE_DL_LIBS}` e un export esplicito per `openrac_revolverator_query`.
 
-## Runtime richiesto
+## Client e provider richiesti
 
-La 0.2 usa il bridge arsenale: base OpenRAC `77a2f052` più 30 hook tipizzati.
-La logica delle armi rimane nel plugin; il bridge espone confini di menu,
-preview, scelta rapida, venditore, pickup e ciclo dei salvataggi. Non cambia
-l'ABI generica del modding. Il runtime standard privo di questi hook viene
-rifiutato con il nome dell'hook mancante.
+La 0.2 usa il client ufficiale OpenRAC Windows x64 NTSC-U invariato, base
+`77a2f052`, SHA256
+`b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081`.
+La mod Arsenal Compatibility 0.1.0 si carica per prima, risolve 30 funzioni via
+`api->function` e prepara detour disabilitati con MinHook 1.3.4. La loro
+attivazione richiede un consumer unico e un commit completo; gli altri 24 hook
+Revolverator rimangono registrati nell'SDK ufficiale.
 
-Nel workspace di sviluppo la patch e la ricetta sono in
-`work/arsenal-bridge-tools/`; la build separata è
-`work/build-openrac-arsenal-bridge/`. Applicare la patch alla base corretta,
-rigenerare i binding con `sdk/tools/gen_binding.py rac1`, poi compilare il target
-`openrac-rac1-ntsc` secondo il toolchain OpenRAC. Non sovrascrivere l'eseguibile
-ufficiale durante queste prove. Gli asset di gioco restano input locali.
-
-Per gli XP opzionali usare il companion privato `weapon-xp 0.6.3-arsenal`, con
-API v4. Non basta un provider che espone soltanto le precedenti API XP.
+Non serve una patch engine, una ricompilazione del client o un EXE sostitutivo.
+La vecchia patch del bridge resta soltanto documentazione storica. Per XP
+opzionali usare il companion `weapon-xp 0.6.3-arsenal` con API v4.
 
 ## Asset aggiuntivi
 
@@ -69,20 +65,17 @@ locale configurare `REVOLVERATOR_HD_ICON_DIR`; senza di esso rimane il fallback
 nativo. Il clone 128×128 deve mantenere il footprint HUD 32×32. Vedi
 [contratto dell'icona](HD_ICON_INTEGRATION.md).
 
-## Consegna privata
+## Preview portatile senza client
 
-La consegna portatile 0.2 deve contenere componenti compatibili: plugin, runtime
-bridge, companion XP opzionale e asset ricostruiti localmente, con hash e
-argomenti della sessione. La preparazione non installa o pubblica nulla.
+`package_private_bundle.py` richiede `--compat-plugin` e i corrispondenti
+`--compat-source`; contiene plugin, sorgenti, script e asset companion.
+`--runtime` verifica in sola lettura un client ufficiale installato, ma non
+archivia mai l'EXE. `--bridge-patch`, se usato, è solo riferimento storico.
+Per XP indicare `--weapon-xp` e `--weapon-xp-source` corrispondenti.
 
-Il packager aggiornato `package_private_bundle.py` richiede `--runtime` e
-`--bridge-patch`; per XP usare `--weapon-xp` con `--weapon-xp-source` che punta
-ai sorgenti corrispondenti. Per il motore indicare `--engine-source` alla copia
-OpenRAC separata. Nel repository pubblico patch e istruzioni sono in
-[`docs/arsenal-bridge`](../../docs/arsenal-bridge/README.md).
-
-`Start-Revolverator.ps1 -PrepareOnly` prepara manifest e profilo persistente
-senza avviare il gioco. I controlli Windows PowerShell 5.1 conservano gli input
-originali, aggiungono le tre classi e riusano `.profile`; la ricevuta di sola
-preparazione non dichiara una prova nativa. La preview resta distinta dalla
-versione definitiva e ogni artefatto distribuito richiede il suo hash.
+`Avvia-Prova.cmd` usa una prova Novalis vuota e isolata con 20 cariche.
+L'avvio normale mantiene `.profile`; `-StartUnlocked` è opzionale, mentre il
+setting `start_unlocked` rimane disattivato per default. `-PrepareOnly` prepara
+manifest e percorsi senza avviare il gioco. Hash, sorgenti e ricevuta nativa
+devono riferirsi esattamente ai plugin distribuiti; la preparazione non è una
+prova nel gioco e la preview rimane distinta dalla versione definitiva.

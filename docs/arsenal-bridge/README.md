@@ -1,6 +1,10 @@
-# Arsenal bridge source patch
+# Historical arsenal engine patch
 
-Revolverator 0.2 development requires these 30 typed native hooks on OpenRAC base
+**Historical reference only. The current preview uses the unchanged official
+client plus [Arsenal Compatibility](../../arsenal-compat/README.md). Do not apply
+this patch for current preview setup.**
+
+An earlier development runtime added these30 typed native hooks on OpenRAC base
 `77a2f05257c5dfc2ab9b1ec52a84fc78e8f64225`:
 [openrac-arsenal-bridge.patch](openrac-arsenal-bridge.patch).
 The exact IDs and signatures are in [hooks.json](hooks.json).
@@ -11,7 +15,7 @@ included. The bridge is GPL-scoped engine work; [COPYING](COPYING) and upstream
 file-specific copyright/license notices remain applicable. The mod's separate
 interop headers do not relicense the engine.
 
-## Build locally
+## Reproducing the historical development runtime
 
 ```sh
 git clone https://github.com/OpenRAC/OpenRAC.git OpenRAC
