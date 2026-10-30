@@ -1,5 +1,7 @@
 # OpenRAC Mods
 
+[![Build and test](https://github.com/noire342/openrac-mods/actions/workflows/build.yml/badge.svg)](https://github.com/noire342/openrac-mods/actions/workflows/build.yml)
+
 My Ratchet & Clank mods for the native OpenRAC port. I want them to feel like part
 of the original game: the existing HUD, native presentation, and settings that
 make optional changes explicit.

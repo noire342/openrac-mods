@@ -28,9 +28,11 @@ An explicit `OpenRACMod_DIR` takes precedence over `OPENRAC_SDK`.
 
 ## Targets and tests
 
-`BUILD_WEAPON_XP` defaults on. It builds the stable source snapshot and twelve
+`BUILD_WEAPON_XP` defaults on. It builds the 0.6.1-based source and twelve
 test groups, including the native adapter/DLL-host harness. These tests are
 separate from native game sessions described in [Validation](VALIDATION.md).
+Unreleased source portability fixes are listed in [Changelog](../CHANGELOG.md);
+the tagged 0.6.1 release archives remain unchanged.
 
 `BUILD_REVOLVERATOR` defaults off until a source snapshot is explicitly released.
 Enabling it on a revision without that folder produces a clear configure error.
