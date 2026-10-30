@@ -188,7 +188,8 @@ def collect_source(inputs, root, identifier, expected_version):
         if not keep or path.name in PRIVATE_ASSET_NAMES or '__pycache__' in parts:
             continue
         put(selected, f'{identifier}/{relative}', inputs.read(root, relative, f'source/{identifier}/{relative}'))
-    required = {f'{identifier}/{name}' for name in ('CMakeLists.txt', 'openrac-mod.json', 'LICENSE', 'README.md', 'src/mod.cpp')}
+    entry_source = 'src/weapon_xp.cpp' if identifier == 'weapon-xp' else 'src/mod.cpp'
+    required = {f'{identifier}/{name}' for name in ('CMakeLists.txt', 'openrac-mod.json', 'LICENSE', 'README.md', entry_source)}
     if not required.issubset(selected):
         raise ValueError(f'Incomplete corresponding source for {identifier}')
     if identifier == 'revolverator':
