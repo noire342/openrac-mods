@@ -6,11 +6,20 @@ on:
 permissions:
   contents: read
 jobs:
-  weapon-xp:
+  mods:
+    name: ${{ matrix.mod }} / ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-24.04]
+        mod: [weapon-xp, revolverator]
+        include:
+          - mod: weapon-xp
+            xp: 'ON'
+            revolverator: 'OFF'
+          - mod: revolverator
+            xp: 'OFF'
+            revolverator: 'ON'
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
@@ -20,13 +29,16 @@ jobs:
       - name: Fetch pinned SDK
         run: python tools/fetch_sdk.py
       - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_WEAPON_XP=${{ matrix.xp }} -DBUILD_REVOLVERATOR=${{ matrix.revolverator }} -DBUILD_TESTING=ON
       - name: Build
         run: cmake --build build --config Release --parallel
       - name: Test
         run: ctest --test-dir build -C Release --output-on-failure
+      - name: Verify Revolverator ELF service
+        if: runner.os == 'Linux' && matrix.mod == 'revolverator'
+        run: python tools/check_revolverator_exports.py build/revolverator/revolverator.so
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: test-results-${{ matrix.os }}
+          name: test-results-${{ matrix.mod }}-${{ matrix.os }}
           path: build/Testing/Temporary/LastTest.log

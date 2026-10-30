@@ -22,6 +22,10 @@ memory dumps, saved campaigns, credentials or the OpenRAC executable. Where a
 restoration needs original art, the asset builder reads the player's own local
 OpenRAC extraction and generates a private local companion.
 
+The optional local HUD-upscaling workflow uses
+[Real-ESRGAN ncnn Vulkan](https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan).
+Its runtime/model files and game-derived output are not vendored here.
+
 Source files retain their own SPDX/copyright notices. GPL-3.0-or-later covers the
 mod implementation; the public Weapon Experience API header has its own MIT
 license. Downloaded OpenRAC SDK files remain under their upstream licenses and

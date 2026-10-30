@@ -34,8 +34,12 @@ separate from native game sessions described in [Validation](VALIDATION.md).
 Unreleased source portability fixes are listed in [Changelog](../CHANGELOG.md);
 the tagged 0.6.1 release archives remain unchanged.
 
-`BUILD_REVOLVERATOR` defaults off until a source snapshot is explicitly released.
-Enabling it on a revision without that folder produces a clear configure error.
+`BUILD_REVOLVERATOR` defaults off because it is a source preview. Build/test it
+explicitly with `-DBUILD_WEAPON_XP=OFF -DBUILD_REVOLVERATOR=ON`. It has ten test
+groups. Enable both options to build both providers and run 22 test groups.
+Its [asset workflow](../revolverator/docs/BUILD_AND_ASSETS.md) separately generates
+the drill and ammunition components from local game data. CI uses the native
+glyph, downloads no game data and publishes only test logs.
 
 ## Releasing
 

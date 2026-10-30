@@ -15,7 +15,7 @@ find_package(OpenRACMod 1.3 REQUIRED)
 include(CTest)
 
 option(BUILD_WEAPON_XP "Build Weapon Experience" ON)
-option(BUILD_REVOLVERATOR "Build Revolverator when its source is available" OFF)
+option(BUILD_REVOLVERATOR "Build the Revolverator source preview" OFF)
 if(BUILD_WEAPON_XP)
   add_subdirectory(weapon-xp)
 endif()

@@ -9,11 +9,12 @@ make optional changes explicit.
 | Mod | Status | What it does |
 |---|---|---|
 | [Weapon Experience](weapon-xp/README.md) | **0.6.1 available** | Ten persistent weapon levels, native HUD integration and a versioned C API. Damage and ammo bonuses are off by default. |
-| [Revolverator](docs/REVOLVERATOR.md) | **In development** | A reconstruction of the cut drill weapon, with capture, spin and throw mechanics. It is not a finished release yet. |
+| [Revolverator](revolverator/README.md) | **0.1.0 source preview** | Capture, spin and throw reconstruction with native ammunition/HUD, localized text and a C API. Build code and generate required art locally. |
 
 Download Weapon Experience from [Releases](https://github.com/noire342/openrac-mods/releases).
-Each mod is released separately. An unfinished Revolverator preview is not a
-replacement for the verified Weapon Experience package.
+Each mod is distributed separately. Revolverator is currently available as
+source and local asset-building tools; no Revolverator binaries or game-derived
+art are published. See its [current scope and limitations](docs/REVOLVERATOR.md).
 
 ## Install Weapon Experience
 
@@ -30,6 +31,7 @@ See [Installation](docs/INSTALLATION.md) for settings, profiles and compatibilit
 - [Build from source](docs/BUILDING.md)
 - [API guide](docs/API.md)
 - [Weapon Experience configuration](weapon-xp/docs/CONFIGURATION.md)
+- [Revolverator API](revolverator/docs/API.md) and [asset/build workflow](revolverator/docs/BUILD_AND_ASSETS.md)
 - [Validation and compatibility](docs/VALIDATION.md)
 - [Credits and asset provenance](CREDITS.md)
 

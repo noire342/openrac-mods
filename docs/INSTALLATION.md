@@ -52,3 +52,12 @@ importer cannot add an absent class by itself.
 The final preview instructions must name the exact asset builder and `--levels`
 output to use. Importing only a DLL ZIP must not be described as sufficient for
 the full custom-art setup.
+## Revolverator source preview
+
+Revolverator is published as source and local asset-building tools. There is no
+public Revolverator binary or single launcher-importable package in this preview.
+Use its [README](../revolverator/README.md) and
+[asset workflow](../revolverator/docs/BUILD_AND_ASSETS.md). It requires NTSC-U
+game data, a locally generated drill pack and the cartridge's native manifest
+extension. Existing Walloper ownership becomes Revolverator ownership in slot 18.
+Read the [known limitations](REVOLVERATOR.md#known-limitations) before building.

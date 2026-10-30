@@ -17,8 +17,15 @@
 
 See [the full 0.6.1 changes](weapon-xp/docs/CHANGES-0.6.1.md).
 
-## Revolverator — unreleased
+## Revolverator 0.1.0 — source preview
 
-Capture/spin/throw reconstruction, native UI integration, an AI-assisted
-ammunition model and vendor/ammunition integration are under development.
-See [current status](docs/REVOLVERATOR.md).
+- Publish source for capture/spin/throw, native ammunition/HUD, Hoven vendor,
+  contact-based attachment and the separately controlled original drill tip.
+- Add a session guest arena, five-language text, a copy-only C API and ten
+  host test groups, plus local asset/bundle builders.
+- Record native Windows NTSC-U checks and 19-level load smoke evidence, with
+  explicit Rilgar HD fallback and Blarg Station pickup-text limitations.
+- Publish no Revolverator binaries or game-derived art. Weapon Experience 0.6.1
+  source and release archives remain unchanged by this preview publication.
+
+See [current scope](docs/REVOLVERATOR.md).

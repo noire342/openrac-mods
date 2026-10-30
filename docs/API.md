@@ -33,14 +33,19 @@ defaults off and does not add that weapon to the XP catalog.
 
 ## Revolverator preview
 
-The current design provides `openrac_revolverator_query` and a versioned,
-copy-only C table. It exposes the weapon phase, charge and counters plus explicit
-cancellation. Guest pointers and private C++ objects do not cross this boundary.
+The source preview provides `openrac_revolverator_query(1)` and the
+[`revolverator_api.h`](../revolverator/include/revolverator_api.h) C table.
+`get_state` copies phase, charge and counters; `cancel` releases an active
+capture/throw. The optional appended `get_mechanics` copies ammunition, capacity,
+rotor angle/speed and dry-fire/synchronization state. Check the byte offset of
+that tail before reading its pointer.
 
-The preview API remains under integration. Consumers must use the exact header
-shipped with the eventual preview and check version/size; this document does not
-promise unreleased function-table fields. Like the XP service, it is game-thread
-only and must not outlive the provider.
+The [full contract](../revolverator/docs/API.md) and
+[plain-C example](../revolverator/examples/state_client.c) cover version/size
+checks, output initialization, discovery and provider lifetime. Calls are
+game-thread only; guest pointers and private C++ objects do not cross the ABI.
+Item 18 intentionally shares Walloper's XP identity rather than creating a
+separate thirteenth progression record.
 
 ## Composition
 

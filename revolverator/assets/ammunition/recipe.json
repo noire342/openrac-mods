@@ -1,0 +1,13 @@
+{
+  "name": "Revolverator industrial energy cartridge",
+  "description": "A single rechargeable industrial motor cartridge with red metal casing, brass contacts, dark cooling ribs and an amber charge window.",
+  "author": "Community restoration; original procedural mesh and texture",
+  "visual_class": 32000,
+  "vendor_visual_class": 2016,
+  "native_pickup_class": 225,
+  "units": "metres before the native class-scale conversion",
+  "model_kind": "industrial_energy_cartridge",
+  "body_radius": 0.14,
+  "body_height": 0.325,
+  "palette": [[109, 49, 32], [53, 54, 47], [166, 129, 67], [141, 145, 129], [211, 166, 64], [83, 86, 76], [38, 39, 34], [184, 67, 39]]
+}

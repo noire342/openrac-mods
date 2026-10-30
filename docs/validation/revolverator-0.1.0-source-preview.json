@@ -1,0 +1,103 @@
+{
+  "mod": "revolverator",
+  "version": "0.1.0",
+  "distribution": "source preview; no public native binary or game-derived art",
+  "manifest_author": "noire342",
+  "target": "rac1 ntsc",
+  "host_test_groups": 10,
+  "host_platforms": [
+    "windows-x86_64",
+    "linux-x86_64"
+  ],
+  "host_tests_are_native_gameplay": false,
+  "native_evidence": {
+    "platform": "Windows NTSC-U",
+    "private_dll_sha256": "ff3b5b109a65ef9ad786f4f6bb819b130c7e77887589cf4ea55d3296db40cb29",
+    "quick_tap": {
+      "captures": 0,
+      "throws": 0
+    },
+    "minimum_capture_hold_seconds": 0.18,
+    "shaft_up_alignment_approximate": 0.99999,
+    "idle_tip_radians_per_second": 1,
+    "capture_tip_sync_radians_per_second": [
+      8,
+      18
+    ],
+    "empty_ammo_jerk_and_rollback": "observed",
+    "ammunition": {
+      "base_capacity": 10,
+      "activation_cost": 1,
+      "pickup": 2,
+      "pickup_capped": true,
+      "unit_price_bolts": 25
+    },
+    "vendor": {
+      "first_normal_availability": "after Hoven visit",
+      "normal_price_bolts": 15000,
+      "blocked_before_visit": true
+    },
+    "native_crate_breaking": "observed",
+    "cancel_held_enemy": {
+      "result": "idle",
+      "throws": 0,
+      "impacts": 0
+    },
+    "xp_composition": {
+      "local_provider_version": "0.6.2",
+      "item_id": 18,
+      "earned_xp_from_native_kill": 39,
+      "local_provider_source_published_by_this_preview": false
+    },
+    "level_load_smoke_ids": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18
+    ],
+    "orxon_clank_mode": "ordinary weapon use blocked as expected",
+    "xp_name_test": {
+      "assigned_through_api_xp": 3500,
+      "observed_native_name": "Revolverator v4",
+      "is_earned_progression_evidence": false
+    }
+  },
+  "limitations": [
+    "PAL untested and not declared compatible",
+    "Public builds use the native32px glyph; optional private HD falls back on Rilgar",
+    "Blarg Station custom cartridge pickup notifications can be unavailable when the text bank cannot fit",
+    "No full campaign or boss-fight validation",
+    "No exhaustive enemy, save/reload or other-mod configuration coverage"
+  ],
+  "existing_weapon_xp_publication": "0.6.1 source and released artifacts unchanged",
+  "fresh_source_builds": {
+    "windows": {
+      "compiler": "MSVC19.51",
+      "passed": 10,
+      "failed": 0
+    },
+    "linux": {
+      "compiler": "GNU13.3",
+      "passed": 10,
+      "failed": 0,
+      "elf_service_exports_verified": true
+    }
+  },
+  "sdk_version": "1.3.0",
+  "native_source_lf_sha256": "2a177c8de3003cbcf336954f006c2e9aeb595eeea00903e444289fd52af4728a"
+}

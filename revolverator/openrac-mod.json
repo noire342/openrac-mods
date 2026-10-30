@@ -1,0 +1,65 @@
+{
+  "format": 2,
+  "id": "revolverator",
+  "name": "Revolverator",
+  "version": "0.1.0",
+  "author": "noire342",
+  "license": "GPL-3.0-or-later",
+  "api": "1.1",
+  "description": "Restores the cut drill weapon through the native Walloper slot. Hold Circle to catch and spin a regular enemy; release to throw. Original Hoven drill model is supplied by the companion graphics pack.",
+  "games": {
+    "rac1": [
+      "ntsc"
+    ]
+  },
+  "hooks": [
+    "rac1.level.load_gameplay",
+    "rac1.pad.process_report",
+    "rac1.moby.moby180.update",
+    "rac1.moby.bolt.update",
+    "rac1.combat.get_hit",
+    "rac1.moby.record_death",
+    "rac1.player.advance_animation",
+    "rac1.moby.birdbot.update",
+    "rac1.moby.sand_shark.update",
+    "rac1.moby.wb_moby.update",
+    "rac1.moby.scoutbot.update",
+    "rac1.moby.spiderbot.update",
+    "rac1.moby.blarg_trooper.update",
+    "rac1.moby.moby294.update",
+    "rac1.moby.moby573.update",
+    "rac1.moby.moby1382.update",
+    "rac1.moby.peckbot.update",
+    "rac1.moby.extermibot.update",
+    "rac1.moby.moby1048.update",
+    "rac1.moby.sharkigator_35.update",
+    "rac1.moby.sharkigator_1059.update",
+    "rac1.moby.ammo_pickup.update",
+    "rac1.vendor.build_item_list"
+  ],
+  "load": {
+    "after": [
+      "weapon-xp"
+    ]
+  },
+  "settings": [
+    {
+      "key": "hud",
+      "name": "Show charge inside the native weapon HUD",
+      "type": "bool",
+      "default": true
+    },
+    {
+      "key": "reduced_motion",
+      "name": "Reduce weapon presentation motion",
+      "type": "bool",
+      "default": false
+    },
+    {
+      "key": "trace",
+      "name": "Diagnostic logging",
+      "type": "bool",
+      "default": false
+    }
+  ]
+}
