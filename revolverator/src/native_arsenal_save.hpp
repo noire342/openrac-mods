@@ -9,7 +9,10 @@
 namespace revolverator {
 class NativeArsenalSave final:public Memory {
 public:
+    struct Paths { std::filesystem::path card_root; bool no_card=false; };
     NativeArsenalSave(const openrac_api* api,openrac_mod* mod,NativeArsenal& arsenal);
+    // Explicit card roots keep host tests and private sessions isolated.
+    NativeArsenalSave(const openrac_api* api,openrac_mod* mod,NativeArsenal& arsenal,Paths paths);
     void begin_save();
     void after_prepare();
     void after_io();

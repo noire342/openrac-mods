@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 namespace file_overlay {
-int install(const wchar_t* config_file) noexcept;
+int install(const wchar_t* config_file,const char* api_version=nullptr) noexcept;
 int remove() noexcept;
 const char* last_error() noexcept;
 int stats(file_overlay_stats_v1* out) noexcept;

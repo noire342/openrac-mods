@@ -1,5 +1,20 @@
 # Changelog
 
+## Rotatore / Revolverator 0.3.1 and Weapon Experience 0.6.4
+
+- Make PAL Europe v2.00 on official Windows OpenRAC 0.10 the reference region,
+  with separate NTSC-U mappings and exact executable/manifest checks.
+- Add the independent Gold upgrade in Novalis for 50,000 normal bolts, with
+  charge-scaled impacts, native acquisition and preserved ammo/XP/favourites.
+- Buffer throws through bounded recovery; retain independent flying enemies,
+  native damage attribution and copied C API v3 upgrade diagnostics.
+- Correct PAL XP HUD stream/depth and acquisition camera addresses. Preserve
+  API v4, ten levels, native default weapon behavior and opt-in bonuses.
+- Publish the new XP numeric version 0.6.4 so the launcher's update comparison
+  distinguishes the PAL-fixed companion from 0.6.3-arsenal.
+- Include complete corresponding source/fixtures and AI ammunition/Gold credits;
+  preserve all four catalog IDs and the standalone mods' existing releases.
+
 ## Skill Points 0.1.3 and Cinematic Journeys 0.1.1
 
 - Verify the exact official OpenRAC 0.10.0 client and all 19 Skill Points callback maps.

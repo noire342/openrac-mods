@@ -17,7 +17,7 @@ struct Session {
     arsenal_compat::MinHookBackend backend;
     arsenal_compat::Provider provider;
     Session(const openrac_api& functions, openrac_mod* owner)
-        : api(functions), mod(owner), resolver(functions.function), provider(resolver, backend) {}
+        : api(functions), mod(owner), resolver(functions.function, functions.version), provider(resolver, backend) {}
     void log(int level) noexcept {
         arsenal_hooks_diagnostics_v1 diagnostic{}; diagnostic.size = sizeof(diagnostic);
         if (api.log && !provider.diagnostics(&diagnostic)) api.log(mod, level, diagnostic.message);
@@ -50,9 +50,10 @@ extern "C" OPENRAC_MOD_EXPORT int openrac_mod_load(const openrac_api* api, openr
     try {
         if (!api || api->size < offsetof(openrac_api, function) + sizeof(api->function) ||
             !api->function || !api->game || !api->version || !api->platform ||
-            std::strcmp(api->game, "rac1") || std::strcmp(api->version, "ntsc") ||
+            std::strcmp(api->game, "rac1") ||
+            (std::strcmp(api->version, "ntsc") && std::strcmp(api->version, "pal")) ||
             std::strcmp(api->platform, "windows-x86_64")) {
-            if (api && api->fail) api->fail(mod, "arsenal-compat requires stock OpenRAC R&C1 NTSC-U on Windows x64");
+            if (api && api->fail) api->fail(mod, "arsenal-compat requires stock OpenRAC R&C1 PAL or NTSC-U on Windows x64");
             return 1;
         }
         if (session) {

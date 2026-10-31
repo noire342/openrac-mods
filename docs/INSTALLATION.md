@@ -1,47 +1,43 @@
 # Installation
 
-## Revolverator preview through the normal launcher
+## Rotatore / Revolverator 0.3.1 through the normal launcher
 
-Use [official OpenRAC 0.9.0](https://github.com/OpenRAC/OpenRAC/releases/tag/launcher-v0.9.0)
-with your own NTSC-U game data. In the Mods page add
-[the explicit preview release address](https://github.com/noire342/openrac-mods/releases/tag/revolverator-v0.2.0-preview.1),
-select Revolverator, install it and enable it. Launch the game normally.
-The launcher verifies the native archive against the release's `SHA256SUMS`.
+Use official OpenRAC 0.10.0 Windows x64 with your own PAL Europe v2.00
+(`SCES_509.16`) data, the reference region. NTSC-U remains a separate supported
+profile. Re-extract with **Check and play** if format-4 levels are requested.
+In **Mods**, add [the repository](https://github.com/noire342/openrac-mods), select
+Revolverator and install it. The 0.3.1 release is a normal discoverable release,
+so the repository-root link works. Local import of
+`revolverator-0.3.1-windows-x86_64.zip` through **Mods → File** is also available.
+The launcher verifies the exact asset against that release's `SHA256SUMS`.
 
-For local import choose `revolverator-0.2.0-windows-x86_64.zip` in the Mods page.
-This is one ordinary native mod package containing assets and utility libraries.
-Do not install the utility source folders as separate mod cards. No external
-PowerShell launcher, custom level directory, manual manifest edits or client EXE
-replacement is part of this installation flow.
+Enable the mod and launch normally. Its two utility DLLs are private components,
+not separate mod cards. No replacement EXE, external launch script, custom
+`--levels` argument or manual manifest editing is part of this flow. The catalog
+still lists all four public mod IDs. Older historical prereleases require their
+explicit tag address; that restriction does not apply to 0.3.1.
 
-The preview URL must include `/releases/tag/revolverator-v0.2.0-preview.1`.
-The launcher excludes prereleases from its normal repository-root selection;
-the explicit tag selects this preview. The repository index exposes
-Weapon Experience, Revolverator, Skill Points and Cinematic Journeys.
+## Progress and upgrades
 
-## Trying the weapon and preserving progress
+Rotatore is additional logical item 65554, alongside native Walloper 18. Normal
+purchase starts after visiting Hoven, at 15,000 bolts. Base capacity is 20,
+pickups give 2, and ammo costs 25 bolts per round. `start_unlocked` defaults off;
+enabling it does not refill an already owned weapon after every load.
 
-Normal progression offers Revolverator at Hoven for 15,000 bolts, capacity 20,
-pickups give 2 and ammo costs 25 bolts per round. For an immediate trial enable
-**Revolverator sbloccato da subito** (`start_unlocked`) in the mod settings.
-The default is off; an already owned weapon is not refilled on reload.
+The additional Novalis Gold-shop case upgrades it for 50,000 ordinary bolts and
+zero Gold Bolts, subject to the native Gold-shop access gate and base ownership.
+The upgrade retains the same ammo, XP and favourites. Native saves retain native
+IDs; the fingerprinted `.arsenal` codec2 sidecar stores custom state and reads
+the prior codec1 format. PAL and NTSC save profiles remain separate; no automatic
+campaign migration or overwrite is performed. See [PAL/save details](../revolverator/docs/PAL.md).
 
-Use the game's normal saves. Custom ownership, ammo, XP and logical favourites
-are stored in a fingerprinted `saveN.bin.arsenal` sidecar. The normal save keeps
-native IDs and original Walloper state. The mod reads the original asset
-extraction and creates only its own temporary manifest cache; it does not
-rewrite the client or installed source manifests.
+## Optional Weapon Experience 0.6.4
 
-## Optional Weapon Experience
-
-Revolverator runs without XP. If XP is enabled, install the matching
-0.6.3-arsenal/API v4 companion; older stable 0.6.1 cannot filter custom ownership
-and is refused clearly in this combination. Damage/ammo bonuses remain off
-by default. Stable 0.6.1 archives remain unchanged for standalone use.
-
-See [Compatibility](COMPATIBILITY.md) for the exact supported executable and
-[Validation](VALIDATION.md) for binary-specific native scope. The earlier outer
-portable ZIP and helper scripts are historical development workflows.
+The weapon works without XP. When XP is enabled, install the matching 0.6.4 / API v4
+companion. It includes the PAL HUD/camera fixes and preserves older ABI prefixes.
+The old 0.6.3-arsenal binary is not the PAL-fixed companion; stable 0.6.1 remains
+available separately for standalone use. Damage/capacity bonuses default off.
+See [XP PAL coverage](../weapon-xp/docs/PAL.md) for exact native scope.
 
 ## Skill Points: RetroAchievements
 

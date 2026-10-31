@@ -1,0 +1,2183 @@
+{
+  "format": 1,
+  "version": "0.3.0",
+  "runtime_sha256": "b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081",
+  "windows_dll_sha256": "820ffe7dbb8478d8d1afcbd5ac81de66fdb3b68e946b853b7a683d993bb9372a",
+  "compat_dll_sha256": "077a7306b71ac5f35776b74c261cceb1ff0c1144961a847696eabc961c71d55a",
+  "overlay_dll_sha256": "aec87cbfd6eb3133dbb51e62edbce7fae46081355dcd4b5b5aa458876860ca14",
+  "native_gameplay_verified": true,
+  "full_campaign_verified": false,
+  "runtime_included": false,
+  "published": false,
+  "windows_host_test_groups_passed": 24,
+  "base_regression": {
+    "passed": true,
+    "base_revolverator_xp": 39,
+    "native_walloper_xp": 39,
+    "base_has_no_golden_burst": true,
+    "log_sha256": "8f4d5b1405855582e869f2de985370da8b01e3a12316aa639507103945eb832c",
+    "exit_code": 0
+  },
+  "geometry": {
+    "format": 1,
+    "held_models": [
+      {
+        "level": 0,
+        "binary_sha256": "56d4054b6ea12345d97176b147072c7138bc5ac588197ea7a9cfd8b1954a0e00"
+      },
+      {
+        "level": 1,
+        "binary_sha256": "56d4054b6ea12345d97176b147072c7138bc5ac588197ea7a9cfd8b1954a0e00"
+      },
+      {
+        "level": 2,
+        "binary_sha256": "56d4054b6ea12345d97176b147072c7138bc5ac588197ea7a9cfd8b1954a0e00"
+      },
+      {
+        "level": 3,
+        "binary_sha256": "56d4054b6ea12345d97176b147072c7138bc5ac588197ea7a9cfd8b1954a0e00"
+      },
+      {
+        "level": 4,
+        "binary_sha256": "56d4054b6ea12345d97176b147072c7138bc5ac588197ea7a9cfd8b1954a0e00"
+      },
+      {
+        "level": 5,
+        "binary_sha256": "56d4054b6ea12345d97176b147072c7138bc5ac588197ea7a9cfd8b1954a0e00"
+      },
+      {
+        "level": 6,
+        "binary_sha256": "56d4054b6ea12345d97176b147072c7138bc5ac588197ea7a9cfd8b1954a0e00"
+      },
+      {
+        "level": 7,
+        "binary_sha256": "56d4054b6ea12345d97176b147072c7138bc5ac588197ea7a9cfd8b1954a0e00"
+      },
+      {
+        "level": 8,
+        "binary_sha256": "56d4054b6ea12345d97176b147072c7138bc5ac588197ea7a9cfd8b1954a0e00"
+      },
+      {
+        "level": 9,
+        "binary_sha256": "56d4054b6ea12345d97176b147072c7138bc5ac588197ea7a9cfd8b1954a0e00"
+      },
+      {
+        "level": 10,
+        "binary_sha256": "56d4054b6ea12345d97176b147072c7138bc5ac588197ea7a9cfd8b1954a0e00"
+      },
+      {
+        "level": 11,
+        "binary_sha256": "56d4054b6ea12345d97176b147072c7138bc5ac588197ea7a9cfd8b1954a0e00"
+      },
+      {
+        "level": 12,
+        "binary_sha256": "56d4054b6ea12345d97176b147072c7138bc5ac588197ea7a9cfd8b1954a0e00"
+      },
+      {
+        "level": 13,
+        "binary_sha256": "56d4054b6ea12345d97176b147072c7138bc5ac588197ea7a9cfd8b1954a0e00"
+      },
+      {
+        "level": 14,
+        "binary_sha256": "56d4054b6ea12345d97176b147072c7138bc5ac588197ea7a9cfd8b1954a0e00"
+      },
+      {
+        "level": 15,
+        "binary_sha256": "56d4054b6ea12345d97176b147072c7138bc5ac588197ea7a9cfd8b1954a0e00"
+      },
+      {
+        "level": 16,
+        "binary_sha256": "56d4054b6ea12345d97176b147072c7138bc5ac588197ea7a9cfd8b1954a0e00"
+      },
+      {
+        "level": 17,
+        "binary_sha256": "56d4054b6ea12345d97176b147072c7138bc5ac588197ea7a9cfd8b1954a0e00"
+      },
+      {
+        "level": 18,
+        "binary_sha256": "56d4054b6ea12345d97176b147072c7138bc5ac588197ea7a9cfd8b1954a0e00"
+      }
+    ],
+    "all_geometry_uv_topology_skin_rotor_buffers_identical": true,
+    "static_display_unskinned_same_binary": true
+  },
+  "scenarios": [
+    {
+      "scenario": "shop",
+      "passed": true,
+      "result": {
+        "event": "result",
+        "mode": "shop",
+        "pass": true,
+        "checks": 15,
+        "failures": 0,
+        "host_frame": 804,
+        "tick": 311,
+        "triangle_pulses": 1,
+        "purchase_events": 1,
+        "gold_transitions": 1,
+        "gold_render_views": 151,
+        "launch_blast": 0.0,
+        "recoil_frames": 0,
+        "recoil_seconds": 0.0,
+        "recoil_motion_samples": 0,
+        "max_recoil_speed": 0.0,
+        "max_recoil_displacement": 0.0,
+        "resumed_motion_samples": 0
+      },
+      "checks": [
+        {
+          "event": "check",
+          "name": "owned_base_capacity20",
+          "pass": true,
+          "host_frame": 553,
+          "tick": 60
+        },
+        {
+          "event": "check",
+          "name": "gold_unowned_price50000_normal_zero_gold",
+          "pass": true,
+          "host_frame": 553,
+          "tick": 60
+        },
+        {
+          "event": "check",
+          "name": "guarded_teleport_to_native_gold_room",
+          "pass": true,
+          "host_frame": 573,
+          "tick": 80
+        },
+        {
+          "event": "check",
+          "name": "additional_native304_dome_live",
+          "pass": true,
+          "host_frame": 653,
+          "tick": 160
+        },
+        {
+          "event": "check",
+          "name": "gold_display_live_before_purchase",
+          "pass": true,
+          "host_frame": 653,
+          "tick": 160
+        },
+        {
+          "event": "check",
+          "name": "purchase_deducts_exactly50000_normal_bolts",
+          "pass": true,
+          "host_frame": 654,
+          "tick": 161
+        },
+        {
+          "event": "check",
+          "name": "ten_native_gold_flags_and_collection_bits_preserved",
+          "pass": true,
+          "host_frame": 654,
+          "tick": 161
+        },
+        {
+          "event": "check",
+          "name": "gold_purchase_preserves_ammo_and_xp",
+          "pass": true,
+          "host_frame": 654,
+          "tick": 161
+        },
+        {
+          "event": "check",
+          "name": "native_walloper_state_independent",
+          "pass": true,
+          "host_frame": 654,
+          "tick": 161
+        },
+        {
+          "event": "check",
+          "name": "one_native_purchase_and_one_logical_transition",
+          "pass": true,
+          "host_frame": 654,
+          "tick": 161
+        },
+        {
+          "event": "check",
+          "name": "purchase_event_not_replayed",
+          "pass": true,
+          "host_frame": 804,
+          "tick": 311
+        },
+        {
+          "event": "check",
+          "name": "only_display_retires_sold_dome_remains",
+          "pass": true,
+          "host_frame": 804,
+          "tick": 311
+        },
+        {
+          "event": "check",
+          "name": "held_model_renders_gold_class2018",
+          "pass": true,
+          "host_frame": 804,
+          "tick": 311
+        },
+        {
+          "event": "check",
+          "name": "purchase_currency_stable_after_input_release",
+          "pass": true,
+          "host_frame": 804,
+          "tick": 311
+        },
+        {
+          "event": "check",
+          "name": "native_gold_state_stable_after_purchase",
+          "pass": true,
+          "host_frame": 804,
+          "tick": 311
+        }
+      ],
+      "final_state": {
+        "event": "final_state",
+        "mode": "shop",
+        "host_frame": 804,
+        "tick": 311,
+        "step": 9,
+        "phase": 0,
+        "golden": 1,
+        "blast_charge": 0.0,
+        "throw_charge": 0.0,
+        "recoil": 0,
+        "captures": 0,
+        "throws": 0,
+        "impacts": 0,
+        "explosions": 0,
+        "area_hits": 0,
+        "native_hits": 0,
+        "native_deaths": 0,
+        "ammo": 20,
+        "capacity": 20,
+        "xp": 0,
+        "walloper_xp": 0,
+        "bolts": 10000,
+        "held": 18,
+        "requested": 18,
+        "held_class": 180,
+        "hero_x": 250.8,
+        "hero_y": 125.5,
+        "hero_z": 54.46875,
+        "native_mode": 0
+      },
+      "native_bursts": [],
+      "native_events": [
+        {
+          "event": "native_purchase_boundary",
+          "mode": "shop",
+          "host_frame": 653,
+          "tick": 160,
+          "step": 2,
+          "phase": 0,
+          "golden": 1,
+          "blast_charge": 0.0,
+          "throw_charge": 0.0,
+          "recoil": 0,
+          "captures": 0,
+          "throws": 0,
+          "impacts": 0,
+          "explosions": 0,
+          "area_hits": 0,
+          "native_hits": 0,
+          "native_deaths": 0,
+          "ammo": 20,
+          "capacity": 20,
+          "xp": 0,
+          "walloper_xp": 0,
+          "bolts": 10000,
+          "held": 18,
+          "requested": 18,
+          "held_class": 180,
+          "hero_x": 250.8,
+          "hero_y": 125.5,
+          "hero_z": 54.46875,
+          "native_mode": 0
+        }
+      ],
+      "native_purchase_poll_events": 1,
+      "normal_process_exit_observed": true,
+      "original_input_count": 64,
+      "original_inputs_unchanged": true,
+      "log_sha256": "720f2c018ff9b1ddaef6cd9e17d593e30a362990e4674a76245dc686978fba0c",
+      "artifacts": {
+        "runtime": "b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081",
+        "revolverator": "820ffe7dbb8478d8d1afcbd5ac81de66fdb3b68e946b853b7a683d993bb9372a",
+        "compat": "077a7306b71ac5f35776b74c261cceb1ff0c1144961a847696eabc961c71d55a",
+        "overlay": "aec87cbfd6eb3133dbb51e62edbce7fae46081355dcd4b5b5aa458876860ca14",
+        "probe": "096882cfdc2d7b6df0a44e34b6e025a67df76d6640afd931c21fdd85353874a0",
+        "weapon_xp": "68205f76fea997336d4ee01fcb7c2812a2fdd32b6d79d3b67cc51a8b162cb67c"
+      }
+    },
+    {
+      "scenario": "shop",
+      "passed": true,
+      "result": {
+        "event": "result",
+        "mode": "shop",
+        "pass": true,
+        "checks": 16,
+        "failures": 0,
+        "host_frame": 804,
+        "tick": 311,
+        "triangle_pulses": 1,
+        "purchase_events": 1,
+        "gold_transitions": 1,
+        "gold_render_views": 151,
+        "launch_blast": 0.0,
+        "recoil_frames": 0,
+        "recoil_seconds": 0.0,
+        "recoil_motion_samples": 0,
+        "max_recoil_speed": 0.0,
+        "max_recoil_displacement": 0.0,
+        "resumed_motion_samples": 0
+      },
+      "checks": [
+        {
+          "event": "check",
+          "name": "owned_base_capacity20",
+          "pass": true,
+          "host_frame": 553,
+          "tick": 60
+        },
+        {
+          "event": "check",
+          "name": "gold_unowned_price50000_normal_zero_gold",
+          "pass": true,
+          "host_frame": 553,
+          "tick": 60
+        },
+        {
+          "event": "check",
+          "name": "guarded_teleport_to_native_gold_room",
+          "pass": true,
+          "host_frame": 573,
+          "tick": 80
+        },
+        {
+          "event": "check",
+          "name": "additional_native304_dome_live",
+          "pass": true,
+          "host_frame": 653,
+          "tick": 160
+        },
+        {
+          "event": "check",
+          "name": "gold_display_live_before_purchase",
+          "pass": true,
+          "host_frame": 653,
+          "tick": 160
+        },
+        {
+          "event": "check",
+          "name": "eleven_live_cases_preserve_all_ten_original_gold_offers",
+          "pass": true,
+          "host_frame": 653,
+          "tick": 160
+        },
+        {
+          "event": "check",
+          "name": "purchase_deducts_exactly50000_normal_bolts",
+          "pass": true,
+          "host_frame": 654,
+          "tick": 161
+        },
+        {
+          "event": "check",
+          "name": "ten_native_gold_flags_and_collection_bits_preserved",
+          "pass": true,
+          "host_frame": 654,
+          "tick": 161
+        },
+        {
+          "event": "check",
+          "name": "gold_purchase_preserves_ammo_and_xp",
+          "pass": true,
+          "host_frame": 654,
+          "tick": 161
+        },
+        {
+          "event": "check",
+          "name": "native_walloper_state_independent",
+          "pass": true,
+          "host_frame": 654,
+          "tick": 161
+        },
+        {
+          "event": "check",
+          "name": "one_native_purchase_and_one_logical_transition",
+          "pass": true,
+          "host_frame": 654,
+          "tick": 161
+        },
+        {
+          "event": "check",
+          "name": "purchase_event_not_replayed",
+          "pass": true,
+          "host_frame": 804,
+          "tick": 311
+        },
+        {
+          "event": "check",
+          "name": "only_display_retires_sold_dome_remains",
+          "pass": true,
+          "host_frame": 804,
+          "tick": 311
+        },
+        {
+          "event": "check",
+          "name": "held_model_renders_gold_class2018",
+          "pass": true,
+          "host_frame": 804,
+          "tick": 311
+        },
+        {
+          "event": "check",
+          "name": "purchase_currency_stable_after_input_release",
+          "pass": true,
+          "host_frame": 804,
+          "tick": 311
+        },
+        {
+          "event": "check",
+          "name": "native_gold_state_stable_after_purchase",
+          "pass": true,
+          "host_frame": 804,
+          "tick": 311
+        }
+      ],
+      "final_state": {
+        "event": "final_state",
+        "mode": "shop",
+        "host_frame": 804,
+        "tick": 311,
+        "step": 12,
+        "phase": 0,
+        "golden": 1,
+        "blast_charge": 0.0,
+        "throw_charge": 0.0,
+        "recoil": 0,
+        "captures": 0,
+        "throws": 0,
+        "impacts": 0,
+        "explosions": 0,
+        "area_hits": 0,
+        "native_hits": 0,
+        "native_deaths": 0,
+        "ammo": 20,
+        "capacity": 20,
+        "xp": 0,
+        "walloper_xp": 0,
+        "bolts": 10000,
+        "held": 18,
+        "requested": 18,
+        "held_class": 180,
+        "hero_x": 250.8,
+        "hero_y": 125.5,
+        "hero_z": 54.46875,
+        "native_mode": 0
+      },
+      "native_bursts": [],
+      "native_events": [
+        {
+          "event": "native_purchase_boundary",
+          "mode": "shop",
+          "host_frame": 653,
+          "tick": 160,
+          "step": 2,
+          "phase": 0,
+          "golden": 1,
+          "blast_charge": 0.0,
+          "throw_charge": 0.0,
+          "recoil": 0,
+          "captures": 0,
+          "throws": 0,
+          "impacts": 0,
+          "explosions": 0,
+          "area_hits": 0,
+          "native_hits": 0,
+          "native_deaths": 0,
+          "ammo": 20,
+          "capacity": 20,
+          "xp": 0,
+          "walloper_xp": 0,
+          "bolts": 10000,
+          "held": 18,
+          "requested": 18,
+          "held_class": 180,
+          "hero_x": 250.8,
+          "hero_y": 125.5,
+          "hero_z": 54.46875,
+          "native_mode": 0
+        }
+      ],
+      "native_purchase_poll_events": 1,
+      "normal_process_exit_observed": true,
+      "original_input_count": 64,
+      "original_inputs_unchanged": true,
+      "log_sha256": "c0923f6ec6232fbdf08a675c18a499a8591ad157fdce41642f6f1e3f716692e8",
+      "artifacts": {
+        "runtime": "b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081",
+        "revolverator": "820ffe7dbb8478d8d1afcbd5ac81de66fdb3b68e946b853b7a683d993bb9372a",
+        "compat": "077a7306b71ac5f35776b74c261cceb1ff0c1144961a847696eabc961c71d55a",
+        "overlay": "aec87cbfd6eb3133dbb51e62edbce7fae46081355dcd4b5b5aa458876860ca14",
+        "probe": "44d3bc0d729d2334c02825b7d3e5ecb73831cb71e934fd617c01afd77e2a5583"
+      }
+    },
+    {
+      "scenario": "combatshort",
+      "passed": true,
+      "result": {
+        "event": "result",
+        "mode": "combatshort",
+        "pass": true,
+        "checks": 30,
+        "failures": 0,
+        "host_frame": 1058,
+        "tick": 565,
+        "triangle_pulses": 1,
+        "purchase_events": 1,
+        "gold_transitions": 1,
+        "gold_render_views": 405,
+        "launch_blast": 0.111111,
+        "recoil_frames": 9,
+        "recoil_seconds": 0.149999,
+        "recoil_motion_samples": 9,
+        "max_recoil_speed": 0.0,
+        "max_recoil_displacement": 0.0,
+        "resumed_motion_samples": 42
+      },
+      "checks": [
+        {
+          "event": "check",
+          "name": "owned_base_capacity20",
+          "pass": true,
+          "host_frame": 553,
+          "tick": 60
+        },
+        {
+          "event": "check",
+          "name": "gold_unowned_price50000_normal_zero_gold",
+          "pass": true,
+          "host_frame": 553,
+          "tick": 60
+        },
+        {
+          "event": "check",
+          "name": "guarded_teleport_to_native_gold_room",
+          "pass": true,
+          "host_frame": 573,
+          "tick": 80
+        },
+        {
+          "event": "check",
+          "name": "additional_native304_dome_live",
+          "pass": true,
+          "host_frame": 653,
+          "tick": 160
+        },
+        {
+          "event": "check",
+          "name": "gold_display_live_before_purchase",
+          "pass": true,
+          "host_frame": 653,
+          "tick": 160
+        },
+        {
+          "event": "check",
+          "name": "eleven_live_cases_preserve_all_ten_original_gold_offers",
+          "pass": true,
+          "host_frame": 653,
+          "tick": 160
+        },
+        {
+          "event": "check",
+          "name": "purchase_deducts_exactly50000_normal_bolts",
+          "pass": true,
+          "host_frame": 654,
+          "tick": 161
+        },
+        {
+          "event": "check",
+          "name": "ten_native_gold_flags_and_collection_bits_preserved",
+          "pass": true,
+          "host_frame": 654,
+          "tick": 161
+        },
+        {
+          "event": "check",
+          "name": "gold_purchase_preserves_ammo_and_xp",
+          "pass": true,
+          "host_frame": 654,
+          "tick": 161
+        },
+        {
+          "event": "check",
+          "name": "native_walloper_state_independent",
+          "pass": true,
+          "host_frame": 654,
+          "tick": 161
+        },
+        {
+          "event": "check",
+          "name": "one_native_purchase_and_one_logical_transition",
+          "pass": true,
+          "host_frame": 654,
+          "tick": 161
+        },
+        {
+          "event": "check",
+          "name": "purchase_event_not_replayed",
+          "pass": true,
+          "host_frame": 804,
+          "tick": 311
+        },
+        {
+          "event": "check",
+          "name": "only_display_retires_sold_dome_remains",
+          "pass": true,
+          "host_frame": 804,
+          "tick": 311
+        },
+        {
+          "event": "check",
+          "name": "held_model_renders_gold_class2018",
+          "pass": true,
+          "host_frame": 804,
+          "tick": 311
+        },
+        {
+          "event": "check",
+          "name": "purchase_currency_stable_after_input_release",
+          "pass": true,
+          "host_frame": 804,
+          "tick": 311
+        },
+        {
+          "event": "check",
+          "name": "native_gold_state_stable_after_purchase",
+          "pass": true,
+          "host_frame": 804,
+          "tick": 311
+        },
+        {
+          "event": "check",
+          "name": "return_to_original_native_combat_area",
+          "pass": true,
+          "host_frame": 804,
+          "tick": 311
+        },
+        {
+          "event": "check",
+          "name": "four_original_birdbots_available",
+          "pass": true,
+          "host_frame": 804,
+          "tick": 311
+        },
+        {
+          "event": "check",
+          "name": "one_native_controller_throw",
+          "pass": true,
+          "host_frame": 896,
+          "tick": 403
+        },
+        {
+          "event": "check",
+          "name": "blast_charge_matches_hold_until_auto_cap",
+          "pass": true,
+          "host_frame": 896,
+          "tick": 403
+        },
+        {
+          "event": "check",
+          "name": "exactly_one_native_explosion",
+          "pass": true,
+          "host_frame": 1058,
+          "tick": 565
+        },
+        {
+          "event": "check",
+          "name": "area_damage_reaches_multiple_native_accepted_targets",
+          "pass": true,
+          "host_frame": 1058,
+          "tick": 565
+        },
+        {
+          "event": "check",
+          "name": "native_death_bookkeeping_from_golden_hit",
+          "pass": true,
+          "host_frame": 1058,
+          "tick": 565
+        },
+        {
+          "event": "check",
+          "name": "one_shot_costs_one_round_only",
+          "pass": true,
+          "host_frame": 1058,
+          "tick": 565
+        },
+        {
+          "event": "check",
+          "name": "golden_kills_do_not_credit_native_walloper",
+          "pass": true,
+          "host_frame": 1058,
+          "tick": 565
+        },
+        {
+          "event": "check",
+          "name": "revolverator_earns_actual_native_bolt_based_xp",
+          "pass": true,
+          "host_frame": 1058,
+          "tick": 565
+        },
+        {
+          "event": "check",
+          "name": "native_motion_hooks_stop_only_ratchet_during_recoil",
+          "pass": true,
+          "host_frame": 1058,
+          "tick": 565
+        },
+        {
+          "event": "check",
+          "name": "recoil_has_short_bounded_duration_with_no_horizontal_drift",
+          "pass": true,
+          "host_frame": 1058,
+          "tick": 565
+        },
+        {
+          "event": "check",
+          "name": "native_locomotion_resumes_after_recoil",
+          "pass": true,
+          "host_frame": 1058,
+          "tick": 565
+        },
+        {
+          "event": "check",
+          "name": "native_gold_flags_preserved_through_combat",
+          "pass": true,
+          "host_frame": 1058,
+          "tick": 565
+        }
+      ],
+      "final_state": {
+        "event": "final_state",
+        "mode": "combatshort",
+        "host_frame": 1058,
+        "tick": 565,
+        "step": 12,
+        "phase": 0,
+        "golden": 1,
+        "blast_charge": 0.0,
+        "throw_charge": 0.0,
+        "recoil": 0,
+        "captures": 1,
+        "throws": 1,
+        "impacts": 1,
+        "explosions": 1,
+        "area_hits": 2,
+        "native_hits": 2,
+        "native_deaths": 2,
+        "ammo": 19,
+        "capacity": 20,
+        "xp": 78,
+        "walloper_xp": 0,
+        "bolts": 10021,
+        "held": 18,
+        "requested": 18,
+        "held_class": 180,
+        "hero_x": 165.54405,
+        "hero_y": 135.66375,
+        "hero_z": 60.0,
+        "native_mode": 0
+      },
+      "native_bursts": [
+        {
+          "charge": 0.111,
+          "radius": 2.88,
+          "damage": 8.88,
+          "scale": 1.39,
+          "targets": 2
+        }
+      ],
+      "native_events": [
+        {
+          "event": "native_purchase_boundary",
+          "mode": "combatshort",
+          "host_frame": 653,
+          "tick": 160,
+          "step": 2,
+          "phase": 0,
+          "golden": 1,
+          "blast_charge": 0.0,
+          "throw_charge": 0.0,
+          "recoil": 0,
+          "captures": 0,
+          "throws": 0,
+          "impacts": 0,
+          "explosions": 0,
+          "area_hits": 0,
+          "native_hits": 0,
+          "native_deaths": 0,
+          "ammo": 20,
+          "capacity": 20,
+          "xp": 0,
+          "walloper_xp": 0,
+          "bolts": 10000,
+          "held": 18,
+          "requested": 18,
+          "held_class": 180,
+          "hero_x": 250.8,
+          "hero_y": 125.5,
+          "hero_z": 54.46875,
+          "native_mode": 0
+        },
+        {
+          "event": "released",
+          "mode": "combatshort",
+          "host_frame": 896,
+          "tick": 403,
+          "step": 7,
+          "phase": 3,
+          "golden": 1,
+          "blast_charge": 0.111111,
+          "throw_charge": 0.208333,
+          "recoil": 1,
+          "captures": 1,
+          "throws": 1,
+          "impacts": 0,
+          "explosions": 0,
+          "area_hits": 0,
+          "native_hits": 0,
+          "native_deaths": 0,
+          "ammo": 19,
+          "capacity": 20,
+          "xp": 0,
+          "walloper_xp": 0,
+          "bolts": 10000,
+          "held": 18,
+          "requested": 18,
+          "held_class": 180,
+          "hero_x": 165.57162,
+          "hero_y": 136.43124,
+          "hero_z": 60.0,
+          "native_mode": 0
+        },
+        {
+          "event": "exploded",
+          "mode": "combatshort",
+          "host_frame": 908,
+          "tick": 415,
+          "step": 8,
+          "phase": 4,
+          "golden": 1,
+          "blast_charge": 0.0,
+          "throw_charge": 0.0,
+          "recoil": 0,
+          "captures": 1,
+          "throws": 1,
+          "impacts": 1,
+          "explosions": 1,
+          "area_hits": 2,
+          "native_hits": 0,
+          "native_deaths": 0,
+          "ammo": 19,
+          "capacity": 20,
+          "xp": 0,
+          "walloper_xp": 0,
+          "bolts": 10000,
+          "held": 18,
+          "requested": 18,
+          "held_class": 180,
+          "hero_x": 165.57369,
+          "hero_y": 136.43119,
+          "hero_z": 60.0,
+          "native_mode": 0
+        },
+        {
+          "event": "native_accepted_hit",
+          "host_frame": 908,
+          "tick": 415,
+          "target": 32176000,
+          "class": 459,
+          "stamp": 0,
+          "origin": 2017,
+          "attacker": 32339584,
+          "flags": 8585216,
+          "damage": 8.088862,
+          "held": 18
+        },
+        {
+          "event": "native_accepted_hit",
+          "host_frame": 908,
+          "tick": 415,
+          "target": 32175744,
+          "class": 459,
+          "stamp": 0,
+          "origin": 2017,
+          "attacker": 32339584,
+          "flags": 8585216,
+          "damage": 8.888888,
+          "held": 18
+        },
+        {
+          "event": "native_death",
+          "host_frame": 912,
+          "target": 32175744,
+          "class": 459,
+          "base_bolts": 39,
+          "budget": 39
+        },
+        {
+          "event": "native_death",
+          "host_frame": 915,
+          "target": 32176000,
+          "class": 459,
+          "base_bolts": 39,
+          "budget": 39
+        }
+      ],
+      "native_purchase_poll_events": 1,
+      "normal_process_exit_observed": true,
+      "original_input_count": 64,
+      "original_inputs_unchanged": true,
+      "log_sha256": "6197cc3f971d84738987afb7db0756d6986f57cc641e3ad211c79c6453a37aa9",
+      "artifacts": {
+        "runtime": "b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081",
+        "revolverator": "820ffe7dbb8478d8d1afcbd5ac81de66fdb3b68e946b853b7a683d993bb9372a",
+        "compat": "077a7306b71ac5f35776b74c261cceb1ff0c1144961a847696eabc961c71d55a",
+        "overlay": "aec87cbfd6eb3133dbb51e62edbce7fae46081355dcd4b5b5aa458876860ca14",
+        "probe": "44d3bc0d729d2334c02825b7d3e5ecb73831cb71e934fd617c01afd77e2a5583",
+        "weapon_xp": "68205f76fea997336d4ee01fcb7c2812a2fdd32b6d79d3b67cc51a8b162cb67c"
+      }
+    },
+    {
+      "scenario": "combatlong",
+      "passed": true,
+      "result": {
+        "event": "result",
+        "mode": "combatlong",
+        "pass": true,
+        "checks": 29,
+        "failures": 0,
+        "host_frame": 1217,
+        "tick": 724,
+        "triangle_pulses": 1,
+        "purchase_events": 1,
+        "gold_transitions": 1,
+        "gold_render_views": 564,
+        "launch_blast": 1.0,
+        "recoil_frames": 9,
+        "recoil_seconds": 0.149999,
+        "recoil_motion_samples": 9,
+        "max_recoil_speed": 0.0,
+        "max_recoil_displacement": 0.0,
+        "resumed_motion_samples": 38
+      },
+      "checks": [
+        {
+          "event": "check",
+          "name": "owned_base_capacity20",
+          "pass": true,
+          "host_frame": 553,
+          "tick": 60
+        },
+        {
+          "event": "check",
+          "name": "gold_unowned_price50000_normal_zero_gold",
+          "pass": true,
+          "host_frame": 553,
+          "tick": 60
+        },
+        {
+          "event": "check",
+          "name": "guarded_teleport_to_native_gold_room",
+          "pass": true,
+          "host_frame": 573,
+          "tick": 80
+        },
+        {
+          "event": "check",
+          "name": "additional_native304_dome_live",
+          "pass": true,
+          "host_frame": 653,
+          "tick": 160
+        },
+        {
+          "event": "check",
+          "name": "gold_display_live_before_purchase",
+          "pass": true,
+          "host_frame": 653,
+          "tick": 160
+        },
+        {
+          "event": "check",
+          "name": "purchase_deducts_exactly50000_normal_bolts",
+          "pass": true,
+          "host_frame": 654,
+          "tick": 161
+        },
+        {
+          "event": "check",
+          "name": "ten_native_gold_flags_and_collection_bits_preserved",
+          "pass": true,
+          "host_frame": 654,
+          "tick": 161
+        },
+        {
+          "event": "check",
+          "name": "gold_purchase_preserves_ammo_and_xp",
+          "pass": true,
+          "host_frame": 654,
+          "tick": 161
+        },
+        {
+          "event": "check",
+          "name": "native_walloper_state_independent",
+          "pass": true,
+          "host_frame": 654,
+          "tick": 161
+        },
+        {
+          "event": "check",
+          "name": "one_native_purchase_and_one_logical_transition",
+          "pass": true,
+          "host_frame": 654,
+          "tick": 161
+        },
+        {
+          "event": "check",
+          "name": "purchase_event_not_replayed",
+          "pass": true,
+          "host_frame": 804,
+          "tick": 311
+        },
+        {
+          "event": "check",
+          "name": "only_display_retires_sold_dome_remains",
+          "pass": true,
+          "host_frame": 804,
+          "tick": 311
+        },
+        {
+          "event": "check",
+          "name": "held_model_renders_gold_class2018",
+          "pass": true,
+          "host_frame": 804,
+          "tick": 311
+        },
+        {
+          "event": "check",
+          "name": "purchase_currency_stable_after_input_release",
+          "pass": true,
+          "host_frame": 804,
+          "tick": 311
+        },
+        {
+          "event": "check",
+          "name": "native_gold_state_stable_after_purchase",
+          "pass": true,
+          "host_frame": 804,
+          "tick": 311
+        },
+        {
+          "event": "check",
+          "name": "return_to_original_native_combat_area",
+          "pass": true,
+          "host_frame": 804,
+          "tick": 311
+        },
+        {
+          "event": "check",
+          "name": "four_original_birdbots_available",
+          "pass": true,
+          "host_frame": 804,
+          "tick": 311
+        },
+        {
+          "event": "check",
+          "name": "one_native_controller_throw",
+          "pass": true,
+          "host_frame": 1057,
+          "tick": 564
+        },
+        {
+          "event": "check",
+          "name": "blast_charge_matches_hold_until_auto_cap",
+          "pass": true,
+          "host_frame": 1057,
+          "tick": 564
+        },
+        {
+          "event": "check",
+          "name": "exactly_one_native_explosion",
+          "pass": true,
+          "host_frame": 1217,
+          "tick": 724
+        },
+        {
+          "event": "check",
+          "name": "area_damage_reaches_multiple_native_accepted_targets",
+          "pass": true,
+          "host_frame": 1217,
+          "tick": 724
+        },
+        {
+          "event": "check",
+          "name": "native_death_bookkeeping_from_golden_hit",
+          "pass": true,
+          "host_frame": 1217,
+          "tick": 724
+        },
+        {
+          "event": "check",
+          "name": "one_shot_costs_one_round_only",
+          "pass": true,
+          "host_frame": 1217,
+          "tick": 724
+        },
+        {
+          "event": "check",
+          "name": "golden_kills_do_not_credit_native_walloper",
+          "pass": true,
+          "host_frame": 1217,
+          "tick": 724
+        },
+        {
+          "event": "check",
+          "name": "revolverator_earns_actual_native_bolt_based_xp",
+          "pass": true,
+          "host_frame": 1217,
+          "tick": 724
+        },
+        {
+          "event": "check",
+          "name": "native_motion_hooks_stop_only_ratchet_during_recoil",
+          "pass": true,
+          "host_frame": 1217,
+          "tick": 724
+        },
+        {
+          "event": "check",
+          "name": "recoil_has_short_bounded_duration_with_no_horizontal_drift",
+          "pass": true,
+          "host_frame": 1217,
+          "tick": 724
+        },
+        {
+          "event": "check",
+          "name": "native_locomotion_resumes_after_recoil",
+          "pass": true,
+          "host_frame": 1217,
+          "tick": 724
+        },
+        {
+          "event": "check",
+          "name": "native_gold_flags_preserved_through_combat",
+          "pass": true,
+          "host_frame": 1217,
+          "tick": 724
+        }
+      ],
+      "final_state": {
+        "event": "final_state",
+        "mode": "combatlong",
+        "host_frame": 1217,
+        "tick": 724,
+        "step": 9,
+        "phase": 0,
+        "golden": 1,
+        "blast_charge": 0.0,
+        "throw_charge": 0.0,
+        "recoil": 0,
+        "captures": 1,
+        "throws": 1,
+        "impacts": 1,
+        "explosions": 1,
+        "area_hits": 3,
+        "native_hits": 3,
+        "native_deaths": 2,
+        "ammo": 19,
+        "capacity": 20,
+        "xp": 78,
+        "walloper_xp": 0,
+        "bolts": 10000,
+        "held": 18,
+        "requested": 18,
+        "held_class": 180,
+        "hero_x": 165.78395,
+        "hero_y": 137.04927,
+        "hero_z": 60.0,
+        "native_mode": 0
+      },
+      "native_bursts": [
+        {
+          "charge": 1.0,
+          "radius": 6.0,
+          "damage": 16.0,
+          "scale": 3.0,
+          "targets": 3
+        }
+      ],
+      "native_events": [
+        {
+          "event": "native_purchase_boundary",
+          "mode": "combatlong",
+          "host_frame": 653,
+          "tick": 160,
+          "step": 2,
+          "phase": 0,
+          "golden": 1,
+          "blast_charge": 0.0,
+          "throw_charge": 0.0,
+          "recoil": 0,
+          "captures": 0,
+          "throws": 0,
+          "impacts": 0,
+          "explosions": 0,
+          "area_hits": 0,
+          "native_hits": 0,
+          "native_deaths": 0,
+          "ammo": 20,
+          "capacity": 20,
+          "xp": 0,
+          "walloper_xp": 0,
+          "bolts": 10000,
+          "held": 18,
+          "requested": 18,
+          "held_class": 180,
+          "hero_x": 250.69863,
+          "hero_y": 121.20288,
+          "hero_z": 54.7341,
+          "native_mode": 0
+        },
+        {
+          "event": "released",
+          "mode": "combatlong",
+          "host_frame": 1057,
+          "tick": 564,
+          "step": 7,
+          "phase": 3,
+          "golden": 1,
+          "blast_charge": 1.0,
+          "throw_charge": 1.0,
+          "recoil": 1,
+          "captures": 1,
+          "throws": 1,
+          "impacts": 0,
+          "explosions": 0,
+          "area_hits": 0,
+          "native_hits": 0,
+          "native_deaths": 0,
+          "ammo": 19,
+          "capacity": 20,
+          "xp": 0,
+          "walloper_xp": 0,
+          "bolts": 10000,
+          "held": 18,
+          "requested": 18,
+          "held_class": 180,
+          "hero_x": 165.57154,
+          "hero_y": 136.43576,
+          "hero_z": 60.0,
+          "native_mode": 0
+        },
+        {
+          "event": "exploded",
+          "mode": "combatlong",
+          "host_frame": 1067,
+          "tick": 574,
+          "step": 8,
+          "phase": 4,
+          "golden": 1,
+          "blast_charge": 0.0,
+          "throw_charge": 0.0,
+          "recoil": 0,
+          "captures": 1,
+          "throws": 1,
+          "impacts": 1,
+          "explosions": 1,
+          "area_hits": 3,
+          "native_hits": 0,
+          "native_deaths": 0,
+          "ammo": 19,
+          "capacity": 20,
+          "xp": 0,
+          "walloper_xp": 0,
+          "bolts": 10000,
+          "held": 18,
+          "requested": 18,
+          "held_class": 180,
+          "hero_x": 165.57154,
+          "hero_y": 136.43576,
+          "hero_z": 60.0,
+          "native_mode": 0
+        },
+        {
+          "event": "native_accepted_hit",
+          "host_frame": 1067,
+          "tick": 574,
+          "target": 32176000,
+          "class": 459,
+          "stamp": 0,
+          "origin": 2017,
+          "attacker": 32339328,
+          "flags": 8585216,
+          "damage": 15.120017,
+          "held": 18
+        },
+        {
+          "event": "native_accepted_hit",
+          "host_frame": 1067,
+          "tick": 574,
+          "target": 32176512,
+          "class": 459,
+          "stamp": 0,
+          "origin": 2017,
+          "attacker": 32339328,
+          "flags": 8585216,
+          "damage": 15.306656,
+          "held": 18
+        },
+        {
+          "event": "native_accepted_hit",
+          "host_frame": 1067,
+          "tick": 574,
+          "target": 32175744,
+          "class": 459,
+          "stamp": 0,
+          "origin": 2017,
+          "attacker": 32339328,
+          "flags": 8585216,
+          "damage": 16.0,
+          "held": 18
+        },
+        {
+          "event": "native_death",
+          "host_frame": 1070,
+          "target": 32176512,
+          "class": 459,
+          "base_bolts": 39,
+          "budget": 39
+        },
+        {
+          "event": "native_death",
+          "host_frame": 1072,
+          "target": 32175744,
+          "class": 459,
+          "base_bolts": 39,
+          "budget": 39
+        }
+      ],
+      "native_purchase_poll_events": 1,
+      "normal_process_exit_observed": true,
+      "original_input_count": 64,
+      "original_inputs_unchanged": true,
+      "log_sha256": "20f99f2eaa77f743b613d26719a75518f3a3d35c000e70c698c5f74bad22a4f7",
+      "artifacts": {
+        "runtime": "b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081",
+        "revolverator": "820ffe7dbb8478d8d1afcbd5ac81de66fdb3b68e946b853b7a683d993bb9372a",
+        "compat": "077a7306b71ac5f35776b74c261cceb1ff0c1144961a847696eabc961c71d55a",
+        "overlay": "aec87cbfd6eb3133dbb51e62edbce7fae46081355dcd4b5b5aa458876860ca14",
+        "probe": "f45cb5a3b88165c922cff9dfe1974d9668ca6d2d8e4f66e9619b1040400b929e",
+        "weapon_xp": "68205f76fea997336d4ee01fcb7c2812a2fdd32b6d79d3b67cc51a8b162cb67c"
+      }
+    },
+    {
+      "scenario": "switch-flight",
+      "passed": true,
+      "result": {
+        "event": "result",
+        "mode": "switch-flight",
+        "pass": true,
+        "checks": 29,
+        "failures": 0,
+        "host_frame": 1058,
+        "tick": 565,
+        "triangle_pulses": 1,
+        "purchase_events": 1,
+        "gold_transitions": 1,
+        "gold_render_views": 243,
+        "launch_blast": 0.111111,
+        "recoil_frames": 0,
+        "recoil_seconds": 0.0,
+        "recoil_motion_samples": 0,
+        "max_recoil_speed": 0.0,
+        "max_recoil_displacement": 0.0,
+        "resumed_motion_samples": 60
+      },
+      "checks": [
+        {
+          "event": "check",
+          "name": "owned_base_capacity20",
+          "pass": true,
+          "host_frame": 553,
+          "tick": 60
+        },
+        {
+          "event": "check",
+          "name": "gold_unowned_price50000_normal_zero_gold",
+          "pass": true,
+          "host_frame": 553,
+          "tick": 60
+        },
+        {
+          "event": "check",
+          "name": "guarded_teleport_to_native_gold_room",
+          "pass": true,
+          "host_frame": 573,
+          "tick": 80
+        },
+        {
+          "event": "check",
+          "name": "additional_native304_dome_live",
+          "pass": true,
+          "host_frame": 653,
+          "tick": 160
+        },
+        {
+          "event": "check",
+          "name": "gold_display_live_before_purchase",
+          "pass": true,
+          "host_frame": 653,
+          "tick": 160
+        },
+        {
+          "event": "check",
+          "name": "purchase_deducts_exactly50000_normal_bolts",
+          "pass": true,
+          "host_frame": 654,
+          "tick": 161
+        },
+        {
+          "event": "check",
+          "name": "ten_native_gold_flags_and_collection_bits_preserved",
+          "pass": true,
+          "host_frame": 654,
+          "tick": 161
+        },
+        {
+          "event": "check",
+          "name": "gold_purchase_preserves_ammo_and_xp",
+          "pass": true,
+          "host_frame": 654,
+          "tick": 161
+        },
+        {
+          "event": "check",
+          "name": "native_walloper_state_independent",
+          "pass": true,
+          "host_frame": 654,
+          "tick": 161
+        },
+        {
+          "event": "check",
+          "name": "one_native_purchase_and_one_logical_transition",
+          "pass": true,
+          "host_frame": 654,
+          "tick": 161
+        },
+        {
+          "event": "check",
+          "name": "purchase_event_not_replayed",
+          "pass": true,
+          "host_frame": 804,
+          "tick": 311
+        },
+        {
+          "event": "check",
+          "name": "only_display_retires_sold_dome_remains",
+          "pass": true,
+          "host_frame": 804,
+          "tick": 311
+        },
+        {
+          "event": "check",
+          "name": "held_model_renders_gold_class2018",
+          "pass": true,
+          "host_frame": 804,
+          "tick": 311
+        },
+        {
+          "event": "check",
+          "name": "purchase_currency_stable_after_input_release",
+          "pass": true,
+          "host_frame": 804,
+          "tick": 311
+        },
+        {
+          "event": "check",
+          "name": "native_gold_state_stable_after_purchase",
+          "pass": true,
+          "host_frame": 804,
+          "tick": 311
+        },
+        {
+          "event": "check",
+          "name": "return_to_original_native_combat_area",
+          "pass": true,
+          "host_frame": 804,
+          "tick": 311
+        },
+        {
+          "event": "check",
+          "name": "four_original_birdbots_available",
+          "pass": true,
+          "host_frame": 804,
+          "tick": 311
+        },
+        {
+          "event": "check",
+          "name": "one_native_controller_throw",
+          "pass": true,
+          "host_frame": 896,
+          "tick": 403
+        },
+        {
+          "event": "check",
+          "name": "blast_charge_matches_hold_until_auto_cap",
+          "pass": true,
+          "host_frame": 896,
+          "tick": 403
+        },
+        {
+          "event": "check",
+          "name": "native_wrench_equip_function_available",
+          "pass": true,
+          "host_frame": 896,
+          "tick": 403
+        },
+        {
+          "event": "check",
+          "name": "exactly_one_native_explosion",
+          "pass": true,
+          "host_frame": 1058,
+          "tick": 565
+        },
+        {
+          "event": "check",
+          "name": "area_damage_reaches_multiple_native_accepted_targets",
+          "pass": true,
+          "host_frame": 1058,
+          "tick": 565
+        },
+        {
+          "event": "check",
+          "name": "native_death_bookkeeping_from_golden_hit",
+          "pass": true,
+          "host_frame": 1058,
+          "tick": 565
+        },
+        {
+          "event": "check",
+          "name": "one_shot_costs_one_round_only",
+          "pass": true,
+          "host_frame": 1058,
+          "tick": 565
+        },
+        {
+          "event": "check",
+          "name": "golden_kills_do_not_credit_native_walloper",
+          "pass": true,
+          "host_frame": 1058,
+          "tick": 565
+        },
+        {
+          "event": "check",
+          "name": "revolverator_earns_actual_native_bolt_based_xp",
+          "pass": true,
+          "host_frame": 1058,
+          "tick": 565
+        },
+        {
+          "event": "check",
+          "name": "launched_enemy_completes_after_actual_wrench_equip",
+          "pass": true,
+          "host_frame": 1058,
+          "tick": 565
+        },
+        {
+          "event": "check",
+          "name": "equip_switch_clears_recoil",
+          "pass": true,
+          "host_frame": 1058,
+          "tick": 565
+        },
+        {
+          "event": "check",
+          "name": "native_gold_flags_preserved_through_combat",
+          "pass": true,
+          "host_frame": 1058,
+          "tick": 565
+        }
+      ],
+      "final_state": {
+        "event": "final_state",
+        "mode": "switch-flight",
+        "host_frame": 1058,
+        "tick": 565,
+        "step": 9,
+        "phase": 0,
+        "golden": 1,
+        "blast_charge": 0.0,
+        "throw_charge": 0.0,
+        "recoil": 0,
+        "captures": 1,
+        "throws": 1,
+        "impacts": 1,
+        "explosions": 1,
+        "area_hits": 2,
+        "native_hits": 2,
+        "native_deaths": 2,
+        "ammo": 19,
+        "capacity": 20,
+        "xp": 78,
+        "walloper_xp": 0,
+        "bolts": 10006,
+        "held": 8,
+        "requested": 8,
+        "held_class": 71,
+        "hero_x": 165.49179,
+        "hero_y": 134.90721,
+        "hero_z": 60.0,
+        "native_mode": 0
+      },
+      "native_bursts": [
+        {
+          "charge": 0.111,
+          "radius": 2.88,
+          "damage": 8.88,
+          "scale": 1.39,
+          "targets": 2
+        }
+      ],
+      "native_events": [
+        {
+          "event": "native_purchase_boundary",
+          "mode": "switch-flight",
+          "host_frame": 653,
+          "tick": 160,
+          "step": 2,
+          "phase": 0,
+          "golden": 1,
+          "blast_charge": 0.0,
+          "throw_charge": 0.0,
+          "recoil": 0,
+          "captures": 0,
+          "throws": 0,
+          "impacts": 0,
+          "explosions": 0,
+          "area_hits": 0,
+          "native_hits": 0,
+          "native_deaths": 0,
+          "ammo": 20,
+          "capacity": 20,
+          "xp": 0,
+          "walloper_xp": 0,
+          "bolts": 10000,
+          "held": 18,
+          "requested": 18,
+          "held_class": 180,
+          "hero_x": 250.8,
+          "hero_y": 125.5,
+          "hero_z": 54.46875,
+          "native_mode": 0
+        },
+        {
+          "event": "released",
+          "mode": "switch-flight",
+          "host_frame": 896,
+          "tick": 403,
+          "step": 7,
+          "phase": 3,
+          "golden": 1,
+          "blast_charge": 0.111111,
+          "throw_charge": 0.208333,
+          "recoil": 1,
+          "captures": 1,
+          "throws": 1,
+          "impacts": 0,
+          "explosions": 0,
+          "area_hits": 0,
+          "native_hits": 0,
+          "native_deaths": 0,
+          "ammo": 19,
+          "capacity": 20,
+          "xp": 0,
+          "walloper_xp": 0,
+          "bolts": 10000,
+          "held": 18,
+          "requested": 18,
+          "held_class": 180,
+          "hero_x": 165.57162,
+          "hero_y": 136.43124,
+          "hero_z": 60.0,
+          "native_mode": 0
+        },
+        {
+          "event": "switch_requested_after_release",
+          "mode": "switch-flight",
+          "host_frame": 896,
+          "tick": 403,
+          "step": 7,
+          "phase": 3,
+          "golden": 1,
+          "blast_charge": 0.111111,
+          "throw_charge": 0.208333,
+          "recoil": 0,
+          "captures": 1,
+          "throws": 1,
+          "impacts": 0,
+          "explosions": 0,
+          "area_hits": 0,
+          "native_hits": 0,
+          "native_deaths": 0,
+          "ammo": 19,
+          "capacity": 20,
+          "xp": 0,
+          "walloper_xp": 0,
+          "bolts": 10000,
+          "held": 18,
+          "requested": 18,
+          "held_class": 180,
+          "hero_x": 165.57162,
+          "hero_y": 136.43124,
+          "hero_z": 60.0,
+          "native_mode": 0
+        },
+        {
+          "event": "exploded",
+          "mode": "switch-flight",
+          "host_frame": 908,
+          "tick": 415,
+          "step": 8,
+          "phase": 4,
+          "golden": 1,
+          "blast_charge": 0.0,
+          "throw_charge": 0.0,
+          "recoil": 0,
+          "captures": 1,
+          "throws": 1,
+          "impacts": 1,
+          "explosions": 1,
+          "area_hits": 2,
+          "native_hits": 0,
+          "native_deaths": 0,
+          "ammo": 19,
+          "capacity": 20,
+          "xp": 0,
+          "walloper_xp": 0,
+          "bolts": 10000,
+          "held": 8,
+          "requested": 8,
+          "held_class": 71,
+          "hero_x": 165.57305,
+          "hero_y": 136.31861,
+          "hero_z": 60.0,
+          "native_mode": 0
+        },
+        {
+          "event": "native_accepted_hit",
+          "host_frame": 908,
+          "tick": 415,
+          "target": 32176000,
+          "class": 459,
+          "stamp": 0,
+          "origin": 2017,
+          "attacker": 32096640,
+          "flags": 8585216,
+          "damage": 8.088862,
+          "held": 8
+        },
+        {
+          "event": "native_accepted_hit",
+          "host_frame": 908,
+          "tick": 415,
+          "target": 32175744,
+          "class": 459,
+          "stamp": 0,
+          "origin": 2017,
+          "attacker": 32096640,
+          "flags": 8585216,
+          "damage": 8.888888,
+          "held": 8
+        },
+        {
+          "event": "native_death",
+          "host_frame": 912,
+          "target": 32175744,
+          "class": 459,
+          "base_bolts": 39,
+          "budget": 39
+        },
+        {
+          "event": "native_death",
+          "host_frame": 915,
+          "target": 32176000,
+          "class": 459,
+          "base_bolts": 39,
+          "budget": 39
+        }
+      ],
+      "native_purchase_poll_events": 1,
+      "normal_process_exit_observed": true,
+      "original_input_count": 64,
+      "original_inputs_unchanged": true,
+      "log_sha256": "fa10c940814abffb57f2555f50f228fec41832e029d3d3cc75475add0297e017",
+      "artifacts": {
+        "runtime": "b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081",
+        "revolverator": "820ffe7dbb8478d8d1afcbd5ac81de66fdb3b68e946b853b7a683d993bb9372a",
+        "compat": "077a7306b71ac5f35776b74c261cceb1ff0c1144961a847696eabc961c71d55a",
+        "overlay": "aec87cbfd6eb3133dbb51e62edbce7fae46081355dcd4b5b5aa458876860ca14",
+        "probe": "096882cfdc2d7b6df0a44e34b6e025a67df76d6640afd931c21fdd85353874a0",
+        "weapon_xp": "68205f76fea997336d4ee01fcb7c2812a2fdd32b6d79d3b67cc51a8b162cb67c"
+      }
+    },
+    {
+      "scenario": "save",
+      "passed": true,
+      "result": {
+        "event": "result",
+        "mode": "save",
+        "pass": true,
+        "checks": 19,
+        "failures": 0,
+        "host_frame": 1045,
+        "tick": 672,
+        "triangle_pulses": 1,
+        "purchase_events": 1,
+        "gold_transitions": 1,
+        "gold_render_views": 512,
+        "launch_blast": 0.0,
+        "recoil_frames": 0,
+        "recoil_seconds": 0.0,
+        "recoil_motion_samples": 0,
+        "max_recoil_speed": 0.0,
+        "max_recoil_displacement": 0.0,
+        "resumed_motion_samples": 0
+      },
+      "checks": [
+        {
+          "event": "check",
+          "name": "owned_base_capacity20",
+          "pass": true,
+          "host_frame": 433,
+          "tick": 60
+        },
+        {
+          "event": "check",
+          "name": "gold_unowned_price50000_normal_zero_gold",
+          "pass": true,
+          "host_frame": 433,
+          "tick": 60
+        },
+        {
+          "event": "check",
+          "name": "guarded_teleport_to_native_gold_room",
+          "pass": true,
+          "host_frame": 453,
+          "tick": 80
+        },
+        {
+          "event": "check",
+          "name": "additional_native304_dome_live",
+          "pass": true,
+          "host_frame": 533,
+          "tick": 160
+        },
+        {
+          "event": "check",
+          "name": "gold_display_live_before_purchase",
+          "pass": true,
+          "host_frame": 533,
+          "tick": 160
+        },
+        {
+          "event": "check",
+          "name": "purchase_deducts_exactly50000_normal_bolts",
+          "pass": true,
+          "host_frame": 534,
+          "tick": 161
+        },
+        {
+          "event": "check",
+          "name": "ten_native_gold_flags_and_collection_bits_preserved",
+          "pass": true,
+          "host_frame": 534,
+          "tick": 161
+        },
+        {
+          "event": "check",
+          "name": "gold_purchase_preserves_ammo_and_xp",
+          "pass": true,
+          "host_frame": 534,
+          "tick": 161
+        },
+        {
+          "event": "check",
+          "name": "native_walloper_state_independent",
+          "pass": true,
+          "host_frame": 534,
+          "tick": 161
+        },
+        {
+          "event": "check",
+          "name": "one_native_purchase_and_one_logical_transition",
+          "pass": true,
+          "host_frame": 534,
+          "tick": 161
+        },
+        {
+          "event": "check",
+          "name": "purchase_event_not_replayed",
+          "pass": true,
+          "host_frame": 684,
+          "tick": 311
+        },
+        {
+          "event": "check",
+          "name": "only_display_retires_sold_dome_remains",
+          "pass": true,
+          "host_frame": 684,
+          "tick": 311
+        },
+        {
+          "event": "check",
+          "name": "held_model_renders_gold_class2018",
+          "pass": true,
+          "host_frame": 684,
+          "tick": 311
+        },
+        {
+          "event": "check",
+          "name": "purchase_currency_stable_after_input_release",
+          "pass": true,
+          "host_frame": 684,
+          "tick": 311
+        },
+        {
+          "event": "check",
+          "name": "native_gold_state_stable_after_purchase",
+          "pass": true,
+          "host_frame": 684,
+          "tick": 311
+        },
+        {
+          "event": "check",
+          "name": "native_save_request_accepted",
+          "pass": true,
+          "host_frame": 685,
+          "tick": 312
+        },
+        {
+          "event": "check",
+          "name": "native_save_completed_without_card_error",
+          "pass": true,
+          "host_frame": 1045,
+          "tick": 672
+        },
+        {
+          "event": "check",
+          "name": "saved_gold_ammunition_snapshot_is_seven",
+          "pass": true,
+          "host_frame": 1045,
+          "tick": 672
+        },
+        {
+          "event": "check",
+          "name": "save_preserves_purchase_economy_and_native_gold",
+          "pass": true,
+          "host_frame": 1045,
+          "tick": 672
+        }
+      ],
+      "final_state": {
+        "event": "final_state",
+        "mode": "save",
+        "host_frame": 1045,
+        "tick": 672,
+        "step": 12,
+        "phase": 0,
+        "golden": 1,
+        "blast_charge": 0.0,
+        "throw_charge": 0.0,
+        "recoil": 0,
+        "captures": 0,
+        "throws": 0,
+        "impacts": 0,
+        "explosions": 0,
+        "area_hits": 0,
+        "native_hits": 0,
+        "native_deaths": 0,
+        "ammo": 7,
+        "capacity": 20,
+        "xp": 0,
+        "walloper_xp": 0,
+        "bolts": 10000,
+        "held": 18,
+        "requested": 18,
+        "held_class": 180,
+        "hero_x": 250.8,
+        "hero_y": 125.5,
+        "hero_z": 54.46875,
+        "native_mode": 0
+      },
+      "native_bursts": [],
+      "native_events": [
+        {
+          "event": "native_purchase_boundary",
+          "mode": "save",
+          "host_frame": 533,
+          "tick": 160,
+          "step": 2,
+          "phase": 0,
+          "golden": 1,
+          "blast_charge": 0.0,
+          "throw_charge": 0.0,
+          "recoil": 0,
+          "captures": 0,
+          "throws": 0,
+          "impacts": 0,
+          "explosions": 0,
+          "area_hits": 0,
+          "native_hits": 0,
+          "native_deaths": 0,
+          "ammo": 20,
+          "capacity": 20,
+          "xp": 0,
+          "walloper_xp": 0,
+          "bolts": 10000,
+          "held": 18,
+          "requested": 18,
+          "held_class": 180,
+          "hero_x": 250.8,
+          "hero_y": 125.5,
+          "hero_z": 54.46875,
+          "native_mode": 0
+        }
+      ],
+      "native_purchase_poll_events": 1,
+      "normal_process_exit_observed": true,
+      "original_input_count": 64,
+      "original_inputs_unchanged": true,
+      "log_sha256": "7cfe5d3d209c38d6e09dae46e1199be75e112af0c0aad5a1c104a1438425dc88",
+      "artifacts": {
+        "runtime": "b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081",
+        "revolverator": "820ffe7dbb8478d8d1afcbd5ac81de66fdb3b68e946b853b7a683d993bb9372a",
+        "compat": "077a7306b71ac5f35776b74c261cceb1ff0c1144961a847696eabc961c71d55a",
+        "overlay": "aec87cbfd6eb3133dbb51e62edbce7fae46081355dcd4b5b5aa458876860ca14",
+        "probe": "68b5d89f8bb864995aa9a219e6e7191b75924812892db4722eebf8682c63fbe1",
+        "weapon_xp": "68205f76fea997336d4ee01fcb7c2812a2fdd32b6d79d3b67cc51a8b162cb67c"
+      }
+    },
+    {
+      "scenario": "reload",
+      "passed": true,
+      "result": {
+        "event": "result",
+        "mode": "reload",
+        "pass": true,
+        "checks": 4,
+        "failures": 0,
+        "host_frame": 853,
+        "tick": 480,
+        "triangle_pulses": 0,
+        "purchase_events": 0,
+        "gold_transitions": 1,
+        "gold_render_views": 0,
+        "launch_blast": 0.0,
+        "recoil_frames": 0,
+        "recoil_seconds": 0.0,
+        "recoil_motion_samples": 0,
+        "max_recoil_speed": 0.0,
+        "max_recoil_displacement": 0.0,
+        "resumed_motion_samples": 0
+      },
+      "checks": [
+        {
+          "event": "check",
+          "name": "fresh_process_starts_without_custom_ownership",
+          "pass": true,
+          "host_frame": 433,
+          "tick": 60
+        },
+        {
+          "event": "check",
+          "name": "native_reload_completed_without_card_error",
+          "pass": true,
+          "host_frame": 853,
+          "tick": 480
+        },
+        {
+          "event": "check",
+          "name": "fresh_process_restores_golden_and_exact_ammo_from_sidecar",
+          "pass": true,
+          "host_frame": 853,
+          "tick": 480
+        },
+        {
+          "event": "check",
+          "name": "native_bolt_balance_restored_with_golden_save",
+          "pass": true,
+          "host_frame": 853,
+          "tick": 480
+        }
+      ],
+      "final_state": {
+        "event": "final_state",
+        "mode": "reload",
+        "host_frame": 853,
+        "tick": 480,
+        "step": 12,
+        "phase": 0,
+        "golden": 1,
+        "blast_charge": 0.0,
+        "throw_charge": 0.0,
+        "recoil": 0,
+        "captures": 0,
+        "throws": 0,
+        "impacts": 0,
+        "explosions": 0,
+        "area_hits": 0,
+        "native_hits": 0,
+        "native_deaths": 0,
+        "ammo": 7,
+        "capacity": 20,
+        "xp": 0,
+        "walloper_xp": 0,
+        "bolts": 10000,
+        "held": 8,
+        "requested": 8,
+        "held_class": 71,
+        "hero_x": 162.53031,
+        "hero_y": 136.39347,
+        "hero_z": 60.0,
+        "native_mode": 0
+      },
+      "native_bursts": [],
+      "native_events": [],
+      "native_purchase_poll_events": 0,
+      "normal_process_exit_observed": true,
+      "original_input_count": 64,
+      "original_inputs_unchanged": true,
+      "log_sha256": "9683a58c31895515e25467bd54c3fb273c39e4751f8190abae5dd34bc7411671",
+      "artifacts": {
+        "runtime": "b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081",
+        "revolverator": "820ffe7dbb8478d8d1afcbd5ac81de66fdb3b68e946b853b7a683d993bb9372a",
+        "compat": "077a7306b71ac5f35776b74c261cceb1ff0c1144961a847696eabc961c71d55a",
+        "overlay": "aec87cbfd6eb3133dbb51e62edbce7fae46081355dcd4b5b5aa458876860ca14",
+        "probe": "68b5d89f8bb864995aa9a219e6e7191b75924812892db4722eebf8682c63fbe1",
+        "weapon_xp": "68205f76fea997336d4ee01fcb7c2812a2fdd32b6d79d3b67cc51a8b162cb67c"
+      }
+    }
+  ],
+  "fixture_note": "Separate local profiles. Save/reload use copies of a native card; reload does not grant ownership. Other scenarios seed base ownership, normal currency, NG+ access and positions. Health, rewards, XP and Golden ownership are never seeded.",
+  "limits": [
+    "Native combat evidence on Novalis Birdbots",
+    "Boss eligibility and line-of-sight edge cases have host coverage",
+    "No full campaign or every boss-phase claim",
+    "Windows0.9.0 NTSC-U executable hash listed above only",
+    "No PAL or native Linux/macOS compatibility claim"
+  ]
+}

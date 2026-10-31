@@ -12,16 +12,26 @@ float wrapped(float angle){return std::remainder(angle,tau);}
 void RotorController::reset(float angle){
     angle_=std::isfinite(angle)?wrapped(angle):0;
     speed_=phase_offset_=dry_base_=dry_elapsed_=0;
+    activation_=pulse_remaining_=0;
     dry_=synchronized_=false;
 }
 void RotorController::dry_fire(){
     if(dry_)return;
     dry_=true;dry_base_=angle_;dry_elapsed_=0;synchronized_=false;speed_=0;
+    activation_=pulse_remaining_=0;
 }
 void RotorController::update(const RotorFrame& frame){
     if(!frame.playing||frame.paused||!std::isfinite(frame.seconds)||frame.seconds<=0||frame.seconds>.1f)return;
     const float previous=angle_;
     const bool catching=frame.phase==Phase::Windup||frame.phase==Phase::Spinning;
+    if(frame.phase==Phase::Spinning){activation_=pulse_remaining_=0;}
+    else{
+        if(frame.phase==Phase::Windup)pulse_remaining_=pulse_duration;
+        else pulse_remaining_=std::max(0.f,pulse_remaining_-frame.seconds);
+        const float target=pulse_remaining_>0?1.f:0.f;
+        const float step=frame.seconds*(target>activation_?20.f:12.f);
+        activation_+=std::clamp(target-activation_,-step,step);
+    }
     if(dry_&&catching){angle_=dry_base_;dry_=false;dry_elapsed_=0;}
     if(dry_){
         dry_elapsed_+=frame.seconds;
@@ -46,8 +56,7 @@ void RotorController::update(const RotorFrame& frame){
         return;
     }
     synchronized_=false;
-    const float charge=std::isfinite(frame.charge)?std::clamp(frame.charge,0.f,1.f):0;
-    speed_=catching?8.f+charge*10.f:frame.ammunition>0?idle_speed:0;
+    speed_=pulse_remaining_>0?windup_speed:frame.ammunition>0?idle_speed:0;
     angle_=wrapped(angle_+speed_*frame.seconds);
 }
 }

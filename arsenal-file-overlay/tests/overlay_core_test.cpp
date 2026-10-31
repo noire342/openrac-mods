@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #include "overlay_core.hpp"
+#include "client_profile.hpp"
 #include <cstdlib>
 #include <functional>
 #include <iostream>
@@ -65,5 +66,19 @@ void immutable_map() {
     bad = pairs(); bad[0].replacement.clear(); rejects([&] { PathMap empty(bad); });
     bad = pairs(); bad.pop_back(); rejects([&] { PathMap short_map(bad); });
 }
+void client_profiles() {
+    const char* ntsc09="b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081";
+    const char* ntsc10="f70a9f2bc6de39ed42b9f9f64fc5cea98ffad8b8bd7795c7adfb965a9875c95b";
+    const char* pal10="e720a59d130b4b2289a4eb15cad3e33f739a72a385992db171ef43490205fb0e";
+    for(const auto digest:{ntsc09,ntsc10,pal10})CHECK(supported_client(digest));
+    CHECK(supported_client(ntsc09,"ntsc"));CHECK(supported_client(ntsc10,"ntsc"));CHECK(supported_client(pal10,"pal"));
+    CHECK(!supported_client(ntsc09,"pal"));CHECK(!supported_client(ntsc10,"pal"));CHECK(!supported_client(pal10,"ntsc"));
+    for(const auto digest:{ntsc09,ntsc10,pal10}){
+        CHECK(!supported_client(digest,""));CHECK(!supported_client(digest,"unknown"));
+        std::string changed(digest);changed[0]='0';CHECK(!supported_client(changed));
+        CHECK(!supported_client(std::string(digest)+"0"));CHECK(!supported_client(std::string(digest).substr(1)));
+    }
+    CHECK(!supported_client(""));CHECK(!supported_client(std::string(64,'0')));
 }
-int main() { parsing(); policy(); immutable_map(); std::cout << checks << " file-overlay host checks passed\n"; }
+}
+int main() { parsing(); policy(); immutable_map(); client_profiles(); std::cout << checks << " file-overlay host checks passed\n"; }

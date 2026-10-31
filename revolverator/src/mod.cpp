@@ -3,6 +3,7 @@
 #include "native_world.hpp"
 #include "presentation.hpp"
 #include "native_vendor.hpp"
+#include "native_vendor_icons.hpp"
 #include "native_class_alias.hpp"
 #include "native_weapon_alias.hpp"
 #include "native_weapon_menu.hpp"
@@ -11,6 +12,8 @@
 #include "native_runtime_hooks.hpp"
 #include "native_asset_bundle.hpp"
 #include "native_compatibility_modules.hpp"
+#include "native_gold_vendor.hpp"
+#include "native_acquisition.hpp"
 #include "revolverator_api.h"
 #include <memory>
 #include <exception>
@@ -27,17 +30,26 @@ using namespace revolverator;
 int grant(unsigned key,int equip);
 struct Session {
  const openrac_api* api;openrac_mod* mod;GuestArena arena,core_arena;arsenal::Registry registry;
- NativeAmmunition ammunition;NativeAmmoAlias alias;NativeWeaponAlias weapon_alias;NativeVendor vendor;NativeRotor rotor,preview_rotor;NativeWorld world;Controller controller;Presentation presentation;
+ NativeAmmunition ammunition;NativeAmmoAlias alias;NativeWeaponAlias weapon_alias;NativeVendor vendor;NativeVendorIcons vendor_icons;NativeRotor rotor,preview_rotor,scene_rotor;NativeWorld world;Controller controller;Presentation presentation;
  NativeArsenal arsenal;NativeWeaponMenu menu;NativeArsenalSave saves;NativeArsenalXP xp;
+ NativeGoldVendor gold_vendor;NativeAcquisition acquisition;
  bool primary=false;unsigned epoch=0;int level=-1;
+ bool golden()const{const auto* state=registry.state(arsenal::RevolveratorKey);return state&&state->owned&&state->golden;}
  unsigned grant_override=0,native_save_depth=0;bool new_game_plus=false;
  std::deque<NativeArsenalXP::LevelUp> animations,events;
- Session(const openrac_api* a,openrac_mod* m):api(a),mod(m),ammunition(a,&arena,true),alias(a),weapon_alias(a),vendor(a),rotor(a,core_arena),preview_rotor(a,arena,true),world(a,m,ammunition,rotor,core_arena),controller(world),presentation(a,m,&arena,true),arsenal(a,registry,presentation),menu(a,arena,arsenal),saves(a,m,arsenal),xp(a,m,arsenal){
+ Session(const openrac_api* a,openrac_mod* m):api(a),mod(m),ammunition(a,&arena,true),alias(a),weapon_alias(a),vendor(a),vendor_icons(a,vendor),rotor(a,core_arena),preview_rotor(a,arena,true),scene_rotor(a,arena,true,true),world(a,m,ammunition,rotor,core_arena),controller(world),presentation(a,m,&arena,true),arsenal(a,registry,presentation),menu(a,arena,arsenal),saves(a,m,arsenal),xp(a,m,arsenal),gold_vendor(a,m,registry,weapon_alias),acquisition(a,m,arena,{this,
+  +[](void* user){auto& s=*static_cast<Session*>(user);s.presentation.set_golden(s.golden());s.arsenal.project(arsenal::RevolveratorKey);},
+  +[](void* user){static_cast<Session*>(user)->restore_context();},
+  +[](void* user,unsigned actor){auto& s=*static_cast<Session*>(user);
+   s.scene_rotor.update(actor,0,Phase::Idle,0,0,0,false,true);
+   const bool applied=s.weapon_alias.apply_preview(actor,true,s.golden());
+   if(!applied&&s.api->setting_bool(s.mod,"trace"))s.api->log(s.mod,OPENRAC_LOG_WARN,"Acquisition weapon is not ready for the Rotatore model");}}){
   registry.register_weapon({arsenal::RevolveratorKey,"noire342.revolverator",18,60037,NativeAmmunition::capacity,15000,12});vendor.set_arsenal(&arsenal);
  }
  ~Session(){before_load();}
  void before_load(){
-  controller.cancel();rotor.reset(true);preview_rotor.reset(true);world.reset();menu.reset();weapon_alias.reset();arsenal.reset();presentation.reset();vendor.reset();alias.reset();ammunition.reset();core_arena.reset();arena.reset();xp.reset();animations.clear();events.clear();
+  acquisition.reset();gold_vendor.reset();
+  controller.cancel();rotor.reset(true);preview_rotor.reset(true);scene_rotor.reset(true);world.reset();menu.reset();weapon_alias.reset();arsenal.reset();presentation.reset();vendor.reset();alias.reset();ammunition.reset();core_arena.reset();arena.reset();xp.reset();animations.clear();events.clear();
  }
  void prepare_level(){
   arsenal.begin_level();ammunition.frame();alias.frame();weapon_alias.frame();vendor.set_preview_class(alias.ready()?NativeAmmoAlias::native_class:225);vendor.frame();
@@ -52,7 +64,7 @@ struct Session {
  }
  void restore_context(){
   if(native_save_depth)arsenal.project(arsenal::NativeWalloperKey);
-  else if(xp.acquisition_presentation_active()>0)arsenal.project(arsenal::RevolveratorKey);
+  else if(acquisition.active())arsenal.project(arsenal::RevolveratorKey);
   else if(world.read<int>(world.mode())==5)arsenal.project(vendor.selected_key());
   else arsenal.restore_gameplay();
  }
@@ -83,10 +95,8 @@ struct Session {
   presentation.set_experience(xp.ready()&&(xp.flags()&WEAPON_XP_SHOW_HUD),stats.level,stats.progress,
    xp.ready()&&(xp.flags()&WEAPON_XP_VERSIONED_NAMES));
   world.set_damage_multiplier(stats.damage_multiplier);
-  if(!animations.empty()&&xp.acquisition_presentation_active()<=0){
-   arsenal.project(arsenal::RevolveratorKey);
-   const int result=xp.request_acquisition_presentation();
-   if(result==WEAPON_XP_OK||result==WEAPON_XP_DISABLED||result==WEAPON_XP_NOT_FOUND)animations.pop_front();
+  if(!animations.empty()){
+   if(!(xp.flags()&WEAPON_XP_LEVEL_UP_ANIMATION)||acquisition.request())animations.pop_front();
   }
   restore_context();
  }
@@ -96,13 +106,27 @@ struct Session {
   if(current<0||current>18)return;
   if(!arsenal.ready())prepare_level();
   weapon_alias.frame();arsenal.commit();arsenal.observe_equipped();restore_context();unlock_starting_weapon();progression();
+  gold_vendor.frame();
+  if(gold_vendor.poll_purchase()){
+   acquisition.request();
+   api->log(mod,OPENRAC_LOG_INFO,"Golden Revolverator purchased:50000 normal bolts,0 gold bolts; ammunition and XP preserved");
+  }
   if(world.read<int>(world.mode())!=3)preview_rotor.reset();
+  if(world.read<int>(world.mode())!=5)scene_rotor.reset();
   ammunition.frame();alias.frame();vendor.set_preview_class(alias.ready()?NativeAmmoAlias::native_class:225);vendor.frame();menu.frame();
   world.set_active(arsenal.revolverator_active());
-  const auto f=world.snapshot(primary,epoch);controller.tick(f);
-  if(controller.phase()!=Phase::Spinning&&!f.paused)world.pose(controller.phase(),controller.spin_angle());
-  if(f.equipped)rotor.update(world.weapon(),ammunition.count(),controller.phase(),controller.charge(),controller.spin_angle(),f.seconds,f.playing,f.paused);
+  world.set_golden(golden());presentation.set_golden(golden());
+  auto f=world.snapshot(primary,epoch);
+  const bool safe=f.playing&&!f.paused&&f.alive&&f.grounded&&controller.attack_phase()==Phase::Idle&&
+   !controller.flight_count()&&!world.release_recoil_active();
+  acquisition.frame(safe,xp.acquisition_presentation_active()>0);
+  if(acquisition.active()){primary=false;f=world.snapshot(false,epoch);}
+  world.set_drill_head_scale(rotor.controller().radial_scale(),rotor.controller().axial_scale());
+  controller.tick(f);
+  if(controller.attack_phase()!=Phase::Spinning&&!f.paused)world.pose(controller.attack_phase(),controller.spin_angle());
+  if(f.equipped)rotor.update(world.weapon(),ammunition.count(),controller.attack_phase(),controller.charge(),controller.spin_angle(),f.seconds,f.playing,f.paused);
   else rotor.reset();
+  world.set_drill_head_scale(rotor.controller().radial_scale(),rotor.controller().axial_scale());
   arsenal.commit();
   presentation.frame(f.equipped);
  }
@@ -128,9 +152,11 @@ using PrepareSave=void(*)(int,int);
 using AutoSave=int(*)(int,int);
 using RestoreData=int(*)(unsigned,int,unsigned);
 Update walloper_original{},relay_original{},ammo_original{};Pad pad_original{};Load load_original{};
+Update gold_offer_original{};
+Advance motion_input_original{};void(*planar_velocity_original)(float){};
 GetHit hit_original{};Death death_original{};Advance animation_original{};
 BuildVendor vendor_original{};
-Give give_original{};Advance vendor_update_original{},vendor_selected_original{},save_io_original{},new_game_original{};
+Give give_original{};Advance vendor_update_original{},vendor_selected_original{},vendor_icons_original{},save_io_original{},new_game_original{};
 ChooseAmmo choose_original{};SpawnAmmo spawn_original{};Update quick_init_original{},quick_update_original{},preview_pose_original{},serialize_original{},restore_original{};
 MenuCall quick_draw_original{};PrepareSave prepare_original{};AutoSave autosave_original{};RestoreData restore_data_original{};void(*new_game_plus_original)(int){};
 SignedMenuCall item_ammo_original{};
@@ -172,13 +198,18 @@ public:
 void canonicalize_weapon(unsigned moby){
  if(session&&session->weapon_alias.owns(moby))session->world.write<std::uint16_t>(moby+0xa6,NativeWeaponAlias::source_class);
 }
+void motion_input(){motion_input_original();if(session)session->world.enforce_release_recoil();}
+void planar_velocity(float angle){planar_velocity_original(angle);if(session)session->world.enforce_release_recoil();}
+void gold_offer(unsigned moby){if(!session||!session->gold_vendor.update(moby))gold_offer_original(moby);}
 void pad(U32 address,U32 report,int size){
+ if(session&&address==session->world.global(0x13c940)&&size>0&&Memory::valid(report,unsigned(size)))
+  session->acquisition.filter_report(session->api->memory+report,size);
  pad_original(address,report,size);
  if(!session||address!=session->world.global(0x13c940))return;
  auto& w=session->world;
  w.set_active(session->arsenal.revolverator_active());
  const auto f=w.snapshot(false,session->epoch);
- if(!f.equipped||!f.playing){session->primary=false;return;}
+ if(!f.equipped||!f.playing||session->acquisition.active()){session->primary=false;return;}
  session->primary=(w.read<unsigned>(address+0x1a0)&0x20)!=0;
  for(unsigned off:{0x1a0u,0x1a4u,0x1a8u,0x1b0u,0x1b4u,0x1b8u,0x1c0u,0x1c4u,0x1c8u})w.write<unsigned>(address+off,w.read<unsigned>(address+off)&~0x20u);
  const unsigned index=w.read<unsigned short>(address+0x18e);
@@ -197,18 +228,22 @@ void walloper(U32 moby){
  const bool held=moby==s.world.weapon();
  const bool custom=held?s.arsenal.revolverator_active():
   s.arsenal.projected()==arsenal::RevolveratorKey&&
-   (s.world.read<int>(s.world.mode())==5||s.xp.acquisition_presentation_active()>0);
+   (s.world.read<int>(s.world.mode())==5||s.acquisition.presenting());
  if(!custom){
   if(held)s.weapon_alias.apply(moby,false);else s.weapon_alias.apply_preview(moby,false);
   walloper_original(moby);return;
  }
  if(held){
-  if(s.controller.phase()==Phase::Spinning)s.world.align_weapon(s.controller.spin_angle());
-  s.rotor.apply();const bool applied=s.weapon_alias.apply(moby,true);
+  if(s.controller.attack_phase()==Phase::Spinning)s.world.align_weapon(s.controller.spin_angle());
+  else s.world.align_release();
+  s.rotor.apply();const bool applied=s.weapon_alias.apply(moby,true,s.golden());
   static unsigned traced=0;if(traced<8&&s.api->setting_bool(s.mod,"trace")){
    char text[160];std::snprintf(text,sizeof text,"weapon render alias held=%08x applied=%d class=%u ready=%d",moby,int(applied),unsigned(s.world.read<unsigned short>(moby+0xa6)),int(s.weapon_alias.ready()));s.api->log(s.mod,OPENRAC_LOG_INFO,text);++traced;
   }
- }else s.weapon_alias.apply_preview(moby,true);
+ }else{
+  s.scene_rotor.update(moby,0,Phase::Idle,0,0,0,false,true);
+  s.weapon_alias.apply_preview(moby,true,s.golden());
+ }
 }
 void ammo_pickup(U32 moby){
  if(!session){ammo_original(moby);return;}
@@ -247,14 +282,14 @@ U32 load(int full){
 U32 get_hit(U32 moby,int mask,int keep){
  if(session)session->xp.before_hit();
  const auto hit=hit_original(moby,mask,keep);
- if(session&&session->arsenal.revolverator_active()&&capturable_class(int(session->world.token(moby).klass))&&session->controller.phase()!=Phase::Idle&&session->world.blocks_native_hit(hit)){
+ if(session&&session->arsenal.revolverator_active()&&capturable_class(int(session->world.token(moby).klass))&&session->controller.attack_phase()!=Phase::Idle&&session->world.blocks_native_hit(hit)){
   session->xp.block_hit(moby);if(keep)hit_original(moby,mask,0);return 0;
  }
  if(session&&hit)session->xp.confirm_hit(moby,hit);
  return hit;
 }
 void death(U32 moby,int flags,int index){
- if(session){session->xp.death_before(moby);if(session->world.frozen(moby))session->controller.cancel();}
+ if(session){session->xp.death_before(moby);if(session->world.frozen(moby))session->controller.discard(session->world.token(moby));}
  death_original(moby,flags,index);
 }
 void animation(){if(session)session->restore_context();animation_original();if(session)session->presentation.names();}
@@ -267,6 +302,9 @@ void vendor_selected(){
  if(!session){vendor_selected_original();return;}
  auto& s=*session;s.vendor.before_vendor_update();s.arsenal.project(s.vendor.selected_key());
  vendor_selected_original();s.arsenal.commit();s.restore_context();s.vendor.after_vendor_update();
+}
+void vendor_icon_strip(){
+ if(!session||!session->vendor_icons.draw())vendor_icons_original();
 }
 void give(int item,int equip){
  if(!session||!session->arsenal.ready()||item<0||item>int(arsenal::Registry::MaximumNativeKey)){
@@ -326,7 +364,7 @@ void preview_pose(unsigned moby){
  canonicalize_weapon(moby);preview_pose_original(moby);
  if(session){
   const bool custom=session->arsenal.projected()==arsenal::RevolveratorKey;
-  const bool applied=session->weapon_alias.apply_preview(moby,custom);
+  const bool applied=session->weapon_alias.apply_preview(moby,custom,session->golden());
   static unsigned traced=0;if(custom&&traced<8&&session->api->setting_bool(session->mod,"trace")){
    char text[160];std::snprintf(text,sizeof text,"weapon preview alias moby=%08x applied=%d class=%u ready=%d",moby,int(applied),unsigned(session->world.read<unsigned short>(moby+0xa6)),int(session->weapon_alias.ready()));session->api->log(session->mod,OPENRAC_LOG_INFO,text);++traced;
   }
@@ -346,7 +384,7 @@ template<MenuCall* Original>int draw_selected_preview(unsigned screen){
   // attached to the housing. The actual held actor uses its separate rotor.
   if(custom&&(s.world.read<unsigned short>(moby+0xa6)==180||s.weapon_alias.owns(moby)))
    s.preview_rotor.update(moby,0,Phase::Idle,0,0,0,false,true);
-  if(s.weapon_alias.apply_preview(moby,custom)&&custom)
+  if(s.weapon_alias.apply_preview(moby,custom,s.golden())&&custom)
    s.weapon_alias.fit_preview(moby,s.world.read<int>(s.world.global(0x1d5bf0))==5?0.65f:1.f);
   s.alias.apply_preview(moby,custom);
  }
@@ -503,29 +541,42 @@ int poll_level_up(revolverator_level_up_v2* out){
 }
 const revolverator_api_v1 service{sizeof(service),1,get_state,cancel,get_mechanics};
 const revolverator_api_v2 service_v2{sizeof(service_v2),2,get_state,cancel,get_mechanics,get_inventory,get_quick,grant,get_progress,poll_level_up};
-static_assert(offsetof(revolverator_api_v2,get_inventory)==sizeof(revolverator_api_v1),"v2 preserves the published v1 prefix");
+int get_upgrade(revolverator_upgrade_v3* out){
+ if(!session||!out||out->size<sizeof(*out))return 0;
+ auto& s=*session;s.arsenal.commit();
+ *out={sizeof(*out),unsigned(s.golden()),NativeGoldVendor::price,0,s.controller.blast_charge(),
+       unsigned(s.world.release_recoil_active()),s.world.golden_explosions(),s.world.golden_hits()};return 1;
 }
-extern "C" { OPENRAC_MOD_DEFINE("revolverator","0.2.0") }
+const revolverator_api_v3 service_v3{sizeof(service_v3),3,get_state,cancel,get_mechanics,get_inventory,get_quick,grant,get_progress,poll_level_up,get_upgrade};
+static_assert(offsetof(revolverator_api_v2,get_inventory)==sizeof(revolverator_api_v1),"v2 preserves the published v1 prefix");
+static_assert(offsetof(revolverator_api_v3,get_upgrade)==sizeof(revolverator_api_v2),"v3 preserves the published v2 prefix");
+}
+extern "C" { OPENRAC_MOD_DEFINE("revolverator","0.3.1") }
 extern "C" OPENRAC_MOD_EXPORT const revolverator_api_v1* openrac_revolverator_query(unsigned version){
  if(!session)return nullptr;
  if(version==1)return &service;
- return version==2?reinterpret_cast<const revolverator_api_v1*>(&service_v2):nullptr;
+ if(version==2)return reinterpret_cast<const revolverator_api_v1*>(&service_v2);
+ return version==3?reinterpret_cast<const revolverator_api_v1*>(&service_v3):nullptr;
 }
 extern "C" OPENRAC_MOD_EXPORT int openrac_mod_load(const openrac_api* api,openrac_mod* mod){
  try{
-  if(!api||!api->memory||!api->game||!api->version||std::strcmp(api->game,"rac1")||std::strcmp(api->version,"ntsc"))throw std::runtime_error("Revolverator 0.2.0 requires Ratchet & Clank NTSC-U and Arsenal Compatibility");
-  weapon_assets=std::make_unique<NativeAssetBundle>();
+  if(!api||!api->memory||!api->game||std::strcmp(api->game,"rac1")||!RegionBindings::for_version(api->version))throw std::runtime_error("Revolverator requires Ratchet & Clank PAL Europe v2.00 or NTSC-U and matching Arsenal Compatibility");
+  weapon_assets=std::make_unique<NativeAssetBundle>(api->api_minor>=10?4u:3u,api->version);
   compatibility_modules=std::make_unique<NativeCompatibilityModules>(api,mod,weapon_assets->configuration());
   runtime_hooks=std::make_unique<NativeRuntimeHooks>(api,mod);
   session=std::make_unique<Session>(api,mod);
   hook("rac1.level.load_gameplay","u32(i32)",reinterpret_cast<void*>(load),reinterpret_cast<void**>(&load_original));
   hook("rac1.pad.process_report","void(u32,u32,i32)",reinterpret_cast<void*>(pad),reinterpret_cast<void**>(&pad_original));
+  hook("rac1.player.update_motion_input","void()",reinterpret_cast<void*>(motion_input),reinterpret_cast<void**>(&motion_input_original));
+  hook("rac1.player.set_planar_velocity","void(f32)",reinterpret_cast<void*>(planar_velocity),reinterpret_cast<void**>(&planar_velocity_original));
   hook("rac1.moby.moby180.update","void(u32)",reinterpret_cast<void*>(walloper),reinterpret_cast<void**>(&walloper_original));
   hook("rac1.moby.ammo_pickup.update","void(u32)",reinterpret_cast<void*>(ammo_pickup),reinterpret_cast<void**>(&ammo_original));
+  hook(NativeGoldVendor::hook,NativeGoldVendor::signature,reinterpret_cast<void*>(gold_offer),reinterpret_cast<void**>(&gold_offer_original));
   hook("rac1.item.give","void(i32,i32)",reinterpret_cast<void*>(give),reinterpret_cast<void**>(&give_original));
   hook(NativeVendor::build_hook,NativeVendor::build_signature,reinterpret_cast<void*>(build_vendor),reinterpret_cast<void**>(&vendor_original));
   hook("rac1.vendor.menu_update","void()",reinterpret_cast<void*>(vendor_update),reinterpret_cast<void**>(&vendor_update_original));
   hook("rac1.vendor.initialize_selected","void()",reinterpret_cast<void*>(vendor_selected),reinterpret_cast<void**>(&vendor_selected_original));
+  hook("rac1.vendor.icon_strip.draw","void()",reinterpret_cast<void*>(vendor_icon_strip),reinterpret_cast<void**>(&vendor_icons_original));
   hook("rac1.ammo.choose_drop","i32(u32,u32)",reinterpret_cast<void*>(choose_ammo),reinterpret_cast<void**>(&choose_original));
   hook("rac1.ammo.spawn_drop","u32(u32,i32,i32,i32)",reinterpret_cast<void*>(spawn_ammo),reinterpret_cast<void**>(&spawn_original));
   MenuHook<0,&NativeWeaponMenu::grid_update>::install("rac1.menu.item_grid.update");
@@ -564,10 +615,10 @@ extern "C" OPENRAC_MOD_EXPORT int openrac_mod_load(const openrac_api* api,openra
   enemy<9>("rac1.moby.peckbot.update");enemy<10>("rac1.moby.extermibot.update");enemy<11>("rac1.moby.moby1048.update");
   enemy<12>("rac1.moby.sharkigator_35.update");enemy<13>("rac1.moby.sharkigator_1059.update");
   session->xp.frame();
-  if(!session->xp.compatible())throw std::runtime_error("Revolverator 0.2.0 requires Weapon XP API v4 when Weapon XP is enabled; update both mod packages");
+  if(!session->xp.compatible())throw std::runtime_error("Revolverator 0.3.0 requires Weapon XP API v4 when Weapon XP is enabled; update both mod packages");
   if(api->on_frame(mod,+[](void*){if(session)session->frame();},nullptr))throw std::runtime_error("Frame registration failed");
   runtime_hooks->commit();
-  api->log(mod,OPENRAC_LOG_INFO,"Revolverator 0.2.0: additive logical arsenal, independent Walloper, native menus and sidecar saves, copy-only API v2");
+  api->log(mod,OPENRAC_LOG_INFO,"Revolverator 0.3.0: Golden Novalis upgrade, charge-scaled impact explosions, weighted throw, independent arsenal saves, copy-only API v3");
   return 0;
  }catch(const std::exception& e){if(api&&api->fail)api->fail(mod,e.what());session.reset();runtime_hooks.reset();compatibility_modules.reset();weapon_assets.reset();return 1;}
 }

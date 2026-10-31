@@ -13,6 +13,8 @@ public:
     std::optional<Vec3> hold(unsigned owner, unsigned weapon, float yaw, float seconds);
     std::optional<Vec3> align_weapon(unsigned weapon);
     void release();
+    bool releasing() const { return release_time_ > 0; }
+    void set_head_scale(float radial, float axial);
     void settle(float seconds);
     void reset(bool discard=false);
 private:
@@ -24,6 +26,7 @@ private:
     float original_radius_{},owned_radius_{};
     int level_=-1,arena_level_=-1;
     float raised_time_{},release_time_{},yaw_{};
+    float head_radial_=1.f,head_axial_=1.f;
     std::array<Quaternion,3> rotations_{{{0,0,0,1},{0,0,0,1},{0,0,0,1}}};
     std::array<Vec3,3> grip_axes_{};bool grip_ready_{};
     using Matrix=std::array<float,16>;
@@ -32,8 +35,9 @@ private:
     std::optional<Matrix> sample(unsigned joint);
     std::optional<Matrix> parent_frame(unsigned joint);
     bool pose();
+    bool pose_torso(float progress,Vec3 outward);
     bool aim(unsigned node, unsigned joint, unsigned endpoint, Vec3 target, float weight);
-    bool turn_wrist(float weight);
+    bool turn_wrist(float weight,Vec3 direction);
     bool track_weapon(unsigned weapon);
     void unlink(unsigned owner,unsigned node);
 };

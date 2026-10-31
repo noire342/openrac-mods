@@ -108,14 +108,33 @@ int main(){
      vendor.frame();require(f.get<int>(preview_model)==225,"ammunition hologram metadata must initialize native class225 in slot2");
      vendor.before_vendor_update();vendor.after_vendor_update();
      require(f.get<std::uint16_t>(ammo+0xa6)==32000,"selected Revolverator ammunition must show the companion cell model");
+     require(f.get<std::uint16_t>(preview_list+0x100+0xa6)==32000,"the details monitor must show the cell as well as the separate world hologram");
      require(f.get<unsigned>(ammo+0x24)==pclass&&f.get<unsigned>(ammo+0x78)==pvars&&f.get<unsigned>(ammo+0x38)==stamp,"render substitution must retain native class data and record identity");
-     require(f.get<std::uint16_t>(preview_list+0x100+0xa6)==180&&f.get<std::uint16_t>(preview_list+0x300+0xa6)==180,"weapon monitor and unowned weapon hologram must remain weapon models");
+     require(f.get<std::uint16_t>(preview_list+0x300+0xa6)==180,"unowned weapon hologram must remain a weapon model");
      vendor.before_vendor_update();require(f.get<std::uint16_t>(ammo+0xa6)==225,"native class must be restored before native update/deletion");
+     require(f.get<std::uint16_t>(preview_list+0x100+0xa6)==180,"monitor must regain its native weapon class before updates");
      vendor.after_vendor_update();vendor.frame();require(f.get<std::uint16_t>(ammo+0xa6)==225,"frame boundary must restore after deferred rendering and before the next tick");
      require(f.inventory()==inventory,"preview substitution must not change inventory or ammunition");
      vendor.reset();require(f.get<int>(preview_model)==0,"owned preview metadata must restore on unload");}
     {Fixture f;NativeVendor vendor(&f.api);f.rows({{18,0,0,0,102}});f.previews();vendor.frame();vendor.after_vendor_update();
      require(f.get<std::uint16_t>(preview_list+0x200+0xa6)==225,"weapon purchase selection must not receive an ammunition model");}
+    {Fixture f;NativeVendor vendor(&f.api);f.rows({{18,1,0,0,102}});f.previews();
+     const auto monitor=preview_list+0x100,hologram=preview_list+0x200;
+     const std::array<float,3> origin{{10,20,30}},centre{{10*1024.f,20*1024.f,30*1024.f}};
+     f.put(monitor+0x10,origin);f.put(monitor,centre);f.put(monitor+0x2c,.14583333f);f.put(hologram+0x2c,.027870022f);
+     f.put(monitor+0xc0,std::array<float,3>{{0,1,0}});f.put(monitor+0xd0,std::array<float,3>{{-1,0,0}});f.put(monitor+0xe0,std::array<float,3>{{0,0,1}});
+     vendor.frame();vendor.after_vendor_update();
+     const auto at=f.get<std::array<float,3>>(monitor+0x10);const float scale=f.get<float>(monitor+0x2c);
+     require(scale==f.get<float>(hologram+0x2c),"monitor uses native ammunition scale instead of the five-times-larger glove scale");
+     require(std::abs(at[0]+.032292763f*scale-10)<.00001f&&std::abs(at[1]-20)<.00001f&&std::abs(at[2]+7.409395f*scale-30)<.00001f,
+         "ammo mesh centre stays at the native monitor centre for a rotated actor");
+     require(f.get<std::array<float,3>>(monitor)==centre,"fitting preserves the original culling centre");
+     vendor.before_vendor_update();
+     require(f.get<std::array<float,3>>(monitor+0x10)==origin&&f.get<float>(monitor+0x2c)==.14583333f,
+         "next native update receives the original monitor position and scale");
+     vendor.after_vendor_update();f.put(monitor+0x2c,.5f);f.put(monitor+0x10,std::array<float,3>{{9,8,7}});vendor.before_vendor_update();
+     require(f.get<float>(monitor+0x2c)==.5f&&f.get<std::array<float,3>>(monitor+0x10)==std::array<float,3>{{9,8,7}},
+         "a later owner's position or scale edit survives lease restoration");}
     {Fixture f;NativeVendor vendor(&f.api);f.rows({{15,1,0,0,102}});f.previews();vendor.frame();vendor.after_vendor_update();
      require(f.get<std::uint16_t>(preview_list+0x200+0xa6)==225,"other weapons' ammunition previews must remain untouched");}
     {Fixture f;NativeVendor vendor(&f.api);f.rows({{18,1,0,0,102}});f.previews();f.put<std::uint16_t>(preview_list+0x200+0xa6,214);

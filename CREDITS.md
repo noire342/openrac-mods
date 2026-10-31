@@ -20,6 +20,11 @@ Maintained by **Noire** ([noire342](https://github.com/noire342)).
   original procedural mesh and texture recipe. It is new mod art; it is not an
   extracted game asset or an original Insomniac design.
 
+The Golden atlas is an **AI-assisted recolour** of the original drill atlas,
+using the original Gold weapon palette as a reference. Its original artwork
+belongs to Insomniac Games / Sony; the software GPL does not relicense that art.
+See [Golden texture provenance](revolverator/assets/golden/README.md).
+
 The Revolverator is a community reconstruction. Its proposed behavior and reused
 native animations should not be presented as recovered, complete original game
 code or a verified exact recreation of the removed weapon.

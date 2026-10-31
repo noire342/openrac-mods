@@ -2,7 +2,7 @@
   "format": 2,
   "id": "weapon-xp",
   "name": "Weapon Experience",
-  "version": "0.6.3-arsenal",
+  "version": "0.6.4",
   "author": "noire342",
   "description": "Ten persistent weapon levels with native localized vN names, acquisition presentations and integrated weapon HUD. Original weapon behavior and visuals by default. Optional damage and ammo-capacity scaling are independently disabled by default. XP follows native enemy bolt payouts and depletion.",
   "license": "GPL-3.0-or-later",

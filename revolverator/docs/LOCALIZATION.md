@@ -1,5 +1,11 @@
 # Native text localization
 
+Version0.3 uses **Rotatore** in Italian and **Rotatore d'oro** for its
+Golden upgrade. The native description changes with the variant, and optional
+versioned names retain the same shared XP level. Other supported languages
+have their own Gold names/descriptions. Italian shop prompt/name layout was
+inspected in the real Novalis room; this is not proof for every translation.
+
 `src/localization.hpp` supplies text without reading game memory or changing
 state. The adapter reads the native NTSC-U language field through SDK relocation
 and rebinds its own text records when language/bank context changes.

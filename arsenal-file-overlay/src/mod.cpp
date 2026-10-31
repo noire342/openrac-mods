@@ -32,15 +32,16 @@ OPENRAC_MOD_EXPORT int openrac_file_overlay_stats(file_overlay_stats_v1* out) { 
 OPENRAC_MOD_EXPORT int openrac_mod_load(const openrac_api* api, openrac_mod* mod) {
     try {
         if (!api || !api->game || !api->version || !api->platform || std::strcmp(api->game, "rac1") ||
-            std::strcmp(api->version, "ntsc") || std::strcmp(api->platform, "windows-x86_64")) {
-            if (api && api->fail) api->fail(mod, "File-overlay POC requires the official R&C1 NTSC-U Windows x64 client");
+            (std::strcmp(api->version, "ntsc") && std::strcmp(api->version, "pal")) ||
+            std::strcmp(api->platform, "windows-x86_64")) {
+            if (api && api->fail) api->fail(mod, "File-overlay POC requires the official R&C1 PAL or NTSC-U Windows x64 client");
             return 1;
         }
         const auto path = file_overlay::default_config_file();
         wchar_t trace[2]{};
         const bool diagnostics = GetEnvironmentVariableW(L"OPENRAC_FILE_OVERLAY_DIAGNOSTICS", trace, 2) == 1 && trace[0] == L'1';
         file_overlay::enable_diagnostics(diagnostics);
-        const auto result = file_overlay::install(path.c_str());
+        const auto result = file_overlay::install(path.c_str(),api->version);
         if (result) { if (api->fail) api->fail(mod, file_overlay::last_error()); return 1; }
         if (api->log) api->log(mod, OPENRAC_LOG_INFO, file_overlay::last_error());
         if (diagnostics) {

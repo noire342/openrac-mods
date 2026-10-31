@@ -6,8 +6,8 @@
   "author": "noire342",
   "license": "GPL-3.0-or-later",
   "api": "1.1",
-  "description": "Exact-build Windows x64 compatibility provider for additive arsenal mods on the unchanged stock OpenRAC NTSC-U executable. Load before Revolverator. Fails closed on other builds; no game behavior is enabled without a complete consumer transaction.",
-  "games": {"rac1": ["ntsc"]},
+  "description": "Exact-build Windows x64 compatibility provider for additive arsenal mods on unchanged official OpenRAC PAL and NTSC-U executables. Load before a compatible consumer. Rejects unknown builds and mismatched regions; enables hooks only after a complete consumer transaction.",
+  "games": {"rac1": ["pal", "ntsc"]},
   "hooks": [],
   "settings": [],
   "plugin": {"windows-x86_64": "lib/windows-x86_64/arsenal_compat.dll"},
@@ -15,9 +15,21 @@
     "noire342.arsenalHooks": {
       "query": "openrac_arsenal_hooks_query",
       "apiVersion": 1,
-      "requiredExecutableSha256": "b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081",
+      "supportedExecutableSha256": [
+        "b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081",
+        "f70a9f2bc6de39ed42b9f9f64fc5cea98ffad8b8bd7795c7adfb965a9875c95b",
+        "e720a59d130b4b2289a4eb15cad3e33f739a72a385992db171ef43490205fb0e"
+      ],
+      "supportedExecutableSha256ByVersion": {
+        "ntsc": [
+          "b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081",
+          "f70a9f2bc6de39ed42b9f9f64fc5cea98ffad8b8bd7795c7adfb965a9875c95b"
+        ],
+        "pal": ["e720a59d130b4b2289a4eb15cad3e33f739a72a385992db171ef43490205fb0e"]
+      },
       "consumerLimit": 1,
-      "hookCount": 30
+      "hookCount": 30,
+      "optionalHooks": ["rac1.vendor.icon_strip.draw"]
     }
   }
 }

@@ -11,7 +11,7 @@ bool stable_id_valid(const std::string& id){
     for(unsigned char c:id)if(c<=32||c>=127)return false;
     return true;
 }
-bool state_equal(const State& a,const State& b){return a.owned==b.owned&&a.ammo==b.ammo&&a.xp==b.xp;}
+bool state_equal(const State& a,const State& b){return a.owned==b.owned&&a.ammo==b.ammo&&a.xp==b.xp&&a.golden==b.golden;}
 bool walloper_equal(const WalloperNativeState& a,const WalloperNativeState& b){
     return a.owned==b.owned&&a.unlocked==b.unlocked&&a.acquired==b.acquired&&
            a.ammo==b.ammo&&a.text_variant==b.text_variant;
@@ -22,7 +22,7 @@ bool records_equal(const std::vector<Record>& a,const std::vector<Record>& b){
         if(a[i].key!=b[i].key||a[i].stable_id!=b[i].stable_id||!state_equal(a[i].state,b[i].state))return false;
     return true;
 }
-bool basic_state_valid(const State& state){return state.ammo<=Registry::MaximumCapacity&&state.xp<=Registry::MaximumXp;}
+bool basic_state_valid(const State& state){return state.ammo<=Registry::MaximumCapacity&&state.xp<=Registry::MaximumXp&&(!state.golden||state.owned);}
 auto find_record(std::vector<Record>& records,WeaponKey key){
     return std::find_if(records.begin(),records.end(),[=](const Record& r){return r.key==key;});
 }
@@ -85,6 +85,21 @@ bool Registry::owned(WeaponKey key)const {
     if(key==NativeWrenchKey)return true;
     const auto* d=descriptor(key);const auto* s=d?custom_state(key):nullptr;
     return s&&s->owned;
+}
+bool Registry::golden(WeaponKey key)const {
+    const auto* state=descriptor(key)?custom_state(key):nullptr;
+    return state&&state->owned&&state->golden;
+}
+GoldenPurchaseResult Registry::purchase_golden(WeaponKey key,int& bolts,std::uint32_t price){
+    const auto* definition=descriptor(key);const auto* current=definition?custom_state(key):nullptr;
+    if(!current)return GoldenPurchaseResult::UnknownWeapon;
+    if(!current->owned)return GoldenPurchaseResult::BaseMissing;
+    if(current->golden)return GoldenPurchaseResult::AlreadyOwned;
+    if(!price||price>std::uint32_t(INT_MAX))return GoldenPurchaseResult::InvalidPrice;
+    if(bolts<0||std::uint32_t(bolts)<price)return GoldenPurchaseResult::InsufficientBolts;
+    auto upgraded=*current;upgraded.golden=true;
+    if(!set_state(key,upgraded))return GoldenPurchaseResult::UnknownWeapon;
+    bolts-=int(price);return GoldenPurchaseResult::Purchased;
 }
 bool Registry::can_equip(WeaponKey key)const {
     if(key<=MaximumNativeKey)return key!=NativeWalloperKey||walloper_.owned;

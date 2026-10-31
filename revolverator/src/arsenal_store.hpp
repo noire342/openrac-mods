@@ -30,6 +30,8 @@ const char* store_status_message(StoreStatus status)noexcept;
 // a unique temporary sidecar in the same directory, flushes it, then atomically
 // replaces only our final sidecar. It never modifies or replaces native_save.
 // load leaves output byte-for-byte semantically unchanged on every failure.
+// New writes use codec2. Codec1 loads with golden=false; codec2 uses the old
+// per-record reserved byte as a canonical 0/1 Golden flag (no layout growth).
 bool save(const std::filesystem::path& native_save,const Snapshot& snapshot,
           StoreStatus* status=nullptr)noexcept;
 bool load(const std::filesystem::path& native_save,Snapshot& output,

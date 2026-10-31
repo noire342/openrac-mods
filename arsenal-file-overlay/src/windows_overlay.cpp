@@ -2,6 +2,7 @@
 // Copyright (c) 2026 noire342
 #include "windows_overlay.hpp"
 #include "overlay_core.hpp"
+#include "client_profile.hpp"
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <windows.h>
@@ -20,7 +21,6 @@
 namespace file_overlay {
 namespace {
 using Create = HANDLE (WINAPI*)(LPCWSTR, DWORD, DWORD, LPSECURITY_ATTRIBUTES, DWORD, DWORD, HANDLE);
-constexpr char SupportedHash[] = "b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081";
 std::mutex lifecycle;
 std::array<char, 512> error_text{};
 std::shared_ptr<const PathMap> mapping;
@@ -187,14 +187,14 @@ void pin_self() noexcept {
         reinterpret_cast<LPCWSTR>(&file_hook), &own);
 }
 }
-int install(const wchar_t* config_file) noexcept {
+int install(const wchar_t* config_file,const char* api_version) noexcept {
     try {
         std::lock_guard<std::mutex> guard(lifecycle);
         if (created) return error(FILE_OVERLAY_ALREADY_INSTALLED, "A file overlay is already installed or awaiting safe removal");
         if (!config_file || !*config_file) return error(FILE_OVERLAY_ARGUMENT, "An absolute configuration file path is required");
         std::string digest;
-        if (!digest_executable(digest) || digest != SupportedHash)
-            return error(FILE_OVERLAY_BUILD, "Unsupported client: file overlay requires the unchanged official NTSC-U Windows x64 executable SHA256 b7f3762a...df94081");
+        if (!digest_executable(digest) || !supported_client(digest,api_version))
+            return error(FILE_OVERLAY_BUILD, "Unsupported client: file overlay requires a documented unchanged official Windows x64 executable matching the PAL0.10 or NTSC-U0.9/0.10 API profile");
         auto prepared = read_mapping(config_file);
         // UCRT imports the API-set entry, which resolves directly to KernelBase.
         // kernel32 has a different wrapper address and misses those calls.

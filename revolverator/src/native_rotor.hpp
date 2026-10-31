@@ -9,7 +9,7 @@
 namespace revolverator {
 class NativeRotor final:public Memory {
 public:
-    NativeRotor(const openrac_api* api,GuestArena& arena,bool hud_fallback=false);
+    NativeRotor(const openrac_api* api,GuestArena& arena,bool hud_fallback=false,bool preserve_root=false);
     ~NativeRotor();
     void update(unsigned weapon,int ammunition,Phase phase,float charge,float enemy_angle,
                 float seconds,bool playing,bool paused);
@@ -27,6 +27,7 @@ private:
     int level_=-1,arena_level_=-1;
     bool pending_dry_{};
     bool hud_fallback_{};
+    bool preserve_root_{};
     Vec3 pivot_{},inverse_bind_offset_{};
     bool attached()const;
     bool attach(unsigned weapon);

@@ -16,10 +16,11 @@ std::string serialize_json(const openrac::json::Value&);
 
 // Same path precedence as the native program: the last --levels wins;
 // otherwise the last --data (or its native environment fallback) supplies
-// port/ntsc. Paths are resolved against the caller's current directory.
+// port/<version>. Paths are resolved against the caller's current directory.
 std::filesystem::path levels_from_arguments(
     const std::vector<std::filesystem::path>& arguments,
-    const std::filesystem::path& environment_data = {});
+    const std::filesystem::path& environment_data = {},
+    const char* version = "ntsc");
 }
 
 class NativeAssetBundle {
@@ -33,9 +34,9 @@ public:
 
     // Windows: derive roots from the actual process command line, this module
     // and LOCALAPPDATA. Throws before publishing a configuration on any error.
-    NativeAssetBundle();
+    explicit NativeAssetBundle(unsigned required_format=0,const char* version="ntsc");
     // Explicit roots provide the same staging contract for host tests/tools.
-    explicit NativeAssetBundle(Paths);
+    explicit NativeAssetBundle(Paths,unsigned required_format=0,const char* version="ntsc");
     ~NativeAssetBundle() noexcept;
     NativeAssetBundle(const NativeAssetBundle&) = delete;
     NativeAssetBundle& operator=(const NativeAssetBundle&) = delete;

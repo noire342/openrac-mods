@@ -1039,7 +1039,7 @@ int main(int argc, char** argv) {
             CHECK(get<unsigned>(gauge + 0x18) == code.relay);
             glyph_text.clear();
             put<unsigned>(
-                ov(std::strcmp(disc->version, "pal") == 0 ? 0x161240 : 0x1611C0), 0x610000
+                ov(std::strcmp(disc->version, "pal") == 0 ? 0x161280 : 0x1611C0), 0x610000
             );
             relay_dispatch(gauge);
             CHECK(glyph_text == "LV1LV1" && guest_sp == 0xE0100000u);

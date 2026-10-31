@@ -16,6 +16,7 @@ public:
  void names();
  void select_identity(bool revolverator)override;
  void set_experience(bool enabled,unsigned level,float progress,bool versioned_names);
+ void set_golden(bool golden){golden_identity_=golden;hd_.set_golden(golden);apply_identity();}
  static constexpr unsigned custom_icon_bank=60037;
  void frame(bool equipped);
  bool owns(unsigned element)const;
@@ -33,6 +34,7 @@ private:
  Hud hud_;Rectangle rectangle_;Quad quad_;Texture texture_;void* relay_;
  bool enabled_;int level_=-1;unsigned slot_{},old_callback_{},callback_{},arena_{},bank_{},table_{};
  bool revolverator_identity_=true;
+ bool golden_identity_=false;
  bool experience_enabled_=false,versioned_names_=false;
  unsigned experience_level_=1;
  float experience_progress_=0;

@@ -60,6 +60,27 @@ typedef struct revolverator_api_v2 {
  int (*get_progress)(revolverator_progress_v2* out);
  int (*poll_level_up)(revolverator_level_up_v2* out);
 } revolverator_api_v2;
+
+/* Version 3 appends copy-only upgrade and flight diagnostics. The logical
+ * weapon, ammunition and XP remain the same across the Golden upgrade. */
+typedef struct revolverator_upgrade_v3 {
+ uint32_t size,golden,normal_price,gold_bolt_price;
+ float blast_charge;
+ uint32_t release_recoil_active;
+ uint64_t golden_explosions,golden_hits;
+} revolverator_upgrade_v3;
+typedef struct revolverator_api_v3 {
+ uint32_t size,version;
+ int (*get_state)(revolverator_state_v1* out);
+ int (*cancel)(void);
+ int (*get_mechanics)(revolverator_mechanics_v1* out);
+ int (*get_inventory)(uint32_t key,revolverator_inventory_v2* out);
+ int (*get_quick)(revolverator_quick_v2* out);
+ int (*grant)(uint32_t key,int equip);
+ int (*get_progress)(revolverator_progress_v2* out);
+ int (*poll_level_up)(revolverator_level_up_v2* out);
+ int (*get_upgrade)(revolverator_upgrade_v3* out);
+} revolverator_api_v3;
 typedef const revolverator_api_v1* (*revolverator_query_fn)(uint32_t version);
 #ifdef __cplusplus
 }

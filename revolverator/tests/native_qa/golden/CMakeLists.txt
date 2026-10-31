@@ -1,0 +1,10 @@
+cmake_minimum_required(VERSION 3.20)
+project(golden_native_probe LANGUAGES C CXX)
+find_package(OpenRACMod 1.3 REQUIRED)
+openrac_add_mod(golden_native_probe MANIFEST openrac-mod.json SOURCES probe.cpp)
+target_compile_features(golden_native_probe PRIVATE cxx_std_17)
+target_include_directories(golden_native_probe PRIVATE
+  ../../../include ../../../../weapon-xp/include)
+if(MSVC)
+  target_compile_options(golden_native_probe PRIVATE /W4 /WX /EHsc)
+endif()

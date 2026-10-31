@@ -21,7 +21,7 @@ bool unit_rotation(const std::array<float,16>& m){
     return true;
 }
 }
-NativeRotor::NativeRotor(const openrac_api* api,GuestArena& arena,bool hud_fallback):Memory(api),guest_(arena),hud_fallback_(hud_fallback){}
+NativeRotor::NativeRotor(const openrac_api* api,GuestArena& arena,bool hud_fallback,bool preserve_root):Memory(api),guest_(arena),hud_fallback_(hud_fallback),preserve_root_(preserve_root){}
 NativeRotor::~NativeRotor(){reset();}
 bool NativeRotor::attached()const{
     return owner_&&api_->loaded_level()==level_&&valid(owner_,256)&&
@@ -55,7 +55,7 @@ bool NativeRotor::attach(unsigned weapon){
     vars_=read<unsigned>(weapon+0x78);level_=api_->loaded_level();
     for(unsigned joint=0;joint<5;++joint){
         const auto node=arena_+joint*64;
-        write<unsigned char>(node+1,1);write<unsigned char>(node+3,1);
+        write<unsigned char>(node+1,1);write<unsigned char>(node+3,joint==0&&preserve_root_?0:1);
         write(node+4,0x70000000u+joint*64);write(node+8,read<unsigned>(weapon+0x64));
         write<float>(node+0xc,1.f);write(node+0x10,identity);write(node+0x20,Vec3{1,1,1});
         write(weapon+0x64,node);
@@ -79,15 +79,18 @@ void NativeRotor::apply(){
         write(node+0x10,identity);write(node+0x20,Vec3{1,1,1});write(node+0x30,Vec3{});
     }
     const float angle=controller_.angle();
+    const float radial=controller_.radial_scale(),axial=controller_.axial_scale();
     const auto head=arena_+4*64;
     // Native joint quaternions use conjugated axis images. Positive native Y
     // therefore rotates the head about its outward -Y shaft, matching +Z enemy
     // rotation when the hand holds the drill upright.
     write(head+0x10,std::array<float,4>{0,std::sin(angle*.5f),0,std::cos(angle*.5f)});
+    write(head+0x20,Vec3{radial,axial,radial});
     // The port evaluates the guest Part's P4*S4, not the GLB's bind matrices.
     // Choose P4 translation so the effective palette is T(pivot)*R*T(-pivot),
     // without changing the shared native skeleton or importer-compatible IBMs.
-    write(head+0x30,pivot_-turn_minus_y(pivot_+inverse_bind_offset_,angle));
+    const auto offset=pivot_+inverse_bind_offset_;
+    write(head+0x30,pivot_-turn_minus_y({offset.x*radial,offset.y*axial,offset.z*radial},angle));
 }
 void NativeRotor::unlink(unsigned node){
     unsigned link=owner_+0x64;

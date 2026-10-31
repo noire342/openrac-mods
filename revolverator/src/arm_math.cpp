@@ -30,22 +30,45 @@ Quaternion blend_rotation(Quaternion to, float weight) {
     if(n>.00001f)for(auto& v:q)v/=n;
     return q;
 }
-std::optional<ArmGoal> arm_goal(Vec3 shoulder, float upper, float lower,
-                                Vec3 outward, Vec3 forward, float raise) {
-    if(!finite(shoulder)||!finite(outward)||!finite(forward)||
+namespace {
+std::optional<ArmGoal> solve_arm(Vec3 shoulder,float upper,float lower,Vec3 outward,Vec3 offset) {
+    if(!finite(shoulder)||!finite(outward)||!finite(offset)||
        !std::isfinite(upper)||!std::isfinite(lower)||upper<=.001f||lower<=.001f) return {};
-    outward=unit(outward); forward=unit(forward);
+    outward=unit(outward);
     const float reach=upper+lower;
-    // Keep the wrist outside the ear and the elbow farther out still. The arm
-    // reaches diagonally upward, rather than folding the clavicle over the skull.
-    Vec3 offset=outward*(reach*.66f)+forward*(reach*.10f)+Vec3{0,0,reach*.67f};
     const float distance=std::clamp(std::sqrt(length_squared(offset)),
         std::abs(upper-lower)+.0001f,reach*.96f);
     const Vec3 direction=unit(offset);
     const Vec3 pole=unit(outward-direction*dot(outward,direction));
     const float along=(upper*upper-lower*lower+distance*distance)/(2*distance);
     const float side=std::sqrt(std::max(0.f,upper*upper-along*along));
-    (void)raise;
     return ArmGoal{shoulder+direction*along+pole*side,shoulder+direction*distance};
+}
+}
+std::optional<ArmGoal> arm_goal(Vec3 shoulder,float upper,float lower,
+                                Vec3 outward,Vec3 forward,float raise) {
+    if(!finite(forward))return {};
+    const float reach=upper+lower;
+    (void)raise;
+    return solve_arm(shoulder,upper,lower,outward,
+        unit(outward)*(reach*.66f)+unit(forward)*(reach*.10f)+Vec3{0,0,reach*.67f});
+}
+std::optional<ArmGoal> throw_goal(Vec3 shoulder,float upper,float lower,
+                                  Vec3 outward,Vec3 forward,float progress) {
+    if(!std::isfinite(progress)||!finite(forward))return {};
+    const float p=std::clamp(progress,0.f,1.f),reach=upper+lower;
+    const float u=std::clamp(p/.55f,0.f,1.f),s=u*u*(3-2*u);
+    const float tail=std::clamp((p-.55f)/.45f,0.f,1.f);
+    // Sweep the raised hand forward, then let it follow through below the
+    // shoulder. The same outward pole keeps both solutions outside the head.
+    const Vec3 offset=unit(outward)*(reach*(.66f-.36f*s))+
+        unit(forward)*(reach*(.10f+.75f*s-.09f*tail))+
+        Vec3{0,0,reach*(.67f-.57f*s-.26f*tail)};
+    return solve_arm(shoulder,upper,lower,outward,offset);
+}
+float throw_lean(float progress) {
+    if(!std::isfinite(progress)||progress<=0||progress>=1)return 0;
+    const float t=progress<.4f?progress/.4f:(1-progress)/.6f;
+    return throw_lean_radians*t*t*(3-2*t);
 }
 }

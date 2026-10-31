@@ -1,4 +1,20 @@
-# Build e asset della 0.2
+# Build e asset della 0.3
+
+La0.3 aggiunge due identita visuali Golden:2018 per l'arma riggata e2019 per
+la sola esposizione statica nella cupola di Novalis. Dopo aver predisposto il
+package con gli asset base e la munizione, eseguire:
+
+```powershell
+python revolverator/tools/build_golden_assets.py --plugin <build>/package/revolverator --report <output>/golden-art-validation.json
+```
+
+Il builder include l'atlante Golden in19 livelli e genera l'esposizione2019
+soltanto per Novalis. L'atlante e in `assets/golden` nei sorgenti. Non modifica
+vertici, UV, indici, pesi o matrici del modello: cambiano il riferimento alla
+texture e il nome della mesh; il display statico omette soltanto il binding
+della skin. Rifiuta output gia presenti e non modifica i livelli installati.
+La versioneGolden si acquista, non si seleziona con una modifica manuale al
+salvataggio nativo. Vedi [contratto dell'upgrade](GOLDEN_UPGRADE.md).
 
 La mod richiede R&C1 NTSC-U e gli asset estratti dalla propria copia del gioco.
 I builder leggono il formato livelli 3; non richiedono R&C2 e non modificano la

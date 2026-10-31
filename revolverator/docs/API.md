@@ -1,4 +1,28 @@
-# Revolverator API v2
+# Revolverator API v3
+
+## Golden upgrade
+
+Version3 retains the complete version2 prefix and adds
+`get_upgrade(revolverator_upgrade_v3*)`. Set the output's `size` before each
+call. It copies Golden ownership, the50,000 ordinary-bolt price, zero Gold-Bolt
+cost, normalized explosion charge, recoil state and explosion/hit counters.
+Query version3 and cast the returned pointer to `const revolverator_api_v3*`
+after checking `size` and `version`. Version1 and2 queries continue to return
+their original tables.
+
+Golden is a persistent upgrade of key65554, not another inventory key. Ammo,
+XP and favourite bindings are shared with the base Rotatore. The runtime
+API has no free Golden setter or purchase bypass. Offline editors can use
+`State.golden` through the validated registry/store modules. Codec2 reads
+older codec1 sidecars with Golden disabled.
+
+`blast_charge` is separate from the original throw's `charge`: it reaches
+one after three seconds, at automatic release. Once released, the shot owns
+its variant, charge and damage multiplier even if equipment changes.
+Counters are diagnostics; accepted native damage/death records provide the
+gameplay evidence.
+
+## Existing discovery and version2 contract
 
 The manifest also exposes `extensions["noire342.arsenal"]`, version1: a
 declarative discovery contract for future launchers. It lists stable logical

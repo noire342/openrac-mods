@@ -242,7 +242,7 @@ void NativeUpgrades::tick(const Progression& state, bool safe, bool versioned_na
             rename(b, next.level);
         }
     }
-    const auto game_camera = m_api->relocate_level_data(0, pal ? 0x166D00 : 0x166C80);
+    const auto game_camera = m_api->relocate_level_data(0, pal ? 0x166D80 : 0x166C80);
     const std::array<float, 3> camera{
         read<float>(game_camera + 0x140),
         read<float>(game_camera + 0x144),

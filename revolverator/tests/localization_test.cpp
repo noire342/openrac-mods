@@ -48,7 +48,9 @@ int main(){
   for(const char* value:{strings.weapon_name,strings.description,strings.pickup_singular,strings.pickup_plural}){
    CHECK(ascii(value)&&std::strlen(value)<256);
   }
-  CHECK(std::strcmp(strings.weapon_name,"Revolverator")==0);
+  CHECK(std::strcmp(strings.weapon_name,i==4?"Rotatore":"Revolverator")==0);
+  CHECK(ascii(weapon_name_for_language(codes[i],true))&&ascii(description_for_language(codes[i],true)));
+  CHECK(std::strlen(description_for_language(codes[i],true))<256);
   CHECK(std::strcmp(strings.pickup_singular,strings.pickup_plural)!=0);
   pickup_format(strings.pickup_singular,1);pickup_format(strings.pickup_plural,2);
  }
@@ -56,6 +58,7 @@ int main(){
   CHECK(&strings_for_language(fallback)==&translations[0]);
  // Console3 is Spanish, but GAME3 is German: never interchange the two enums.
  CHECK(std::strcmp(strings_for_language(3).pickup_singular,"%d Revolverator-Patrone erhalten")==0);
- CHECK(std::strcmp(strings_for_language(5).pickup_singular,"Hai raccolto %d cartuccia per il Revolverator")==0);
+ CHECK(std::strcmp(strings_for_language(5).pickup_singular,"Hai raccolto %d cartuccia per il Rotatore")==0);
+ CHECK(std::strcmp(weapon_name_for_language(5,true),"Rotatore d'oro")==0);
  std::puts("localization: native language columns, English fallback, ASCII bounds, singular/plural and native integer formats passed");
 }

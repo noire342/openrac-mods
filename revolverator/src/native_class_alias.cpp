@@ -5,8 +5,8 @@
 
 namespace revolverator {
 namespace {
-// Executable NTSC-U symbols. api.relocate_data resolves the loaded program's
-// copies; offsets into each table are added AFTER resolving its base.
+// Canonical table keys are translated by Memory's regional bindings before
+// relocation. Offsets into each table are added AFTER resolving its base.
 constexpr unsigned class_count=0x15ff00;
 constexpr unsigned class_resources=0x1b3200;
 constexpr unsigned class_updates=0x1b3580;
@@ -17,7 +17,7 @@ static_assert(NativeAmmoAlias::native_class<NativeAmmoAlias::id_capacity);
 bool NativeAmmoAlias::supported() const {
     return api_&&api_->memory&&api_->loaded_level&&api_->relocate_data&&
         api_->game&&api_->version&&std::strcmp(api_->game,"rac1")==0&&
-        std::strcmp(api_->version,"ntsc")==0&&api_->loaded_level()>=0&&api_->loaded_level()<19;
+        RegionBindings::for_version(api_->version)==&bindings()&&api_->loaded_level()>=0&&api_->loaded_level()<19;
 }
 bool NativeAmmoAlias::source_valid(unsigned map,std::uint8_t slot) const {
     const auto count_at=global(class_count),resources=global(class_resources),ids=global(class_ids),updates=global(class_updates);

@@ -4,6 +4,7 @@
 #include "native_ammunition.hpp"
 #include "native_arsenal.hpp"
 #include <algorithm>
+#include <cmath>
 #include <cstring>
 
 namespace revolverator {
@@ -24,7 +25,7 @@ NativeVendor::NativeVendor(const openrac_api* api):Memory(api){}
 NativeVendor::~NativeVendor(){reset();}
 bool NativeVendor::supported() const {
     return api_&&api_->memory&&api_->game&&api_->version&&
-        std::strcmp(api_->game,"rac1")==0&&std::strcmp(api_->version,"ntsc")==0&&
+        std::strcmp(api_->game,"rac1")==0&&RegionBindings::for_version(api_->version)==&bindings()&&
         api_->loaded_level()>=0&&api_->loaded_level()<19;
 }
 bool NativeVendor::unlocked() const {
@@ -39,6 +40,10 @@ void NativeVendor::frame() {
     const int current=api_->loaded_level();
     if(current!=level_){reset();level_=current;}
     if(!supported())return;
+    if(!native_icon_captured_){
+        const auto at=global(0x1863d0)+item_id*76+0x38;
+        if(valid(at,2)){native_icon_bank_=read<unsigned short>(at);native_icon_captured_=true;}
+    }
     // vsync consumes the native deferred draw before mods::frame (see
     // port/game/common/program/vsync.cpp). Return to the native class now so
     // the following menu update/reinitialization never sees a render-only ID.
@@ -63,6 +68,16 @@ bool NativeVendor::selected_custom()const{
     const auto base=level(vendor_menu);const int count=read<int>(base+count_offset),selected=read<int>(base+selection_offset);
     return count>0&&count<=16&&selected>=0&&selected<count&&
         read<Row>(base+rows_offset+unsigned(selected)*sizeof(Row)).unused==custom_row_marker;
+}
+unsigned NativeVendor::icon_bank_for_row(unsigned index)const{
+    if(!supported())return 0;
+    const auto base=level(vendor_menu);const int count=read<int>(base+count_offset);
+    if(count<=0||count>16||index>=unsigned(count))return 0;
+    const auto row=read<Row>(base+rows_offset+index*sizeof(Row));
+    if(row.item<0||row.item>36)return 0;
+    if(row.unused==custom_row_marker)return row.item==item_id?60037u:0u;
+    if(row.item==item_id&&native_icon_captured_)return native_icon_bank_;
+    return read<unsigned short>(global(0x1863d0)+unsigned(row.item)*76+0x38);
 }
 unsigned NativeVendor::selected_key()const{
     if(selected_custom())return arsenal::RevolveratorKey;
@@ -152,16 +167,24 @@ void NativeVendor::restore_menu() {
     write(menu_.rows,menu_.original);write(menu_.rows+sizeof(current),menu_.original_count);
     write(menu_.selection,menu_.original_selection);
 }
-bool NativeVendor::preview_valid() const {
-    return preview_.address&&api_->loaded_level()==level_&&valid(preview_.address,0x100)&&
-        read<unsigned>(preview_.address+0x24)==preview_.pclass&&
-        read<unsigned>(preview_.address+0x78)==preview_.pvars&&
-        read<unsigned>(preview_.address+0x38)==preview_.stamp;
+bool NativeVendor::preview_valid(const PreviewLease& preview) const {
+    return preview.address&&api_->loaded_level()==level_&&valid(preview.address,0x100)&&
+        read<unsigned>(preview.address+0x24)==preview.pclass&&
+        read<unsigned>(preview.address+0x78)==preview.pvars&&
+        read<unsigned>(preview.address+0x38)==preview.stamp;
 }
 void NativeVendor::before_vendor_update() {
-    if(preview_valid()&&read<std::uint16_t>(preview_.address+0xa6)==NativeAmmunition::visual_class)
-        write(preview_.address+0xa6,preview_.original_class);
-    preview_={};
+    for(auto& preview:previews_){
+        if(preview_valid(preview)&&read<std::uint16_t>(preview.address+0xa6)==NativeAmmunition::visual_class){
+            if(preview.fitted){
+                if(read<float>(preview.address+0x2c)==preview.applied_scale)write(preview.address+0x2c,preview.original_scale);
+                if(read<decltype(preview.applied_position)>(preview.address+0x10)==preview.applied_position)
+                    write(preview.address+0x10,preview.original_position);
+            }
+            write(preview.address+0xa6,preview.original_class);
+        }
+        preview={};
+    }
 }
 void NativeVendor::after_vendor_update() {
     if(!supported())return;
@@ -176,16 +199,41 @@ void NativeVendor::after_vendor_update() {
     if(row.item!=item_id||row.is_ammo!=1||read<std::uint16_t>(price_address_+8)==0)return;
     const unsigned list=read<unsigned>(base+0x20);
     if(!valid(list,0x600))return;
-    // initialize_vendor_selected_item_mobys creates SIX 0x100-byte menu
-    // records. Slot2 is the ammunition hologram, initialized from the +0x30
-    // field of the 0x40-byte vendor-slot row. Slot3 is the WEAPON hologram
-    // (drawn for an unowned row), and slot1 is the weapon monitor preview.
-    const unsigned moby=list+0x200,pclass=read<unsigned>(moby+0x24);
-    if(!valid(pclass,0x30)||read<std::uint8_t>(moby+0x20)>=0x80||
-       read<std::uint16_t>(moby+0xa6)!=NativeAmmunition::native_pickup_class)return;
-    preview_={moby,pclass,read<unsigned>(moby+0x78),read<unsigned>(moby+0x38),
-        read<std::uint16_t>(moby+0xa6)};
-    write<std::uint16_t>(moby+0xa6,NativeAmmunition::visual_class);
+    // The details monitor always draws slot1, even on an ammunition row.
+    // Slot2 is the separate world hologram; slot3 remains the unowned weapon.
+    // Keep both render aliases alive until the frontend has consumed its
+    // deferred markers, then restore each native actor before its next update.
+    for(unsigned i=0;i<previews_.size();++i){
+        const unsigned moby=list+(i+1)*0x100,pclass=read<unsigned>(moby+0x24);
+        const auto klass=read<std::uint16_t>(moby+0xa6);
+        const auto expected=i==0?180:NativeAmmunition::native_pickup_class;
+        if(!valid(pclass,0x30)||read<std::uint8_t>(moby+0x20)>=0x80||klass!=expected)continue;
+        previews_[i]={moby,pclass,read<unsigned>(moby+0x78),read<unsigned>(moby+0x38),klass};
+        if(i==0){
+            auto& preview=previews_[i];
+            const float scale=read<float>(list+0x200+0x2c);
+            const auto centre=read<std::array<float,3>>(moby);
+            const auto origin=read<std::array<float,3>>(moby+0x10);
+            // The mesh is authored in class225 units. Reusing class180's scale
+            // magnifies it over fivefold. Fit its real mesh centre to the
+            // original monitor actor's native bounding-sphere centre instead
+            // of borrowing the glove's off-centre attachment pivot.
+            constexpr std::array<float,3> mesh_centre{{0,-.032292763f,7.409395f}};
+            auto fitted=centre;float drift=0;
+            for(unsigned axis=0;axis<3;++axis){
+                fitted[axis]/=1024.f;drift+=(fitted[axis]-origin[axis])*(fitted[axis]-origin[axis]);
+                for(unsigned basis_row=0;basis_row<3;++basis_row)
+                    fitted[axis]-=read<float>(moby+0xc0+basis_row*16+axis*4)*mesh_centre[basis_row]*scale;
+            }
+            if(std::isfinite(scale)&&scale>0&&scale<1&&std::isfinite(drift)&&drift<25&&
+               std::all_of(fitted.begin(),fitted.end(),[](float value){return std::isfinite(value);})){
+                preview.original_scale=read<float>(moby+0x2c);preview.applied_scale=scale;
+                preview.original_position=origin;preview.applied_position=fitted;preview.fitted=true;
+                write(moby+0x2c,scale);write(moby+0x10,fitted);
+            }
+        }
+        write<std::uint16_t>(moby+0xa6,NativeAmmunition::visual_class);
+    }
 }
 void NativeVendor::reset() {
     if(api_&&api_->loaded_level()==level_){
@@ -197,6 +245,7 @@ void NativeVendor::reset() {
             write(preview_model_address_,original_preview_model_);
     }
     menu_={};level_=-1;price_address_=0;original_price_=0;price_owned_=false;
-    preview_={};preview_model_address_=0;original_preview_model_=0;preview_model_owned_=false;
+    previews_={};preview_model_address_=0;original_preview_model_=0;preview_model_owned_=false;
+    native_icon_bank_=0;native_icon_captured_=false;
 }
 }

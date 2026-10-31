@@ -26,7 +26,7 @@ namespace arsenal {
 namespace {
 using Bytes=std::vector<std::uint8_t>;
 constexpr std::array<std::uint8_t,8> magic{{'O','R','A','R','S','N','L',0}};
-constexpr std::uint32_t codec_version=1;
+constexpr std::uint32_t codec_version=2;
 constexpr std::size_t header_bytes=32,minimum_bytes=header_bytes+52+4;
 struct Fingerprint {std::uint32_t bytes{};std::uint64_t hash{};};
 bool finish(StoreStatus value,StoreStatus* output){if(output)*output=value;return value==StoreStatus::Ok;}
@@ -96,7 +96,7 @@ Bytes encode(const Snapshot& snapshot,const Fingerprint& native){
     for(auto key:snapshot.quick)u32(payload,key);
     for(const auto& record:snapshot.records){
         u32(payload,record.key);u16(payload,std::uint16_t(record.stable_id.size()));
-        u8(payload,record.state.owned?1:0);u8(payload,0);
+        u8(payload,record.state.owned?1:0);u8(payload,record.state.golden?1:0);
         u32(payload,record.state.ammo);u32(payload,record.state.xp);
         payload.insert(payload.end(),record.stable_id.begin(),record.stable_id.end());
     }
@@ -124,7 +124,7 @@ bool decode(const Bytes& bytes,Snapshot& result,Fingerprint& native){
        !std::equal(magic.begin(),magic.end(),bytes.begin())||
        read_u32(bytes.data()+bytes.size()-4)!=crc32(bytes.data(),bytes.size()-4))return false;
     Reader read(bytes,bytes.size()-4);std::uint32_t version{},length{},reserved{},count{},ammo{};
-    if(!read.skip(8)||!read.get32(version)||version!=codec_version||!read.get32(length)||
+    if(!read.skip(8)||!read.get32(version)||(version!=1&&version!=codec_version)||!read.get32(length)||
        length!=bytes.size()-header_bytes-4||!read.get32(native.bytes)||native.bytes<29||native.bytes>MaximumNativePrefixBytes||
        !read.get64(native.hash)||!read.get32(reserved)||reserved)return false;
     std::uint8_t owned{};
@@ -138,9 +138,9 @@ bool decode(const Bytes& bytes,Snapshot& result,Fingerprint& native){
     for(std::uint32_t i=0;i<count;++i){
         Record record;std::uint16_t text_size{};std::uint8_t flag{},pad{};
         if(!read.get32(record.key)||!read.get16(text_size)||!text_size||text_size>128||
-           !read.get8(flag)||flag>1||!read.get8(pad)||pad||!read.get32(record.state.ammo)||
+           !read.get8(flag)||flag>1||!read.get8(pad)||pad>1||(version==1&&pad)||!read.get32(record.state.ammo)||
            !read.get32(record.state.xp)||!read.text(record.stable_id,text_size))return false;
-        record.state.owned=flag!=0;result.records.push_back(std::move(record));
+        record.state.owned=flag!=0;record.state.golden=version>=2&&pad!=0;result.records.push_back(std::move(record));
     }
     return read.done()&&generic_valid(result);
 }

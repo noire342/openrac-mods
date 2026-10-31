@@ -2,17 +2,17 @@
   "format": 2,
   "id": "revolverator",
   "name": "Revolverator",
-  "version": "0.2.0",
+  "version": "0.3.1",
   "author": "noire342",
   "license": "GPL-3.0-or-later",
   "api": "1.1",
-  "description": "Restores the cut Revolverator as an additional weapon on the official Windows NTSC-U client, preserving the original Walloper. Includes native menus, quick select, twenty rounds, Hoven vendor stock, independent saves and bundled compatibility/asset-loading utilities. Optional Weapon XP API v4.",
+  "description": "Restores the Revolverator as an additional weapon on the official Windows client, with PAL Europe v2.00 as the reference region and NTSC-U support. Gold upgrade sold in an additional Novalis case for 50000 ordinary bolts, with charge-scaled impact explosions and a weighted throw. Twenty rounds, native menus, independent saves and optional Weapon XP API v4.",
   "extensions": {
     "noire342.arsenal": {
       "version": 1,
       "runtimeQuery": "openrac_revolverator_query",
-      "runtimeApiVersion": 2,
-      "stateCodec": "openrac.arsenal.v1",
+      "runtimeApiVersion": 3,
+      "stateCodec": "openrac.arsenal.v2",
       "stateSuffix": ".arsenal",
       "items": [
         {
@@ -66,11 +66,21 @@
       "bundledUtilities": [
         "arsenal_compat.dll",
         "arsenal_file_overlay.dll"
-      ]
+      ],
+      "golden": {
+        "displayClass": 2019,
+        "price": 50000,
+        "firstLevel": 1,
+        "renderClass": 2018,
+        "shop": "Novalis Gold shop",
+        "goldBolts": 0,
+        "upgradeField": "golden"
+      }
     }
   },
   "games": {
     "rac1": [
+      "pal",
       "ntsc"
     ]
   },
@@ -98,7 +108,10 @@
     "rac1.moby.sharkigator_1059.update",
     "rac1.moby.ammo_pickup.update",
     "rac1.vendor.build_item_list",
-    "rac1.item.give"
+    "rac1.item.give",
+    "rac1.player.update_motion_input",
+    "rac1.player.set_planar_velocity",
+    "rac1.moby.item_offer.update"
   ],
   "load": {
     "after": [
@@ -108,8 +121,8 @@
   "settings": [
     {
       "key": "start_unlocked",
-      "name": "Revolverator sbloccato da subito",
-      "description": "Assegna il Revolverator con 20 munizioni alla prima fase giocabile se non e gia posseduto. Non ripristina le munizioni ai successivi caricamenti.",
+      "name": "Rotatore sbloccato da subito",
+      "description": "Assegna il Rotatore con 20 munizioni alla prima fase giocabile se non e gia posseduto. Non ripristina le munizioni ai successivi caricamenti.",
       "type": "bool",
       "default": false
     },

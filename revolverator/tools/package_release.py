@@ -4,7 +4,7 @@
 """Create a standard OpenRAC Revolverator ZIP and its corresponding source ZIP.
 
 The native archive has openrac-mod.json at its root. Only the built Windows
-plugin, its two private utility DLLs, forty assets and notices are distributed.
+plugin, its two private utility DLLs, base/Golden assets and notices are distributed.
 No client EXE, wrapper launcher, staged manifest, card or ISO is included.
 The tool neither installs nor starts the game, and never publishes artifacts.
 """
@@ -21,7 +21,10 @@ from pathlib import Path, PurePosixPath, PureWindowsPath
 
 from package_source import ROOT_DIRS, ROOT_FILES, SUFFIXES, PRIVATE_ASSET_NAMES
 
-STOCK_SHA256 = 'b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081'
+STOCK_SHA256_BY_REGION = {
+    'pal': 'e720a59d130b4b2289a4eb15cad3e33f739a72a385992db171ef43490205fb0e',
+    'ntsc': 'f70a9f2bc6de39ed42b9f9f64fc5cea98ffad8b8bd7795c7adfb965a9875c95b',
+}
 LIBRARIES = {
     'windows_dll_sha256': 'lib/windows-x86_64/revolverator.dll',
     'compat_dll_sha256': 'lib/windows-x86_64/arsenal_compat.dll',
@@ -141,19 +144,30 @@ def read_json(inputs: Inputs, root: Path, relative: str, label: str):
     return json.loads(inputs.read(root, relative, label).decode('utf-8-sig'))
 
 
+def validate_regions(games):
+    regions = games.get('rac1') if isinstance(games, dict) and set(games) == {'rac1'} else None
+    if (not isinstance(regions, list) or len(regions) != 2
+            or any(type(region) is not str for region in regions)
+            or len(set(regions)) != len(regions)
+            or set(regions) != set(STOCK_SHA256_BY_REGION)):
+        raise ValueError('Expected exactly PAL and NTSC in games.rac1, without duplicates or other games')
+
+
 def validate_manifest(manifest):
+    if not isinstance(manifest, dict):
+        raise ValueError('Expected a format2 manifest object')
+    validate_regions(manifest.get('games'))
     if (manifest.get('format') != 2 or manifest.get('id') != 'revolverator'
-            or manifest.get('version') != '0.2.0' or manifest.get('license') != 'GPL-3.0-or-later'
-            or manifest.get('games') != {'rac1': ['ntsc']}
+            or manifest.get('version') != '0.3.1' or manifest.get('license') != 'GPL-3.0-or-later'
             or manifest.get('plugin') != {'windows-x86_64': LIBRARIES['windows_dll_sha256']}
             or manifest.get('requires')):
-        raise ValueError('Expected standalone Windows NTSC-U Revolverator 0.2.0 format2 package')
+        raise ValueError('Expected standalone Windows PAL/NTSC Revolverator 0.3.1 format2 package')
     hooks = manifest.get('hooks', [])
     extension = manifest.get('extensions', {}).get('noire342.arsenal', {})
-    if (len(hooks) != 24 or len(set(hooks)) != 24
+    if (len(hooks) != 27 or len(set(hooks)) != 27
             or set(hooks).intersection(extension.get('compatibilityHooks', []))
             or set(extension.get('bundledUtilities', [])) != {'arsenal_compat.dll', 'arsenal_file_overlay.dll'}):
-        raise ValueError('Expected24 stock SDK hooks and two bundled utilities, without external utility dependencies')
+        raise ValueError('Expected27 stock SDK hooks and two bundled utilities, without external utility dependencies')
 
 
 def validate_dll(data: bytes, relative: str):
@@ -178,6 +192,8 @@ def collect_source(inputs, root, identifier, expected_version):
     if (info.get('id') != identifier or info.get('version') != expected_version
             or info.get('license') != 'GPL-3.0-or-later'):
         raise ValueError(f'Corresponding source identity/version/license mismatch: {identifier}')
+    if identifier == 'revolverator':
+        validate_regions(info.get('games'))
     selected = {}
     for relative in tree_files(root, source=True):
         path = PurePosixPath(relative)
@@ -185,6 +201,8 @@ def collect_source(inputs, root, identifier, expected_version):
         keep = (len(parts) == 1 and path.name in ROOT_FILES) or (
             parts[0] in ROOT_DIRS and (path.suffix.lower() in SUFFIXES or path.name in {'LICENSE', 'COPYING', 'NOTICE', 'AUTHORS'})) or (
             parts[:2] == ('assets', 'ammunition') and len(parts) == 3 and path.name in {'recipe.json', 'README.md'})
+        keep = keep or (parts[:2] == ('assets', 'golden') and len(parts) == 3
+                         and path.name in {'moby_revolverator_gold.png', 'README.md'})
         if not keep or path.name in PRIVATE_ASSET_NAMES or '__pycache__' in parts:
             continue
         put(selected, f'{identifier}/{relative}', inputs.read(root, relative, f'source/{identifier}/{relative}'))
@@ -228,15 +246,19 @@ def main():
     parser.add_argument('--source', type=Path, default=Path(__file__).resolve().parents[1])
     parser.add_argument('--compat-source', type=Path, required=True)
     parser.add_argument('--overlay-source', type=Path, required=True)
-    parser.add_argument('--xp-source', '--weapon-xp-source', dest='xp_source', type=Path, help='Optional Weapon XP0.6.3-arsenal source only; no XP binary is bundled')
+    parser.add_argument('--xp-source', '--weapon-xp-source', dest='xp_source', type=Path, help='Optional corresponding Weapon XP companion source; no XP binary is bundled')
     icon = parser.add_mutually_exclusive_group(required=True)
     icon.add_argument('--hd-icon-data', type=Path, help='Exact generated header used by the HD-enabled DLL; included in corresponding source')
     icon.add_argument('--native-icon-fallback', action='store_true', help='Explicit assertion that the DLL was built without an HD header')
     parser.add_argument('--validation', type=Path, help='Optional native aggregate binding all three DLL hashes and the stock client')
+    parser.add_argument('--reference-region', choices=tuple(STOCK_SHA256_BY_REGION), default='pal',
+                        help='Region whose official OpenRAC0.10 client and native proof are certified; default PAL')
     parser.add_argument('--source-commit', default='', help='Optional source revision; no publication is performed')
     parser.add_argument('--out', type=Path, required=True)
     parser.add_argument('--source-out', type=Path, help='Separate source ZIP; defaults to <out stem>-sources.zip')
     args = parser.parse_args()
+    reference_region = args.reference_region
+    runtime_sha256 = STOCK_SHA256_BY_REGION[reference_region]
     plugin, source = root_path(args.plugin), root_path(args.source)
     compat, overlay = root_path(args.compat_source), root_path(args.overlay_source)
     xp = root_path(args.xp_source) if args.xp_source else None
@@ -258,7 +280,10 @@ def main():
                 'assets/ammunition/model.glb', 'assets/ammunition/texture.png'}
     for level in range(19):
         expected |= {f'assets/graphics/level_{level:02}/mobys/moby_2017.glb',
-                     f'assets/graphics/level_{level:02}/textures/moby_revolverator_original.png'}
+                     f'assets/graphics/level_{level:02}/textures/moby_revolverator_original.png',
+                     f'assets/graphics/level_{level:02}/mobys/moby_2018.glb',
+                     f'assets/graphics/level_{level:02}/textures/moby_revolverator_gold.png'}
+    expected.add('assets/graphics/level_01/mobys/moby_2019.glb')
     actual = set(tree_files(plugin))
     if actual != expected:
         raise ValueError(f'Built package allowlist mismatch: missing={sorted(expected-actual)}, unexpected={sorted(actual-expected)}')
@@ -273,7 +298,7 @@ def main():
         elif relative.endswith('.png') and not data.startswith(b'\x89PNG\r\n\x1a\n'):
             raise ValueError(f'Invalid packaged PNG: {relative}')
         put(binary, relative, data)
-    sources = collect_source(inputs, source, 'revolverator', '0.2.0')
+    sources = collect_source(inputs, source, 'revolverator', '0.3.1')
     if binary['LICENSE'] != sources['revolverator/LICENSE']:
         raise ValueError('The built license does not match its corresponding source')
     for identifier, root in [('arsenal-compat', compat), ('arsenal-file-overlay', overlay)]:
@@ -286,7 +311,7 @@ def main():
         for relative, name in notices.items():
             put(binary, f'THIRD_PARTY_NOTICES/{identifier}/{name}', inputs.read(root, relative, f'source/{identifier}/{relative}'))
     if xp:
-        sources.update(collect_source(inputs, xp, 'weapon-xp', '0.6.3-arsenal'))
+        sources.update(collect_source(inputs, xp, 'weapon-xp', '0.6.4'))
     put(binary, 'THIRD_PARTY_NOTICES/OpenRAC-JSON/NOTICE.md', inputs.read(source, 'third_party/openrac/NOTICE.md', 'source/revolverator/third_party/openrac/NOTICE.md'))
     put(binary, 'THIRD_PARTY_NOTICES/README.md', (
         '# Bundled private utility libraries\n\n'
@@ -298,7 +323,9 @@ def main():
         'The OpenRAC JSON reader retains its original GPL copyright and provenance notice.\n\n'
         'Game-derived drill artwork/glyphs remain the property of their original rights holders.\n'
         'The ammunition model/texture were created with AI assistance. Software licenses do not relicense game art.\n'
-        'Supported installed client SHA256: '+STOCK_SHA256+'\n'
+        'Reference region: '+reference_region+'; reference OpenRAC0.10 client SHA256: '+runtime_sha256+'\n'
+        'Supported OpenRAC0.10 installed clients: '+', '.join(region+' '+digest for region, digest in STOCK_SHA256_BY_REGION.items())+'\n'
+        'Native gameplay verification in the release receipt applies only to its selected reference region.\n'
     ).encode())
     if args.hd_icon_data:
         hd = args.hd_icon_data.absolute()
@@ -320,16 +347,25 @@ def main():
     if args.validation:
         validation_path = args.validation.absolute()
         validation = read_json(inputs, root_path(validation_path.parent), validation_path.name, 'validation/native-aggregate.json')
-        for key, value in {**hashes, 'runtime_sha256': STOCK_SHA256}.items():
-            if validation.get(key, '').lower() != value:
+        if not isinstance(validation, dict):
+            raise ValueError('Native aggregate must be an object')
+        for key in ('reference_region', 'region'):
+            if key in validation and validation[key] != reference_region:
+                raise ValueError(f'Native aggregate {key} does not match reference region {reference_region}')
+        for key, value in {**hashes, 'runtime_sha256': runtime_sha256}.items():
+            actual = validation.get(key)
+            if not isinstance(actual, str) or actual.lower() != value:
                 raise ValueError(f'Native aggregate does not match this package: {key}')
         if type(validation.get('native_gameplay_verified')) is not bool:
             raise ValueError('Native aggregate must explicitly state native_gameplay_verified as a JSON boolean')
         verified = validation['native_gameplay_verified'] is True
-        validation_summary = {**hashes, 'runtime_sha256': STOCK_SHA256, 'native_gameplay_verified': verified}
+        validation_summary = {**hashes, 'reference_region': reference_region, 'runtime_sha256': runtime_sha256,
+                              'native_gameplay_verified': verified, 'scope': 'reference-region-only'}
     source_inventory = inventory(sources)
     put(sources, 'SOURCE-INVENTORY.json', json_bytes({'format': 1, 'components': ['revolverator', 'arsenal-compat', 'arsenal-file-overlay']+(['weapon-xp'] if xp else []),
-        'source_commit': args.source_commit, 'files': source_inventory, 'inventory_self_excluded': True,
+        'source_commit': args.source_commit, 'reference_region': reference_region,
+        'native_verified_regions': [reference_region] if verified else [],
+        'files': source_inventory, 'inventory_self_excluded': True,
         'excluded': ['client EXEs', 'ISOs', 'memory cards', 'staged absolute-path manifests', 'SDK/toolchains', 'build outputs']}))
     inputs.verify()
     owned = []
@@ -338,7 +374,8 @@ def main():
         write_archive(source_out, sources, owned)
         inputs.verify()
         receipt = {'format': 1, 'kind': 'openrac-native-revolverator-release', 'id': 'revolverator', 'version': manifest['version'],
-            'runtime_included': False, 'runtime_sha256': STOCK_SHA256, **hashes,
+            'reference_region': reference_region, 'runtime_included': False, 'runtime_sha256': runtime_sha256, **hashes,
+            'native_verified_regions': [reference_region] if verified else [],
             'native_gameplay_verified': verified, 'validation': validation_summary, 'inputs_stable': True,
             'source_commit': args.source_commit, 'hd_icon_input_included': args.hd_icon_data is not None,
             'binary_archive': {'name': output.name, 'sha256': sha(output.read_bytes()), 'files': inventory(binary)},
@@ -352,7 +389,8 @@ def main():
         raise
     print(json.dumps({'archive': str(output), 'sha256': receipt['binary_archive']['sha256'], 'native_files': len(binary),
         'source_archive': str(source_out), 'source_sha256': receipt['source_archive']['sha256'], 'source_files': len(sources),
-        'receipt': str(receipt_out), 'native_gameplay_verified': verified, 'runtime_included': False, 'published': False}, indent=2))
+        'receipt': str(receipt_out), 'reference_region': reference_region, 'runtime_sha256': runtime_sha256,
+        'native_gameplay_verified': verified, 'runtime_included': False, 'published': False}, indent=2))
 
 
 if __name__ == '__main__':

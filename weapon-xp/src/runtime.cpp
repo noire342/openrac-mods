@@ -601,12 +601,12 @@ std::int32_t Runtime::draw_hud(std::uint32_t element) {
                      )
                   << " hud-stream="
                   << read<unsigned>(
-                         overlay(std::strcmp(m_disc->version, "pal") == 0 ? 0x161240 : 0x1611C0)
+                         overlay(std::strcmp(m_disc->version, "pal") == 0 ? 0x161280 : 0x1611C0)
                      )
                   << " general-at="
                   << resident(std::strcmp(m_disc->version, "pal") == 0 ? 0x161000 : 0x160F00)
                   << " hud-at="
-                  << overlay(std::strcmp(m_disc->version, "pal") == 0 ? 0x161240 : 0x1611C0);
+                  << overlay(std::strcmp(m_disc->version, "pal") == 0 ? 0x161280 : 0x1611C0);
                 log(OPENRAC_LOG_INFO, s.str());
             }
             if (bounds.width >= 42 && bounds.height >= 40) {

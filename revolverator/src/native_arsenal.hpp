@@ -27,7 +27,7 @@ public:
     void finish_level();
     void reset();
     void import_native_inventory();
-    void mark_snapshot_restored(){initialized_=true;}
+    void mark_snapshot_restored();
     void project_quick_slots(bool native_save=false);
     void observe_equipped();
     arsenal::WalloperNativeState native_walloper()const;
@@ -41,6 +41,7 @@ private:
     std::vector<Table> tables_;
     arsenal::WeaponKey projected_=arsenal::NativeWalloperKey;
     bool ready_=false,initialized_=false;
+    arsenal::WeaponKey restored_selection_=0;
     int level_=-1;
     void capture_table(unsigned address,unsigned size);
     void apply_tables(bool custom);

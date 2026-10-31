@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #include "presentation.hpp"
+#include "hud_table_scope.hpp"
+#include "native_icon_variants.hpp"
 #include "localization.hpp"
 #include "ammunition_icon_data.hpp"
 #include <algorithm>
@@ -15,26 +17,11 @@ namespace {
 // Canonical resident relay addresses, checked against the running function table.
 // Source: OpenRAC's NTSC-U bindings; the same callback technique as Weapon XP.
 constexpr std::array<unsigned,19> relays{{0x2a5dd8,0x2bb758,0x2a5d10,0x296298,0x297fe0,0x2cfce0,0x2b2dc8,0x2ceee8,0x2ae8b8,0x2c3fe8,0x296cc0,0x2c9cc0,0x2bd798,0x2b2038,0x2afe30,0x293c18,0x29ec40,0x29df30,0x2a5878}};
-// hud_frame reads the overlay's cached tables, while get_icon_frame and the
-// sprite renderer read the resident tables. Keep both views coherent during
-// each native draw; appended frame indices must never index the old tables.
-class HudTableScope {
- const Memory& memory_;unsigned overlay_;std::array<unsigned,5> before_{},applied_{};
-public:
- explicit HudTableScope(const Memory& memory):memory_(memory),overlay_(memory.level(0x17e4d8)){
-  const auto resident=memory.global(0x19a3e8);
-  if(!Memory::valid(overlay_+0x18,20)||!Memory::valid(resident+0x18,20)){overlay_=0;return;}
-  before_=memory.read<decltype(before_)>(overlay_+0x18);applied_=memory.read<decltype(applied_)>(resident+0x18);
-  memory.write(overlay_+0x18,applied_);
- }
- ~HudTableScope(){if(overlay_)for(unsigned i=0;i<before_.size();++i)
-  if(memory_.read<unsigned>(overlay_+0x18+i*4)==applied_[i])memory_.write(overlay_+0x18+i*4,before_[i]);}
-};
 }
 Presentation::Presentation(const openrac_api* a,openrac_mod* m,GuestArena* arena,bool hud_fallback):Memory(a,arena),hd_(a,arena,hud_fallback),
  hud_(function<Hud>("FUN_L00_0023a7a8")),
  rectangle_(function<Rectangle>("FUN_00200e08")),quad_(function<Quad>("FUN_001f5450")),texture_(function<Texture>("FUN_001f44b8")),
- relay_(a->function("FUN_L00_002a5dd8")),enabled_(a->setting_bool(m,"hud")!=0){hud_fallback_=hud_fallback;}
+ relay_(find_function("FUN_L00_002a5dd8")),enabled_(a->setting_bool(m,"hud")!=0){hud_fallback_=hud_fallback;}
 Presentation::~Presentation(){reset();}
 void Presentation::names(){
  const auto bank=read<unsigned>(global(0x15f6a0));const int count=read<int>(global(0x1996fc));
@@ -66,11 +53,14 @@ void Presentation::set_experience(bool enabled,unsigned level,float progress,boo
 }
 void Presentation::apply_identity(){
  if(arena_){
-  const auto& translated=localization::strings_for_language(read<int>(global(localization::native_language_address)));
+  const int language=read<int>(global(localization::native_language_address));
+  const char* localized_name=localization::weapon_name_for_language(language,golden_identity_);
   char name[256];
-  if(versioned_names_&&experience_level_>1)std::snprintf(name,sizeof name,"%s v%u",translated.weapon_name,experience_level_);
-  else std::snprintf(name,sizeof name,"%s",translated.weapon_name);
+  if(versioned_names_&&experience_level_>1)std::snprintf(name,sizeof name,"%s v%u",localized_name,experience_level_);
+  else std::snprintf(name,sizeof name,"%s",localized_name);
   std::memcpy(api_->memory+arena_,name,std::strlen(name)+1);
+  const char* description=localization::description_for_language(language,golden_identity_);
+  std::memcpy(api_->memory+arena_+256,description,std::strlen(description)+1);
  }
  for(auto& binding:bindings_){
   const auto current=read<unsigned>(binding.entry);
@@ -89,8 +79,8 @@ void Presentation::frame(bool equipped){
  // Native ammo HUD requests60000+item, independently of the item-definition
  // icon. Keep its scheduler's18 identity and scope the render-only bank below.
  if(!Memory::valid(slot,0x90)||read<int>(slot+0x20)!=60018||read<int>(slot+0x68)!=0)return;
- const auto callback=read<unsigned>(slot+0x18),relay=relays[unsigned(current)];
- if(api_->function_at(relay)!=relay_)return;
+ const auto callback=read<unsigned>(slot+0x18),relay=guest_callback(unsigned(current),relays[unsigned(current)]);
+ if(!relay||!relay_||api_->function_at(relay)!=relay_)return;
  if(callback==relay){slot_=slot;callback_=relay;return;}
  if(api_->function_at(callback)!=reinterpret_cast<void*>(hud_))return;
  slot_=slot;old_callback_=callback;callback_=relay;write(slot+0x18,relay);
@@ -136,9 +126,15 @@ void Presentation::bind_icon(){
  write(state+0x1c,definitions_copy);
  write(state+0x20,copy);
  const auto ammunition=generated::ammunition_icon_data();
+ const auto install=[&](const HdIconData& normal){
+  NativeIconVariants variants;
+  const bool complete=variants.build(*this,normal);
+  const auto clean=variants.normal(),vendor_ammo=variants.ammo(),golden=variants.golden();
+  return hd_.install(count,5,complete?clean:normal,&ammunition,complete?&vendor_ammo:nullptr,complete?&golden:nullptr);
+ };
  bool installed=false;
 #ifdef REVOLVERATOR_HD_ICON
- installed=hd_.install(count,5,generated::hd_icon_data(),&ammunition);
+ installed=install(generated::hd_icon_data());
 #endif
  // Source-only builds keep the player's original 32px weapon glyph. The
  // ammunition tile is original authored art and ships with the source.
@@ -147,7 +143,7 @@ void Presentation::bind_icon(){
  const auto pixels=read<unsigned>(page),clut=read<unsigned>(palette);
  if(!installed&&Memory::valid(pixels,1024)&&Memory::valid(clut,1024)&&read<unsigned short>(page+6)==0x0505){
   const HdIconData drill{api_->memory+pixels,1024,api_->memory+clut,1024};
-  hd_.install(count,5,drill,&ammunition);
+  install(drill);
  }
 }
 bool Presentation::owns(unsigned e)const{return slot_==e&&callback_&&api_->loaded_level()==level_&&read<unsigned>(e+0x18)==callback_&&read<int>(e+0x20)==60018;}

@@ -129,25 +129,37 @@ void require_file(const Path& path){
     if(!fs::is_regular_file(path))throw std::runtime_error("asset bundle: missing file "+utf8(path));
 }
 std::string level_name(unsigned level){return "level_"+(level<10?std::string("0"):std::string{})+std::to_string(level);}
-std::string manifest_json(const Value& root,unsigned level,const Path& drill,const Path& ammunition){
-    if(!root.is_object()||!root["format"].is_number()||root["format"].number()!=3||
+std::string disc_version(const char* version){
+    if(!version||(std::string_view(version)!="ntsc"&&std::string_view(version)!="pal"))
+        throw std::runtime_error("asset bundle: only PAL and NTSC-U disc versions are supported");
+    return version;
+}
+std::string manifest_json(const Value& root,unsigned level,const Path& drill,const Path& golden,const Path& ammunition,const std::string& version){
+    if(!root.is_object()||!root["format"].is_number()||
+       (root["format"].number()!=3&&root["format"].number()!=4)||
        !root["game"].is_string()||root["game"].string()!="rac1"||
-       !root["version"].is_string()||root["version"].string()!="ntsc"||
+       !root["version"].is_string()||root["version"].string()!=version||
        !root["level"].is_number()||root["level"].number()!=double(level))
-        throw std::runtime_error("asset bundle: expected R&C1 NTSC-U format3 "+level_name(level));
+        throw std::runtime_error("asset bundle: expected R&C1 "+version+" format3/4 "+level_name(level));
     const auto& classes=root["classes"];const auto& mobys=classes["moby"];
     if(!classes.is_object()||!mobys.is_object()||!mobys["180"].is_object()||!mobys["225"].is_object())
         throw std::runtime_error("asset bundle: missing native class180/225 in "+level_name(level));
-    for(const auto* key:{"2016","2017","32000"})
+    for(const auto* key:{"2016","2017","2018","2019","32000"})
         if(mobys.members().find(key)!=mobys.members().end())
             throw std::runtime_error("asset bundle: custom class collision "+std::string(key)+" in "+level_name(level));
     const auto clone=[&](const Value& native,const Path& mesh,const char* name){
         return patched(native,{{"mesh",json_quote(utf8(mesh))},{"name",json_quote(name)}});
     };
-    const auto added=patched(mobys,{
+    std::map<std::string,std::string> additions{
         {"2017",clone(mobys["180"],drill,"revolverator_independent_weapon")},
+        {"2018",clone(mobys["180"],golden,"revolverator_golden_weapon")},
         {"2016",clone(mobys["225"],ammunition,"revolverator_ammunition_vendor_preview")},
-        {"32000",clone(mobys["225"],ammunition,"revolverator_ammunition")}});
+        {"32000",clone(mobys["225"],ammunition,"revolverator_ammunition")}};
+    if(level==1){
+        if(!mobys["304"].is_object())throw std::runtime_error("asset bundle: Novalis Gold case304 is missing");
+        additions.emplace("2019",clone(mobys["304"],golden.parent_path()/"moby_2019.glb","revolverator_golden_shop_display"));
+    }
+    const auto added=patched(mobys,additions);
     return patched(root,{{"classes",patched(classes,{{"moby",added}})}})+'\n';
 }
 bool component_equal(const Path& a,const Path& b){
@@ -207,7 +219,8 @@ Path module_root(){
     throw std::runtime_error("asset bundle: own plugin assets directory was not found");
 }
 #endif
-NativeAssetBundle::Paths process_paths(){
+NativeAssetBundle::Paths process_paths(const char* version){
+    (void)disc_version(version);
 #ifdef _WIN32
     int count=0;auto** values=CommandLineToArgvW(GetCommandLineW(),&count);
     if(!values)throw std::runtime_error("asset bundle: cannot read process arguments");
@@ -216,7 +229,7 @@ NativeAssetBundle::Paths process_paths(){
     for(int i=0;i<count;++i)args.emplace_back(values[i]);
     auto local=environment_path(L"LOCALAPPDATA");
     if(local.empty())throw std::runtime_error("asset bundle: LOCALAPPDATA is unavailable");
-    return {asset_bundle::levels_from_arguments(args,environment_path(L"OPENRAC_DATA")),module_root(),
+    return {asset_bundle::levels_from_arguments(args,environment_path(L"OPENRAC_DATA"),version),module_root(),
         local/"OpenRAC/revolverator/assets"};
 #else
     throw std::runtime_error("asset bundle: native module discovery is supported on Windows only");
@@ -226,7 +239,8 @@ NativeAssetBundle::Paths process_paths(){
 
 namespace asset_bundle {
 std::string serialize_json(const Value& input){JsonWriter writer;writer.value(input);return writer.take();}
-fs::path levels_from_arguments(const std::vector<Path>& args,const Path& environment_data){
+fs::path levels_from_arguments(const std::vector<Path>& args,const Path& environment_data,const char* version){
+    const auto disc=disc_version(version);
     Path levels,data;
     for(std::size_t i=1;i<args.size();++i){
         const auto& option=args[i];
@@ -243,12 +257,13 @@ fs::path levels_from_arguments(const std::vector<Path>& args,const Path& environ
     if(!levels.empty())return absolute_path(levels);
     if(data.empty())data=environment_data;
     if(data.empty())throw std::runtime_error("asset bundle: neither --levels nor --data is available");
-    return absolute_path(data/"port/ntsc");
+    return absolute_path(data/"port"/disc);
 }
 }
 
-NativeAssetBundle::NativeAssetBundle():NativeAssetBundle(process_paths()){}
-NativeAssetBundle::NativeAssetBundle(Paths paths){
+NativeAssetBundle::NativeAssetBundle(unsigned required_format,const char* version):NativeAssetBundle(process_paths(version),required_format,version){}
+NativeAssetBundle::NativeAssetBundle(Paths paths,unsigned required_format,const char* version){
+    const auto disc=disc_version(version);
     const auto levels=absolute_path(paths.levels_root),mod=absolute_path(paths.mod_root);
     if(!fs::is_directory(levels)||!fs::is_directory(mod))throw std::runtime_error("asset bundle: source roots are unavailable");
     const auto cache=fs::weakly_canonical(absolute_path(paths.cache_root));
@@ -262,10 +277,17 @@ NativeAssetBundle::NativeAssetBundle(Paths paths){
         const auto name=level_name(level);
         const auto art=mod/"assets/graphics"/name;
         const auto drill=art/"mobys/moby_2017.glb";
+        const auto golden=art/"mobys/moby_2018.glb";
         require_file(drill);require_file(art/"textures/moby_revolverator_original.png");
+        require_file(golden);require_file(art/"textures/moby_revolverator_gold.png");
+        if(level==1)require_file(art/"mobys/moby_2019.glb");
         const auto original=levels/name/"manifest.json";
         require_file(original);
-        manifests.push_back({original,manifest_json(document(original),level,drill,ammo)});
+        const auto native=document(original);
+        if(required_format&&(!native["format"].is_number()||native["format"].number()!=double(required_format)))
+            throw std::runtime_error("Revolverator: this OpenRAC client requires level format "+
+                std::to_string(required_format)+". Use Check and play in the official launcher to read the levels again.");
+        manifests.push_back({original,manifest_json(native,level,drill,golden,ammo,disc)});
     }
     files_.reserve(20);
     try{

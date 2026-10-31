@@ -27,7 +27,34 @@ proof or certify every combination with the Revolverator preview.
 The original publication's combined Windows source build passed **41/41 host groups**; see the
 [publication source receipt](validation/skill-points-cinematics-publication.json).
 
-## Current self-contained native package
+## PAL-reference 0.3.1 / Weapon Experience 0.6.4
+
+The current source uses PAL Europe v2.00 (`SCES_509.16`) on the unchanged
+official Windows OpenRAC 0.10 client as its reference. Regional boundaries and
+the exact native scope are documented in [Revolverator PAL](../revolverator/docs/PAL.md)
+and [Weapon Experience PAL](../weapon-xp/docs/PAL.md). Final release receipts
+bind those scenarios to the distributed plugin/utility/client hashes; old NTSC
+receipts below remain historical evidence for their original combinations.
+
+The isolated source build covers all six components and **52 host groups**:
+29 Revolverator, 13 Weapon Experience, the two utility core groups, five Skill
+Points and three Cinematic Journeys. Windows and the final complete Linux run
+both pass **52/52**. The complete Linux stdout has SHA256 `c5ebe4b701a11b339ad9747c5e8451eb739533b4d44832e166b8c521e67c4938`.
+An earlier Windows-checkout TSV line-ending failure was corrected before that
+full run; no runtime code changed. ELF checks expose only
+the three loader entry points and the explicit Revolverator query service.
+
+The PAL XP validation distinguishes combat-earned progression, a native
+level-up presentation, the vertical Suck Cannon gauge and cross-process profile
+reload. Its initial 0.6.3-arsenal receipt is retained separately from the 0.6.4
+recheck. None of these scoped Novalis checks certifies every weapon, planet,
+language, complete campaign, boss fight or arbitrary mod combination. Host
+Linux builds do not establish native Linux gameplay compatibility.
+
+The catalog retains four IDs. Skill Points and Cinematic Journeys source,
+native receipts and published artifacts remain unchanged by this integration.
+
+## Historical 0.2 self-contained native package
 
 The [native receipt](validation/revolverator-0.2.0-native-package.json) records
 six new scenarios on the unchanged official Windows NTSC-U client. The weapon

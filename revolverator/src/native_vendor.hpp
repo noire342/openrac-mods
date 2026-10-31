@@ -37,6 +37,7 @@ public:
     void set_arsenal(NativeArsenal* arsenal){arsenal_=arsenal;}
     unsigned selected_key()const;
     bool selected_custom()const;
+    unsigned icon_bank_for_row(unsigned row)const;
     void set_preview_class(unsigned klass){preview_class_=klass;}
 
     // Bracket preview_hook with these calls. frame() restores the temporary
@@ -72,10 +73,16 @@ private:
     struct PreviewLease {
         unsigned address=0,pclass=0,pvars=0,stamp=0;
         std::uint16_t original_class=0;
-    } preview_;
+        float original_scale=0,applied_scale=0;
+        std::array<float,3> original_position{},applied_position{};
+        bool fitted=false;
+    };
+    std::array<PreviewLease,2> previews_{};
+    unsigned native_icon_bank_{};
+    bool native_icon_captured_=false;
 
     bool supported() const;
     void restore_menu();
-    bool preview_valid() const;
+    bool preview_valid(const PreviewLease& preview) const;
 };
 }

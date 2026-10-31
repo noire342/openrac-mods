@@ -1,0 +1,61 @@
+{
+  "format": 1,
+  "build_kind": "throw-lean-trial",
+  "version": "0.3.1",
+  "passed": true,
+  "release_candidate_complete": false,
+  "native_gameplay_verified": true,
+  "full_campaign_verified": false,
+  "runtime_version": "0.10.0",
+  "artifacts": {
+    "runtime": "f70a9f2bc6de39ed42b9f9f64fc5cea98ffad8b8bd7795c7adfb965a9875c95b",
+    "revolverator": "a1b7308b07d66ae5e7611c0d86534dd42176b2951e4bb73c0237697539d8be7d",
+    "probe": "5222b8339194d0bc74dd2f0d4d7de5a06cabded7940343bf5d799a6500056f61"
+  },
+  "exit_code": 0,
+  "native_frames": 2000,
+  "fixture": "qa-vendor-031-010-throw-lean-04",
+  "spine": {
+    "joint_ids": [
+      3,
+      4,
+      5
+    ],
+    "total_peak_degrees": 11.9996,
+    "duration_seconds": 0.25,
+    "samples": 14,
+    "head_forward_metres_peak": 0.081752,
+    "pelvis_drift_metres_peak": 0,
+    "bend_while_carrying_violations": 0,
+    "modifiers_after_weapon_switch": 0,
+    "measurement": "exact official OpenRAC d015ea1c renderer evaluator on live RAM, posed versus same frame with only additive spine rotations neutralized"
+  },
+  "native_combat": {
+    "revolverator_earned_xp": 39,
+    "walloper_earned_xp": 39,
+    "capacity": 20,
+    "damage_multiplier": 1,
+    "single_tap_pulse_pass": true,
+    "normal_head_size_when_carrying": true,
+    "xp_seeded": false,
+    "enemy_health_or_rewards_modified": false
+  },
+  "host_tests_passed": [
+    "pose",
+    "native_world",
+    "controller",
+    "rotor",
+    "release_recoil",
+    "native_rotor"
+  ],
+  "original_inputs_checked": 44,
+  "original_inputs_changed": 0,
+  "native_errors": [],
+  "log_sha256": "05ed9f3b00af6ee65d3addf8a8c70f032e584383310190f6a4c3c73c20032354",
+  "limits": [
+    "Windows NTSC Novalis base throw and native Walloper only",
+    "Prior Golden and save evidence belongs to C929 build, not this trial hash",
+    "Subjective gesture acceptance remains with the user",
+    "No PAL or full campaign proof"
+  ]
+}

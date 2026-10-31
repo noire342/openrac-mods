@@ -7,7 +7,7 @@
 namespace revolverator {
 namespace {
 constexpr unsigned item=18;
-constexpr unsigned owned=0x13d4c0,unlocked=0x13d408,acquired=0x13d4e8;
+constexpr unsigned owned=0x13d4c0,acquired=0x13d4e8;
 constexpr unsigned ammo=0x13d428,variant=0x13e520,favourites=0x141ea0;
 std::size_t field_width(std::size_t size,std::size_t at){
     // Keep native scalar ownership indivisible. Restoring separate changed
@@ -25,12 +25,15 @@ NativeArsenal::NativeArsenal(const openrac_api* api,arsenal::Registry& registry,
 
 arsenal::WalloperNativeState NativeArsenal::native_walloper()const {
     return {read<unsigned char>(global(owned)+item)!=0,
-        read<unsigned char>(global(unlocked)+item),read<unsigned char>(global(acquired)+item),
+        0,read<unsigned char>(global(acquired)+item),
         read<int>(global(ammo)+item*4),read<unsigned char>(global(variant)+item)};
 }
 void NativeArsenal::write_walloper(const arsenal::WalloperNativeState& state){
     write<unsigned char>(global(owned)+item,state.owned?1:0);
-    write(global(unlocked)+item,state.unlocked);write(global(acquired)+item,state.acquired);
+    // The legacy codec's "unlocked" byte never represented weapon state:
+    // canonical 0x13d408 is the skill-point table. Do not read, project or
+    // restore it, including when loading a sidecar from an earlier mod build.
+    write(global(acquired)+item,state.acquired);
     write(global(ammo)+item*4,state.ammo);write(global(variant)+item,state.text_variant);
 }
 void NativeArsenal::capture_table(unsigned address,unsigned size){
@@ -105,7 +108,7 @@ void NativeArsenal::apply_tables(bool custom){
 void NativeArsenal::apply_state(arsenal::WeaponKey key){
     if(const auto* state=registry_.custom_state(key)){
         arsenal::WalloperNativeState transport;
-        transport.owned=state->owned;transport.unlocked=transport.acquired=state->owned?1:0;
+        transport.owned=state->owned;transport.acquired=state->owned?1:0;
         transport.ammo=int(state->ammo);write_walloper(transport);
     }else write_walloper(registry_.walloper());
 }
@@ -121,10 +124,34 @@ bool NativeArsenal::equipped_revolverator()const{return registry_.equipped()==ar
 bool NativeArsenal::revolverator_active()const{
     return ready_&&equipped_revolverator()&&read<int>(global(0x13f350)+0x10b8)==int(item);
 }
+void NativeArsenal::mark_snapshot_restored(){
+    initialized_=true;
+    const auto key=registry_.equipped();
+    restored_selection_=registry_.descriptor(key)&&registry_.owned(key)?key:0;
+}
 void NativeArsenal::observe_equipped(){
+    if(!ready_||level_!=api_->loaded_level())return;
+    if(restored_selection_&&registry_.equipped()!=restored_selection_)restored_selection_=0;
     if(read<int>(level(0x15f5c4))!=0)return;
-    const int held=read<int>(global(0x13f350)+0x10b8);
-    const int pending=read<int>(global(0x13f350)+0x20b8),equipped=read<int>(global(0x141660));
+    const auto hero=global(0x13f350);
+    if(restored_selection_){
+        const auto* descriptor=registry_.descriptor(restored_selection_);
+        if(!descriptor||!registry_.owned(restored_selection_))restored_selection_=0;
+        else {
+            // A native-compatible save deliberately stores the wrench instead
+            // of a custom transport selection. Restore it once after the actual
+            // player is ready, before observing that fallback as a user switch.
+            const auto body=read<unsigned>(hero+0x2080);const int state=read<int>(hero+0x2084);
+            if(!valid(hero,0x22ac)||read<int>(hero+0x22a8)<=0||state==0x3d||state==0x82||state==0x77||
+               !valid(body,256)||read<unsigned short>(body+0xa6)!=0||read<unsigned char>(body+0x20)>=0x80||
+               !valid(read<unsigned>(body+0x24),0x4c))return;
+            write<int>(global(0x141660),int(descriptor->carrier));
+            write<int>(hero+0x20b8,int(descriptor->carrier));
+            project_quick_slots();restored_selection_=0;return;
+        }
+    }
+    const int held=read<int>(hero+0x10b8);
+    const int pending=read<int>(hero+0x20b8),equipped=read<int>(global(0x141660));
     // The native switch consumes pending before the old held actor is retired.
     // Keep a logical custom selection until the held and persisted native IDs
     // agree; otherwise that transient old weapon erases the logical identity.
@@ -138,6 +165,7 @@ void NativeArsenal::project_quick_slots(bool native_save){
     write(global(favourites),slots);
 }
 void NativeArsenal::reset(){
+    restored_selection_=0;
     if(ready_&&level_==api_->loaded_level()){
         commit();
         for(const auto& table:tables_)for(std::size_t i=0;i<table.original.size();){

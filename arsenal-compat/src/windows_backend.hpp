@@ -7,12 +7,15 @@ namespace arsenal_compat {
 class WindowsResolver final : public Resolver {
 public:
     using Lookup = void* (*)(const char*);
-    explicit WindowsResolver(Lookup lookup) : lookup_(lookup) {}
+    explicit WindowsResolver(Lookup lookup, const char* version = "ntsc")
+        : lookup_(lookup), version_(version ? version : "") {}
+    const char* version() const noexcept override { return version_.c_str(); }
     bool executable_digest(std::string& digest) override;
     void* resolve(const char* symbol) override;
     bool main_executable_target(void* address) override;
 private:
     Lookup lookup_;
+    std::string version_;
 };
 class MinHookBackend final : public Backend {
 public:
@@ -26,6 +29,6 @@ public:
     void pin_remaining() noexcept;
 private:
     struct Owned { void* target{}; void* replacement{}; void* module{}; };
-    std::array<Owned, OPENRAC_ARSENAL_REQUIRED_HOOKS> owned_{};
+    std::array<Owned, HookCatalogSize> owned_{};
 };
 } // namespace arsenal_compat

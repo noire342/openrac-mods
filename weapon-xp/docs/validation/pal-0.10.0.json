@@ -1,0 +1,405 @@
+{
+  "format": 1,
+  "date": "2026-10-31",
+  "status": "passed_scoped_pal_native_smoke",
+  "module": {
+    "id": "weapon-xp",
+    "version": "0.6.3-arsenal",
+    "loader_api": "1.1",
+    "xp_service_abi": 4
+  },
+  "scope": {
+    "platform": "windows-x86_64",
+    "runtime": "OpenRAC 0.10.0",
+    "region": "pal",
+    "disc": "PAL v2.00 / SCES_509.16",
+    "native_level": 1,
+    "native_level_name": "Novalis",
+    "isolated_fixture": true,
+    "user_saves_used": false,
+    "full_campaign_validated": false
+  },
+  "path_convention": "All receipt paths are relative to the development workspace; private QA files are not part of the public game ZIP.",
+  "host_validation": {
+    "groups_passed": 13,
+    "groups_failed": 0,
+    "regions": [
+      "pal",
+      "ntsc"
+    ],
+    "damage_capacity_combinations": 4,
+    "receipt": {
+      "path": "work/build-weapon-xp-pal-review/Testing/Temporary/LastTest.log",
+      "sha256": "9862629918A652134EFF6FD91BC318649952E6D6B0C66D5901BBB9757E6140F9"
+    }
+  },
+  "source_validation": {
+    "commit": "d015ea1c6925de90b4be91ddb349af83361d9d4b",
+    "receipt": {
+      "path": "work/build-weapon-xp-pal-review/source-audit.json",
+      "sha256": "DACEB5DAB3C6D8C0980EA903B29B266DFE725D74C1CF61BB200EDAE4B02176B2"
+    },
+    "hud_callbacks_checked": 76,
+    "region_level_rows": 38,
+    "hook_abis_checked": 6,
+    "pal_globals_checked": 11,
+    "corrected_pal_level0_keys": {
+      "texture_group_header": "0x0017E5D8",
+      "dma_packet_cursor": "0x00161280",
+      "player_camera": "0x00166D80"
+    }
+  },
+  "native_runs": [
+    {
+      "id": "pal-original-xp-01",
+      "exit_code": 0,
+      "runtime_and_mod_sha256": {
+        "revolverator/lib/windows-x86_64/arsenal_compat.dll": "9603BD048AE54B63143BC2A9E35596A581C3FC6A6415DD51E7BC81CA5AFAF091",
+        "runtime": "E720A59D130B4B2289A4EB15CAD3E33F739A72A385992DB171EF43490205FB0E",
+        "revolverator/lib/windows-x86_64/revolverator.dll": "3D9CA9838D655FD15155DC6F2CD6A449E4E2E39DE42D1B9BA45AC62875C61A91",
+        "weapon-xp/lib/windows-x86_64/weapon_xp.dll": "6074BAE6770EF3647C531C2906D4248C2E309A07CB8B49B94434024A5A95514B",
+        "pal-xp-probe/lib/windows-x86_64/pal_xp_probe.dll": "A218BE6499068BF853019B2209E00ECF3C5023270CB55AAF2C615354EDCF4208",
+        "revolverator/lib/windows-x86_64/arsenal_file_overlay.dll": "ABBB81A5840BF26951333DEB799C4613A24033B71EDCC8F7D83F3950EC743D31"
+      },
+      "run_record": {
+        "path": "work/revolverator-pal-migration/runs/pal-original-xp-01/run.json",
+        "sha256": "2ED3D00F9AC509CA34D33B43AFBD165285F4CA6DD9B553CA4BE247300A2F1315"
+      },
+      "exit_record": {
+        "path": "work/revolverator-pal-migration/runs/pal-original-xp-01/process-exit.json",
+        "sha256": "C0ACEFF588D2EBF2487D4868D53E02418824515325736E52049BC6CD39F8B29C"
+      },
+      "native_log": {
+        "path": "work/revolverator-pal-migration/runs/pal-original-xp-01/data/openrac-rac1-pal.log",
+        "sha256": "9584D001E7D460600C9CD0D4E0D900FBFA938014ED3E17CD750AA1900F8B3D7B"
+      },
+      "verdicts": {
+        "combat": {
+          "receipt": "work/revolverator-pal-migration/runs/pal-original-xp-01/data/openrac-rac1-pal.log",
+          "line": 107,
+          "value": "XP_NATIVE_QA COMBAT_RESULT PASS region=pal Walloper=0->39 Blaster=0->39 BlasterAmmo=100->97 RevoXP=0->0 RevoAmmo=0->0"
+        },
+        "level_up": {
+          "receipt": "work/revolverator-pal-migration/runs/pal-original-xp-01/data/openrac-rac1-pal.log",
+          "line": 125,
+          "value": "XP_NATIVE_QA LEVELUP_RESULT PASS sceneSamples=199 oneRatchet=199 duplicate=0 originalVisible=0 inputSamples=198 inputLeaks=0 nativeNameV2=1 levelEvents=1 rulesRestored=1"
+        },
+        "gauge": {
+          "receipt": "work/revolverator-pal-migration/runs/pal-original-xp-01/data/openrac-rac1-pal.log",
+          "line": 139,
+          "value": "XP_NATIVE_QA GAUGE_RESULT PASS nativeDrawCalls=235 ready=236 XP=0->0 baseCombat=1 manual_native_render_review_required=1"
+        },
+        "overall": {
+          "receipt": "work/revolverator-pal-migration/runs/pal-original-xp-01/data/openrac-rac1-pal.log",
+          "line": 140,
+          "value": "XP_NATIVE_QA RESULT PASS combat=1 levelup=1 gauge=1 manual_native_render_review_required=1"
+        }
+      },
+      "combat": {
+        "native_walloper_xp": [
+          0,
+          39
+        ],
+        "native_blaster_xp": [
+          0,
+          39
+        ],
+        "blaster_ammo": [
+          100,
+          97
+        ],
+        "independent_revolverator_xp": [
+          0,
+          0
+        ],
+        "independent_revolverator_ammo": [
+          0,
+          0
+        ],
+        "native_birdbot_deaths": 2,
+        "enemy_health_reward_edits": 0,
+        "artificial_xp_awards": 0
+      },
+      "level_up": {
+        "native_scene_samples": 199,
+        "samples_with_one_scene_ratchet": 199,
+        "duplicate_scene_ratchet_samples": 0,
+        "original_body_visible_samples": 0,
+        "native_input_samples": 198,
+        "input_leaks": 0,
+        "localized_native_name": "Blastatore v2",
+        "level_events": 1,
+        "temporary_blaster_next_threshold": 20,
+        "rules_restored": true
+      },
+      "vertical_gauge": {
+        "item": 9,
+        "icon": "0x753F",
+        "callback": "0x002BC920",
+        "width": 42,
+        "height": 192,
+        "native_draw_calls": 235,
+        "xp_before": 0,
+        "xp_after": 0
+      },
+      "xp_profile": {
+        "path": "work/revolverator-pal-migration/runs/pal-original-xp-01/local/OpenRAC/weapon-xp/pal-campaign-1.wxp",
+        "sha256": "38F712AFE90773BDA184E05DFF13D0834FA2C21EEAF7BFFBA4B63373536363F0"
+      },
+      "visually_reviewed_screenshots": [
+        {
+          "path": "work/revolverator-pal-migration/runs/pal-original-xp-01/shots/frame720.png",
+          "sha256": "DE14FE5109D53C39D258D593F1BEA4CDE470D888875A4B8BD029E0A9B43EB21F"
+        },
+        {
+          "path": "work/revolverator-pal-migration/runs/pal-original-xp-01/shots/frame900.png",
+          "sha256": "26F5C695BCDC94DB4497A49DCA79DB7EB1FEBA55077A36E7F98AE4D5768A1DBD"
+        },
+        {
+          "path": "work/revolverator-pal-migration/runs/pal-original-xp-01/shots/frame1170.png",
+          "sha256": "F58199968583D6EAF9475F50DD039D9E2D8C74103658C4C87075FD4123811681"
+        }
+      ]
+    },
+    {
+      "id": "pal-original-xp-02",
+      "exit_code": 0,
+      "runtime_and_mod_sha256": {
+        "pal-xp-probe/lib/windows-x86_64/pal_xp_probe.dll": "80C505D211FBE25EF94D55A004427BC4CA89FBA9AEA747A090223B51662F592C",
+        "revolverator/lib/windows-x86_64/arsenal_file_overlay.dll": "ABBB81A5840BF26951333DEB799C4613A24033B71EDCC8F7D83F3950EC743D31",
+        "weapon-xp/lib/windows-x86_64/weapon_xp.dll": "6074BAE6770EF3647C531C2906D4248C2E309A07CB8B49B94434024A5A95514B",
+        "revolverator/lib/windows-x86_64/revolverator.dll": "3D9CA9838D655FD15155DC6F2CD6A449E4E2E39DE42D1B9BA45AC62875C61A91",
+        "revolverator/lib/windows-x86_64/arsenal_compat.dll": "9603BD048AE54B63143BC2A9E35596A581C3FC6A6415DD51E7BC81CA5AFAF091",
+        "runtime": "E720A59D130B4B2289A4EB15CAD3E33F739A72A385992DB171EF43490205FB0E"
+      },
+      "run_record": {
+        "path": "work/revolverator-pal-migration/runs/pal-original-xp-02/run.json",
+        "sha256": "A7269FF82345E7AC8937E63EC6A5148766211C3E328F2B8E693CF30EB2904F1C"
+      },
+      "exit_record": {
+        "path": "work/revolverator-pal-migration/runs/pal-original-xp-02/process-exit.json",
+        "sha256": "0424A6557CD8831A639A4974CEAED333979B74E4CD8338D672A42140EF867685"
+      },
+      "native_log": {
+        "path": "work/revolverator-pal-migration/runs/pal-original-xp-02/data/openrac-rac1-pal.log",
+        "sha256": "D8CFE41D1DF926DF774C28492CC5074F4022CC93C1DF8FEB3DCFF9BA87725B83"
+      },
+      "verdicts": {
+        "combat": {
+          "receipt": "work/revolverator-pal-migration/runs/pal-original-xp-02/data/openrac-rac1-pal.log",
+          "line": 6747,
+          "value": "XP_NATIVE_QA COMBAT_RESULT PASS region=pal Walloper=0->39 Blaster=0->39 BlasterAmmo=100->97 RevoXP=0->0 RevoAmmo=0->0"
+        },
+        "level_up": {
+          "receipt": "work/revolverator-pal-migration/runs/pal-original-xp-02/data/openrac-rac1-pal.log",
+          "line": 11114,
+          "value": "XP_NATIVE_QA LEVELUP_RESULT PASS sceneSamples=199 oneRatchet=199 duplicate=0 originalVisible=0 inputSamples=198 inputLeaks=0 nativeNameV2=1 levelEvents=1 rulesRestored=1"
+        },
+        "gauge": {
+          "receipt": "work/revolverator-pal-migration/runs/pal-original-xp-02/data/openrac-rac1-pal.log",
+          "line": 14751,
+          "value": "XP_NATIVE_QA GAUGE_RESULT PASS nativeDrawCalls=235 ready=236 XP=0->0 baseCombat=1 manual_native_render_review_required=1"
+        },
+        "overall": {
+          "receipt": "work/revolverator-pal-migration/runs/pal-original-xp-02/data/openrac-rac1-pal.log",
+          "line": 14752,
+          "value": "XP_NATIVE_QA RESULT PASS combat=1 levelup=1 gauge=1 manual_native_render_review_required=1"
+        }
+      },
+      "combat": {
+        "native_walloper_xp": [
+          0,
+          39
+        ],
+        "native_blaster_xp": [
+          0,
+          39
+        ],
+        "blaster_ammo": [
+          100,
+          97
+        ],
+        "independent_revolverator_xp": [
+          0,
+          0
+        ],
+        "independent_revolverator_ammo": [
+          0,
+          0
+        ],
+        "native_birdbot_deaths": 2,
+        "enemy_health_reward_edits": 0,
+        "artificial_xp_awards": 0
+      },
+      "level_up": {
+        "native_scene_samples": 199,
+        "samples_with_one_scene_ratchet": 199,
+        "duplicate_scene_ratchet_samples": 0,
+        "original_body_visible_samples": 0,
+        "native_input_samples": 198,
+        "input_leaks": 0,
+        "localized_native_name": "Blastatore v2",
+        "level_events": 1,
+        "temporary_blaster_next_threshold": 20,
+        "rules_restored": true
+      },
+      "vertical_gauge": {
+        "item": 9,
+        "icon": "0x753F",
+        "callback": "0x002BC920",
+        "width": 42,
+        "height": 192,
+        "native_draw_calls": 235,
+        "xp_before": 0,
+        "xp_after": 0
+      },
+      "xp_profile": {
+        "path": "work/revolverator-pal-migration/runs/pal-original-xp-02/local/OpenRAC/weapon-xp/pal-campaign-1.wxp",
+        "sha256": "38F712AFE90773BDA184E05DFF13D0834FA2C21EEAF7BFFBA4B63373536363F0"
+      }
+    },
+    {
+      "id": "pal-xp-reload-01",
+      "exit_code": 0,
+      "runtime_and_mod_sha256": {
+        "weapon-xp/lib/windows-x86_64/weapon_xp.dll": "6074BAE6770EF3647C531C2906D4248C2E309A07CB8B49B94434024A5A95514B",
+        "revolverator/lib/windows-x86_64/arsenal_compat.dll": "9603BD048AE54B63143BC2A9E35596A581C3FC6A6415DD51E7BC81CA5AFAF091",
+        "revolverator/lib/windows-x86_64/revolverator.dll": "3D9CA9838D655FD15155DC6F2CD6A449E4E2E39DE42D1B9BA45AC62875C61A91",
+        "revolverator/lib/windows-x86_64/arsenal_file_overlay.dll": "ABBB81A5840BF26951333DEB799C4613A24033B71EDCC8F7D83F3950EC743D31",
+        "runtime": "E720A59D130B4B2289A4EB15CAD3E33F739A72A385992DB171EF43490205FB0E",
+        "pal-xp-probe/lib/windows-x86_64/pal_xp_probe.dll": "80C505D211FBE25EF94D55A004427BC4CA89FBA9AEA747A090223B51662F592C"
+      },
+      "run_record": {
+        "path": "work/revolverator-pal-migration/runs/pal-xp-reload-01/run.json",
+        "sha256": "255867D8BA0485A627A409773FD378FAB73918F079007520D5E60F39C46646D0"
+      },
+      "exit_record": {
+        "path": "work/revolverator-pal-migration/runs/pal-xp-reload-01/process-exit.json",
+        "sha256": "AA707C8914B87AFA4C0BDC54623B2CA10816B8F8E1497A04FCC8A15BCBB3C7E1"
+      },
+      "native_log": {
+        "path": "work/revolverator-pal-migration/runs/pal-xp-reload-01/data/openrac-rac1-pal.log",
+        "sha256": "F5CA14D5A1CD8CD8B05C3FC5AEB39C9DDE5C6FA1E507305314066E36827E7477"
+      },
+      "verdict": {
+        "receipt": "work/revolverator-pal-migration/runs/pal-xp-reload-01/data/openrac-rac1-pal.log",
+        "line": 815,
+        "value": "XP_RELOAD_RESULT PASS region=pal actualWalloper=39 expectedWalloper=39 actualBlaster=39 expectedBlaster=39 readyFrames=60 nativeLevel=1 read_only=1 grants=0 input_injection=0 XP_writes=0"
+      },
+      "read_only_reload": {
+        "consecutive_alive_gameplay_frames": 60,
+        "walloper_xp_expected": 39,
+        "walloper_xp_actual": 39,
+        "blaster_xp_expected": 39,
+        "blaster_xp_actual": 39,
+        "grants": 0,
+        "input_injection": 0,
+        "xp_writes": 0
+      },
+      "xp_profile": {
+        "path": "work/revolverator-pal-migration/runs/pal-xp-reload-01/local/OpenRAC/weapon-xp/pal-campaign-1.wxp",
+        "sha256": "38F712AFE90773BDA184E05DFF13D0834FA2C21EEAF7BFFBA4B63373536363F0"
+      }
+    }
+  ],
+  "persistence": {
+    "format": 4,
+    "walloper_xp": 39,
+    "blaster_xp": 39,
+    "copied_fixture_profile_unchanged_after_reload": true,
+    "profile_sha256": "38F712AFE90773BDA184E05DFF13D0834FA2C21EEAF7BFFBA4B63373536363F0",
+    "independent_native_card_slots": true
+  },
+  "offline_actor_audit": {
+    "run": "work/revolverator-pal-migration/runs/pal-original-xp-02",
+    "count_samples": 21,
+    "ignored_zero_pclass_actor_records": 15248,
+    "zero_record_caveat": "Raw class0Live includes unallocated zero-pclass/zero-alpha slots; these are not extra rendered Ratchets.",
+    "stable_blaster": {
+      "samples": 3,
+      "ticks": [
+        300,
+        360,
+        420
+      ],
+      "render_enabled_class0_each": 1,
+      "drawn_last_class0_each": 1,
+      "other_body_model_each": 0
+    },
+    "after_scene_retirement": {
+      "samples": 6,
+      "first_tick": 660,
+      "last_tick": 900,
+      "render_enabled_class0_each": 1,
+      "drawn_last_class0_each": 1,
+      "other_body_model_each": 0
+    },
+    "native_walloper_afterimages": {
+      "peak_total_rendered_class0": 4,
+      "source_function": "HERO_STATE_HELD_ITEM_ATTACK / PAL state 0x20",
+      "copies": 3,
+      "flags": "0x080A",
+      "initial_alpha": [
+        48,
+        23,
+        12
+      ],
+      "sample_delays": [
+        2,
+        4,
+        6
+      ],
+      "observed_tick180_alpha": [
+        38,
+        13,
+        2
+      ],
+      "faded_before_stable_blaster_samples": true
+    },
+    "suspect_background_silhouette": {
+      "image": "work/revolverator-pal-migration/runs/pal-original-xp-02/shots/frame720.png",
+      "sample_tick": 360,
+      "class0_render_enabled": 1,
+      "airborne_class459_birdbots": 2,
+      "birdbot_delta_z": [
+        3.2577,
+        6.4918
+      ],
+      "pixel_to_moby_identity_claimed": false,
+      "conclusion": "Pool evidence excludes an additional rendered class0 Ratchet in the sampled Blaster stage; airborne Birdbots are consistent with the background silhouettes."
+    },
+    "source_evidence": [
+      {
+        "path": "games/rac1/src/overlays/shared/hero_water_and_ground_motion.c",
+        "lines": [
+          1430,
+          1464
+        ],
+        "meaning": "Native held-item attack creates three delayed hero copies and fades them."
+      },
+      {
+        "path": "games/rac1/src/overlays/shared/moby_path_and_manipulators.c",
+        "lines": [
+          712,
+          731
+        ],
+        "meaning": "Copies source oclass, sets flags0x80A, clears collision and sets alpha."
+      },
+      {
+        "path": "games/rac1/src/overlays/shared/moby_path_and_manipulators.c",
+        "lines": [
+          774,
+          807
+        ],
+        "meaning": "Fades trail copies and deletes them at the end."
+      }
+    ]
+  },
+  "limitations": [
+    "Novalis smoke coverage, not a full campaign or every planet.",
+    "Native earned-XP kills were tested for Walloper and Blaster; Suck Cannon was checked at0XP for the vertical HUD, not for a native XP kill.",
+    "The native level-up used a temporary session threshold20, restored afterward; default progression thresholds were covered by host tests.",
+    "Actor counters and selected screenshots do not establish every possible camera or animation combination.",
+    "PAL v2.00 and Italian localization were exercised; no PALv1/Japanese compatibility claim."
+  ]
+}

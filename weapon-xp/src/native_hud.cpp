@@ -110,12 +110,12 @@ void NativeHud::reflow_gauge(std::uint32_t first, const Bounds& bounds) const {
 
 void NativeHud::draw_gauge(const std::vector<Draw>& commands) const {
     const bool pal = std::strcmp(m_disc.version, "pal") == 0;
-    const auto layer = m_api->relocate_level_data(0, pal ? 0x17E558 : 0x17E4D8);
+    const auto layer = m_api->relocate_level_data(0, pal ? 0x17E5D8 : 0x17E4D8);
     std::uint32_t frame_depth = 0;
     std::memcpy(&frame_depth, m_api->memory + layer + 12, 4);
     const auto depth = std::min(0xFFFFFFu, std::max(0xFFFFF1u, frame_depth + 1));
     const auto general = m_api->relocate_data(pal ? 0x161000 : 0x160F00);
-    const auto hud = m_api->relocate_level_data(0, pal ? 0x161240 : 0x1611C0);
+    const auto hud = m_api->relocate_level_data(0, pal ? 0x161280 : 0x1611C0);
     if (general == hud) {
         for (const auto& command : commands) {
             draw_at_depth(command, depth);

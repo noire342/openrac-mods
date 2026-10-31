@@ -26,7 +26,11 @@ public:
  HdIcon& operator=(const HdIcon&)=delete;
  // first_frame/count must refer to the Presentation-owned, appended references,
  // never to the shared bank 59901 references. Existing icon pages stay intact.
- bool install(unsigned first_frame,unsigned count,const HdIconData& data,const HdIconData* ammunition=nullptr);
+ bool install(unsigned first_frame,unsigned count,const HdIconData& data,const HdIconData* ammunition=nullptr,
+              const HdIconData* vendor_ammo=nullptr,const HdIconData* golden=nullptr);
+ // The requested style may be set before installation or during HUD hiding.
+ // Frames 0/1 follow it; frame 4 always retains the dedicated Gold reference.
+ void set_golden(bool enabled);
  bool ready()const;
  void frame();
  // Bracket only the native ammo HUD callback. Its texture-derived size stays
@@ -46,14 +50,19 @@ private:
  unsigned header_{},header_copy_{};
  std::array<std::uint32_t,45> old_header_{};
  unsigned image_count_{},palette_count_{},hd_page_{},blank_page_{},palette_page_{};
+ unsigned appended_images_{},appended_palettes_{};
  unsigned hd_ref_{},blank_ref_{};
  unsigned ammunition_ref_{};bool ammunition_enabled_{};
+ unsigned vendor_ammunition_ref_{},golden_ref_{};
+ bool vendor_ammunition_enabled_{},golden_enabled_{},golden_selected_{};
  bool hidden_{};
  bool compact_hud_fallback_{};
  std::array<unsigned,5> old_refs_{};
  std::vector<std::uint64_t> old_images_,old_palettes_;
  bool owns_tables()const;
  bool owns_refs()const;
+ unsigned visible_ref(unsigned frame)const;
+ unsigned expected_ref(unsigned frame)const;
  void merge_pages(unsigned original,unsigned copy,const std::vector<std::uint64_t>& baseline);
 };
 }

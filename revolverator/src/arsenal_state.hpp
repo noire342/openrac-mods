@@ -24,6 +24,8 @@ struct Descriptor {
 };
 struct WalloperNativeState {
     bool owned=false;
+    // unlocked is reserved in the v1/v2 codec. Native adapters neither read
+    // nor apply this legacy field; the original address was a skill point.
     std::uint8_t unlocked{},acquired{};
     int ammo{};
     std::uint8_t text_variant{};
@@ -31,7 +33,9 @@ struct WalloperNativeState {
 struct State {
     bool owned=false;
     std::uint32_t ammo{},xp{};
+    bool golden=false;
 };
+enum class GoldenPurchaseResult { Purchased, AlreadyOwned, BaseMissing, InsufficientBolts, InvalidPrice, UnknownWeapon };
 using CustomState=State;
 struct Record {
     WeaponKey key{};
@@ -68,6 +72,10 @@ public:
     bool set_walloper(const WalloperNativeState& state);
     bool set_state(WeaponKey key,const State& state);
     bool set_custom_state(WeaponKey key,const State& state){return set_state(key,state);}
+    bool golden(WeaponKey key)const;
+    // Changes only this custom weapon's upgrade bit and the caller's balance.
+    // No native Gold flag/counter, ammunition, XP or binding is modified.
+    GoldenPurchaseResult purchase_golden(WeaponKey key,int& bolts,std::uint32_t price);
 
     // owned() covers our custom records, Walloper and the permanent wrench.
     // Other native ownership must be read from the native inventory by its owner.

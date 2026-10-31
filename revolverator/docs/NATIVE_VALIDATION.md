@@ -1,12 +1,70 @@
-# Preview nativa installabile dal launcher
+# Verifica corrente 0.3.1 su OpenRAC 0.10
 
-La combinazione corrente è un singolo pacchetto Revolverator con asset e DLL
+Le prove nuove usano il client ufficiale Windows NTSC-U 0.10 invariato e livelli
+nel formato 4. L'EXE installato e quello estratto dall'installer ufficiale hanno
+SHA256 `f70a9f2bc6de39ed42b9f9f64fc5cea98ffad8b8bd7795c7adfb965a9875c95b`.
+Provenienza e compatibilità SDK sono in [OPENRAC_0_10.md](OPENRAC_0_10.md).
+
+Artefatti della serie finale con impulso della trivella:
+
+| Componente | SHA256 |
+| --- | --- |
+| Revolverator 0.3.1 | `c9294347cacad667bd9436feb6ac7c22196ddfff151c745dec8437d3554739f7` |
+| Arsenal Compatibility | `36a52a6501dd2737a7f5957151e29ad961726a66eca5670727715d277cf2414d` |
+| File overlay | `ba99b27d68168630d206020cc75b8888760958d3110b855e8598833335a7dc12` |
+| Weapon XP, dove attivo | `68205f76fea997336d4ee01fcb7c2812a2fdd32b6d79d3b67cc51a8b162cb67c` |
+
+Le ricevute locali sono in `work/revolverator-openrac-010-review/`.
+I probe assegnano arma base, accesso NG+, bolt normali e posizioni controllate;
+non assegnano Golden, XP, salute o ricompense dei nemici. La fixture level-up
+abbassa soltanto le soglie della sessione per esercitare il passaggio, poi
+ripristina le regole originali.
+
+| Ricevuta | Risultato nativo osservato |
+| --- | --- |
+| `final-shop-no-xpfinalpulse.json` | PASS 23 controlli: acquisto reale da 3,35 m, undici cupole con luce nativa, vetrina ferma/centrata e scena Gold completa senza XP |
+| `final-combatshortfinalpulse.json` | PASS 40: un lancio, un'esplosione, tre hit/morti native, Revo 117 XP e Walloper 0; impulso grande/veloce e scala normale durante la rotazione |
+| `final-combatlongfinalpulse.json` | PASS 40: rilascio automatico a 3 s, un'esplosione, cinque hit/morti native, Revo 156 XP e Walloper 0 |
+| `final-switch-flightfinalpulse.json` | PASS 39: cambio alla chiave durante il volo, esplosione e attribuzione conservate, Revo 117 XP e Walloper 0 |
+| `final-levelingfinalpulse.json` | PASS 44: XP reali del nemico, una scena aggiuntiva v2, modello Gold, un solo Ratchet visibile e input bloccato |
+| `final-savefinalpulse.json` | PASS 27: acquisto salvato con 7 cariche e 10.000 bolt, sidecar codec 2 associato al salvataggio nativo |
+| `final-reloadfinalpulse.json` | PASS 4: nuovo processo ripristina Golden, esattamente 7 cariche e 10.000 bolt |
+
+Le ricevute riportano 84 input originali immutati e nessun errore nativo. Nei
+test di combattimento il recupero blocca solo Ratchet per 9 tick, circa 150 ms,
+senza deriva orizzontale; la locomozione riprende e polso/trivella eseguono il
+gesto di lancio. L'impulso su Cerchio raggiunge 2× radiale, 1,2× assiale e 55 rad/s;
+la scala torna immediatamente a 1 quando il nemico comincia a roteare.
+
+Nel log `work/qa-vendor-031-010-base-pulse-final/data/openrac-rac1-ntsc.log`,
+`BASE_SINGLE_TAP_PASS` conferma gli stessi valori su un tap base senza cattura
+e il consumo di una sola carica (20→19). `REVO_EARNED_PASS` conferma poi una
+cattura/lancio/impatto/morte reali: Revo 39 XP, Walloper 0, danni e capacità
+senza bonus. Questa prova non include una successiva uccisione con il Walloper.
+
+La prima `final-rapidfinalpulse.json` non è una prova riuscita: l'input fisico
+ha interferito con l'acquisto della fixture. Il nuovo pass con input isolato
+va registrato separatamente. Le ricevute precedenti di riuso rapido non
+certificano da sole la DLL finale. La successiva prova XP del Walloper viene
+registrata separatamente quando disponibile.
+
+La suite host comprende 25 gruppi; i test mirati finali includono 4.027 controlli
+del rotore, 493 dell'adapter nativo e 95 del negozio Gold. Compilazione e test
+host restano distinti dalle osservazioni del gioco sopra. Queste fixture su
+Novalis non certificano campagna completa, ogni fase dei boss, PAL, native
+Linux/macOS o combinazioni arbitrarie di mod.
+
+---
+
+# Verifiche storiche 0.2: preview nativa installabile dal launcher
+
+La combinazione allora provata è un singolo pacchetto Revolverator con asset e DLL
 utility private. Parte nel client ufficiale NTSC-U invariato usando i livelli
 originali; niente script di preparazione, asset pack esterno o card utility.
 La ricevuta pubblica `docs/validation/revolverator-0.2.0-native-package.json`
 contiene i sei scenari nuovi e gli hash esatti, separati dalle prove precedenti.
 
-| Scenario corrente | Evidenza |
+| Scenario storico 0.2 | Evidenza |
 | --- | --- |
 | Smoke 900 frame | Solo mod di produzione Revo/XP, nessun helper; 20 cariche e controllo al frame 521 |
 | Menu 2.400 frame | 16 armi, griglia nativa 4×5, preferiti 18/65554 e preview/HUD reali; fase 18 terminata |
@@ -31,7 +89,7 @@ non supportati non sono certificati. La preview rimane distinta dalla finale.
 
 # Verifiche storiche con utility/card configurate manualmente
 
-Il percorso corrente usa il client Windows x64 NTSC-U ufficiale invariato,
+Il percorso storico usa il client Windows x64 NTSC-U ufficiale invariato,
 commit `77a2f052`, SHA256
 `b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081`,
 con Arsenal Compatibility 0.1.0. La DLL provider è
@@ -128,7 +186,10 @@ Il renderer HUD usa un frame3 dedicato alla cartuccia, lasciando la trivella
 nei frame di inventario e selezione rapida. La regressione host relativa al
 contratto nativo60018 comprende63 controlli; la suite Windows completa passa17/17.
 
-## Verifiche aperte
+## Verifiche aperte annotate per la combinazione storica 0.2
+
+Questo paragrafo conserva i limiti della ricevuta 0.2. Per le nuove prove di
+acquisizione e combattimento della 0.3.1 su 0.10 fa fede la sezione iniziale.
 
 La prova grafica descritta riguarda Novalis nella configurazione della fixture.
 Carica, livelli, animazione di acquisizione, tutti i pianeti e formati video

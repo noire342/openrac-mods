@@ -115,12 +115,14 @@ def retarget(source,target,ratio,report=None):
 def main():
  parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--levels',type=Path,required=True);parser.add_argument('--out',type=Path,required=True);parser.add_argument('--editor',type=Path,required=True)
  parser.add_argument('--target-class',type=int,default=2017,help='Independent Revolverator render class; 180 explicitly builds the legacy replacement pack')
+ parser.add_argument('--version',choices=('ntsc','pal'),default='ntsc',help='Disc region of the extracted levels (default: ntsc for existing build commands)')
  args=parser.parse_args();levels=args.levels.resolve();out=args.out.resolve()
  if out.exists():raise ValueError('Output exists; choose a new folder')
  if out==levels or out.is_relative_to(levels):raise ValueError('Output must be separate from the installed game levels')
  if args.target_class<0 or args.target_class>=0x800:raise ValueError('Target class must fit the native class-ID map')
  source_level=levels/'level_12';source_manifest=json.loads((source_level/'manifest.json').read_text());source_info=source_manifest['classes']['moby']['164']
- if source_manifest.get('format')!=3 or source_manifest.get('game')!='rac1' or source_manifest.get('version')!='ntsc':raise ValueError('The original drill must come from extracted R&C1 NTSC-U format 3')
+ source_format=source_manifest.get('format')
+ if source_format not in (3,4) or source_manifest.get('game')!='rac1' or source_manifest.get('version')!=args.version:raise ValueError(f'The original drill must come from extracted R&C1 {args.version} format 3/4')
  source=read_glb(source_level/source_info['mesh'])
  source_image=(source_level/'mobys'/source[0]['images'][0]['uri']).resolve();texture=source_image.read_bytes()
  files={};replaces={};rotors={}
@@ -128,7 +130,7 @@ def main():
   folder=levels/f'level_{index:02}';manifest=json.loads((folder/'manifest.json').read_text());info=manifest['classes']['moby'].get('180')
   if not info:raise ValueError(f'Native Walloper class 180 is missing in level {index}')
   if args.target_class!=180 and str(args.target_class) in manifest['classes']['moby']:raise ValueError(f'Target render class {args.target_class} already exists in level {index}')
-  if manifest.get('format')!=3 or manifest['game']!='rac1' or manifest['version']!='ntsc':raise ValueError('This pack targets extracted R&C1 NTSC-U format 3')
+  if manifest.get('format')!=source_format or manifest.get('game')!='rac1' or manifest.get('version')!=args.version:raise ValueError(f'This pack requires consistent R&C1 {args.version} format {source_format} levels')
   target=read_glb(folder/info['mesh']);report={};model=retarget(source,target,float(source_info['scale'])/float(info['scale']),report)
   rotors[f'level_{index:02}']={**report,'native_class_scale':float(info['scale'])}
   files[f'level_{index:02}/mobys/moby_{args.target_class}.glb']=model;files[f'level_{index:02}/textures/moby_revolverator_original.png']=texture
@@ -137,11 +139,11 @@ def main():
  originals=overrides.originals(files,levels)
  description='Original Hoven drill with a rigid housing and independently rotating corkscrew. '
  description+=('Replaces Walloper appearance.' if args.target_class==180 else f'Uses distinct render class{args.target_class}; original Walloper art remains unchanged. Requires the matching extended-level manifest.')
- manifest={'format':1,'id':'revolverator-original-model' if args.target_class==180 else 'revolverator-additive-model','game':'rac1','version':'ntsc','name':'Revolverator original model','author':'Insomniac Games; community restoration adapter','description':description,'levels_format':3,'replaces':replaces,'originals':originals}
+ manifest={'format':1,'id':'revolverator-original-model' if args.target_class==180 else 'revolverator-additive-model','game':'rac1','version':args.version,'name':'Revolverator original model','author':'Insomniac Games; community restoration adapter','description':description,'levels_format':source_format,'replaces':replaces,'originals':originals}
  out.mkdir(parents=True)
  for name,data in files.items():path=out/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(data)
  (out/'openrac-mod.json').write_text(json.dumps(manifest,indent=2)+'\n')
- (out/'rotor.json').write_text(json.dumps({'format':1,'target_class':args.target_class,'native_source_class':180,'source_class_scale':float(source_info['scale']),
+ (out/'rotor.json').write_text(json.dumps({'format':1,'version':args.version,'levels_format':source_format,'target_class':args.target_class,'native_source_class':180,'source_class_scale':float(source_info['scale']),
   'source_sha256':hashlib.sha256((source_level/source_info['mesh']).read_bytes()).hexdigest(),
   'texture_sha256':hashlib.sha256(texture).hexdigest(),'levels':rotors},indent=2)+'\n')
  (out/'README.txt').write_text('Private local asset pack generated from the installed R&C1 disc. Original art belongs to Insomniac Games / Sony. '+description+'\n')

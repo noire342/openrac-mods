@@ -12,7 +12,7 @@ size checks and optional integration. It has no dependency on Weapon Experience.
 
 Cinematic Journeys exposes launcher settings and no additional public C service.
 
-## Revolverator API v2
+## Revolverator APIs v1/v2/v3
 
 Resolve `openrac_revolverator_query(2)` from the already loaded provider and cast
 the compatible v1 return pointer to `const revolverator_api_v2*`. Version 1 keeps
@@ -40,6 +40,12 @@ Base ammunition capacity is 20. Optional XP reaches level 10 and uses independen
 state; without the XP provider progression awards are disabled. No arbitrary
 third-party weapon registration or direct custom XP setter is exposed.
 
+Query version 3 for the appended `get_upgrade` method: Golden ownership,
+normal/Gold-Bolt prices, blast charge, release recoil and copied explosion/hit
+counters. It preserves the v2/v1 prefixes. Gold is an upgrade of logical key
+65554; it does not create another ammo/XP record. Initialize output sizes and
+check the requested table version/size before reading any optional tail.
+
 The [full contract and C example](../revolverator/docs/API.md) cover discovery,
 size checks, lifetime, offline sidecar codec and the declarative
 `extensions["noire342.arsenal"]` manifest metadata. That extension is a discovery
@@ -58,7 +64,7 @@ already loaded module; do not load a second provider.
 |3 | Copied rules/settings, revisioned configuration, reload, diagnostics and flush |
 |4 | Hit-ownership filters and optional native acquisition presentation helpers |
 
-The 0.6.3-arsenal source keeps older prefixes compatible. Filters exclude custom
+The 0.6.4 source keeps older prefixes compatible. Filters exclude custom
 hits before native Walloper credit/damage handling. Callbacks copy context and
 must obey the [full API callback restrictions](../weapon-xp/docs/API.md).
 [`hit_owner.c`](../weapon-xp/examples/hit_owner.c) demonstrates the v4 ownership

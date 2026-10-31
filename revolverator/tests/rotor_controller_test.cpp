@@ -24,9 +24,12 @@ int main(){
         for(int i=0;i<600;++i)rotor.update(f);
         require(rotor.angle()==stopped&&rotor.speed()==0,"empty idle remains exactly stationary");
         f.phase=Phase::Windup;f.seconds=.025f;rotor.update(f);
-        require(close(rotor.angle(),stopped+.2f),"last cartridge still powers an active capture windup");
+        require(close(rotor.angle(),stopped+1.375f),"last cartridge still powers a fast active capture windup");
         f.phase=Phase::Recovery;const float recovered=rotor.angle();rotor.update(f);
-        require(rotor.angle()==recovered,"an empty recovery does not start idle rotation");
+        require(!close(rotor.angle(),recovered),"a valid last-cartridge press completes its short visual accent");
+        for(int i=0;i<20;++i)rotor.update(f);
+        const float empty=rotor.angle();rotor.update(f);
+        require(rotor.angle()==empty&&rotor.radial_scale()==1,"empty recovery stops exactly after the valid attack pulse");
     }
     {
         RotorController rotor;rotor.reset(2.9f);auto f=frame();f.ammunition=0;
@@ -67,6 +70,29 @@ int main(){
         }
         f.paused=true;const float pause=rotor.angle();rotor.update(f);
         require(rotor.angle()==pause,"pause also freezes a synchronized shaft");
+    }
+    {
+        RotorController rotor;auto f=frame();f.phase=Phase::Windup;
+        for(int i=0;i<6;++i)rotor.update(f);
+        require(std::abs(rotor.radial_scale()-2.f)<.00001f&&std::abs(rotor.axial_scale()-1.20f)<.00001f,
+            "active head reaches bounded radial and axial enlargement");
+        require(rotor.speed()==RotorController::windup_speed,"capture starts with a fast motor");
+        f.paused=true;rotor.update(f);require(rotor.radial_scale()==2.f,"pause freezes head growth");
+        f.paused=false;f.phase=Phase::Spinning;f.enemy_angle=0;rotor.update(f);
+        require(rotor.radial_scale()==1&&rotor.axial_scale()==1,"catching an enemy immediately restores the normal-sized head");
+        for(int i=0;i<100;++i){f.enemy_angle+=.4f;rotor.update(f);}
+        require(rotor.radial_scale()==1&&rotor.axial_scale()==1,"a captive spins without any head enlargement");
+        f.phase=Phase::Recovery;for(int i=0;i<20;++i)rotor.update(f);
+        require(rotor.radial_scale()==1&&rotor.axial_scale()==1,"head returns exactly to its original size after use");
+        f.ammunition=0;rotor.dry_fire();rotor.update(f);
+        require(rotor.radial_scale()==1&&rotor.axial_scale()==1,"an empty motor jerk never enlarges the head");
+    }
+    {
+        RotorController rotor;auto f=frame();f.phase=Phase::Windup;rotor.update(f);
+        f.phase=Phase::Recovery;float maximum=0;
+        for(int i=0;i<20;++i){rotor.update(f);maximum=std::max(maximum,rotor.radial_scale());}
+        require(maximum>1.99f,"one single-frame Circle tap still produces the full melee accent");
+        require(rotor.radial_scale()==1&&rotor.axial_scale()==1,"the quick-tap accent restores exact original dimensions");
     }
     {
         RotorController rotor;auto f=frame();f.seconds=std::numeric_limits<float>::quiet_NaN();rotor.update(f);

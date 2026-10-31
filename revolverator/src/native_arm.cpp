@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #include "native_arm.hpp"
+#include "rotor_controller.hpp"
 #include <algorithm>
 #include <cmath>
 #include <cstring>
@@ -8,6 +9,7 @@
 namespace revolverator {
 namespace {
 constexpr Quaternion identity{0,0,0,1};
+constexpr unsigned torso_offset=320,torso_joints=3;
 Vec3 position(const std::array<float,16>& matrix) { return {matrix[12],matrix[13],matrix[14]}; }
 Vec3 axis(const std::array<float,16>& matrix,unsigned row) {
     return unit({matrix[row*4],matrix[row*4+1],matrix[row*4+2]});
@@ -44,6 +46,10 @@ struct Stack {
 NativeArm::NativeArm(const openrac_api* api,GuestArena& arena):Memory(api),guest_(arena),
     bone_(function<Bone>("FUN_0020cca8")),basis_(function<Basis>("FUN_001fa030")) {}
 NativeArm::~NativeArm(){reset();}
+void NativeArm::set_head_scale(float radial,float axial) {
+    head_radial_=std::isfinite(radial)?std::clamp(radial,1.f,RotorController::maximum_radial_scale):1.f;
+    head_axial_=std::isfinite(axial)?std::clamp(axial,1.f,RotorController::maximum_axial_scale):1.f;
+}
 bool NativeArm::attached() const {
     return owner_&&api_->loaded_level()==level_&&valid(owner_,256)&&
         read<unsigned>(owner_+0x24)==klass_&&read<unsigned>(owner_+0x38)==stamp_;
@@ -66,18 +72,26 @@ bool NativeArm::attach(unsigned owner) {
         write(node+8,read<unsigned>(owner+0x64));write(node+0x10,identity);
         write(node+0x20,Vec3{1,1,1});write(owner+0x64,node);
     }
+    // The lower spine (3..5) is above the pelvis and below both clavicles.
+    // Use the unused tail of our arena; leave root, legs and authored keys alone.
+    for(unsigned i=0;i<torso_joints;++i){
+        const unsigned node=arena_+torso_offset+i*64;
+        write<unsigned char>(node+1,1);write(node+4,0x70000000u+(3+i)*64);
+        write(node+8,read<unsigned>(owner+0x64));write(node+0x10,identity);
+        write(node+0x20,Vec3{1,1,1});write(owner+0x64,node);
+    }
     return true;
 }
 std::optional<NativeArm::Matrix> NativeArm::sample(unsigned joint) {
-    if(!attached()||joint>56||joint<52)return {};
+    if(!attached()||!((joint<=6)||(joint>=52&&joint<=56)))return {};
     const unsigned original=read<unsigned>(klass_+0x1c),table=arena_+192,chain=arena_+272;
     if(!valid(original,68))return {};
     std::memcpy(api_->memory+table,api_->memory+original,68);
-    const unsigned count=8+(joint-52);
+    const unsigned count=joint<=6?joint+1:8+(joint-52);
     write<unsigned char>(chain,static_cast<unsigned char>(count));
     write<unsigned short>(chain+2,1);
-    for(unsigned i=0;i<7;++i)write<unsigned char>(chain+4+i,static_cast<unsigned char>(i));
-    for(unsigned i=52;i<=joint;++i)write<unsigned char>(chain+11+i-52,static_cast<unsigned char>(i));
+    for(unsigned i=0;i<std::min(count,7u);++i)write<unsigned char>(chain+4+i,static_cast<unsigned char>(i));
+    if(joint>=52)for(unsigned i=52;i<=joint;++i)write<unsigned char>(chain+11+i-52,static_cast<unsigned char>(i));
     write<unsigned char>(chain+4+count,static_cast<unsigned char>(joint));
     write(table+4,chain);
     Stack stack(api_);if(!stack.address)return {};
@@ -118,23 +132,24 @@ bool NativeArm::aim(unsigned node,unsigned joint,unsigned endpoint,Vec3 target,f
     rotations_[(node-arena_)/64]=best;write(node+0x10,blend_rotation(best,weight));
     return true;
 }
-bool NativeArm::turn_wrist(float weight) {
+bool NativeArm::turn_wrist(float weight,Vec3 direction) {
     const unsigned node=arena_+128;
     write(node+0x10,identity);const auto hand=sample(56),parent=parent_frame(56);
     if(!hand||!parent||!grip_ready_)return false;
     const auto barrel=grip_axes_[1]*-1;
-    const auto wanted=local_vector(*parent,{0,0,1});
+    direction=unit(direction);
+    const auto wanted=local_vector(*parent,direction);
     Quaternion best=identity;
     Matrix measured=*hand;
-    float score=1-world_vector(measured,barrel).z;
+    float score=1-dot(world_vector(measured,barrel),direction);
     const auto candidate=shortest_arc(wanted,local_vector(*parent,world_vector(measured,barrel)));
     write(node+0x10,candidate);
-    if(const auto posed=sample(56))if(1-world_vector(*posed,barrel).z<score){
-        score=1-world_vector(*posed,barrel).z;best=candidate;measured=*posed;
+    if(const auto posed=sample(56))if(1-dot(world_vector(*posed,barrel),direction)<score){
+        score=1-dot(world_vector(*posed,barrel),direction);best=candidate;measured=*posed;
     }
     write(node+0x10,rotations_[2]);
-    if(const auto posed=sample(56))if(1-world_vector(*posed,barrel).z<score){
-        score=1-world_vector(*posed,barrel).z;best=rotations_[2];measured=*posed;
+    if(const auto posed=sample(56))if(1-dot(world_vector(*posed,barrel),direction)<score){
+        score=1-dot(world_vector(*posed,barrel),direction);best=rotations_[2];measured=*posed;
     }
     // Native keys are not always unit quaternions after their authored blend.
     // Consequently their composed rows can be sheared: a purely algebraic arc
@@ -153,7 +168,7 @@ bool NativeArm::turn_wrist(float weight) {
         float system[3][4]{};
         for(unsigned r=0;r<3;++r){
             for(unsigned c=0;c<3;++c)system[r][c]=dot(jacobian[r],jacobian[c])+(r==c?.0001f:0);
-            system[r][3]=dot(jacobian[r],Vec3{0,0,1}-current);
+            system[r][3]=dot(jacobian[r],direction-current);
         }
         for(unsigned col=0;col<3;++col){
             unsigned pivot=col;for(unsigned r=col+1;r<3;++r)if(std::abs(system[r][col])>std::abs(system[pivot][col]))pivot=r;
@@ -174,7 +189,7 @@ bool NativeArm::turn_wrist(float weight) {
         for(unsigned attempt=0;attempt<4;++attempt){
             const auto next=product(best,delta_rotation(step));
             write(node+0x10,next);const auto posed=sample(56);if(!posed)break;
-            const float error=1-world_vector(*posed,barrel).z;
+            const float error=1-dot(world_vector(*posed,barrel),direction);
             if(error<score){score=error;best=next;measured=*posed;improved=true;break;}
             step=step*.5f;
         }
@@ -190,7 +205,7 @@ bool NativeArm::track_weapon(unsigned weapon) {
     weapon_=weapon;weapon_class_=klass;weapon_stamp_=read<unsigned>(weapon+0x38);
     original_radius_=read<float>(weapon+12);owned_radius_=std::max(original_radius_,1280.f);
     // NativeRotor exclusively owns the weapon's modifier list and neutral root.
-    // The arm owns only Ratchet's three arm joints and the held bounds radius.
+    // The arm owns Ratchet's arm/spine modifiers and the held bounds radius.
     return true;
 }
 std::optional<Vec3> NativeArm::hold(unsigned owner,unsigned weapon,float yaw,float seconds) {
@@ -201,6 +216,14 @@ std::optional<Vec3> NativeArm::hold(unsigned owner,unsigned weapon,float yaw,flo
 }
 bool NativeArm::pose() {
     for(unsigned i=0;i<3;++i)write(arena_+i*64+0x10,identity);
+    for(unsigned i=0;i<torso_joints;++i)write(arena_+torso_offset+i*64+0x10,identity);
+    const auto forward_axis=unit(read<Vec3>(owner_+0xc0));
+    const float yaw=length_squared(forward_axis)>.5f?std::atan2(forward_axis.y,forward_axis.x):yaw_;
+    const Vec3 outward{std::sin(yaw),-std::cos(yaw),0},forward{std::cos(yaw),std::sin(yaw),0};
+    const float progress=std::clamp(1.f-release_time_/.25f,0.f,1.f);
+    // Solve the arm after the spine: the hand stays attached to its new shoulder
+    // position, including when authored animation advances later in the frame.
+    if(releasing()&&!pose_torso(progress,outward))return false;
     const auto shoulder=sample(53),elbow=sample(54),hand=sample(56);
     if(!shoulder||!elbow||!hand)return false;
     if(!grip_ready_){
@@ -210,16 +233,32 @@ bool NativeArm::pose() {
         }
         grip_ready_=true;
     }
-    const auto forward_axis=unit(read<Vec3>(owner_+0xc0));
-    const float yaw=length_squared(forward_axis)>.5f?std::atan2(forward_axis.y,forward_axis.x):yaw_;
-    const Vec3 outward{std::sin(yaw),-std::cos(yaw),0},forward{std::cos(yaw),std::sin(yaw),0};
-    const auto goal=arm_goal(position(*shoulder),std::sqrt(length_squared(position(*elbow)-position(*shoulder))),
-        std::sqrt(length_squared(position(*hand)-position(*elbow))),outward,forward,1);
+    const float upper=std::sqrt(length_squared(position(*elbow)-position(*shoulder))),
+        lower=std::sqrt(length_squared(position(*hand)-position(*elbow)));
+    const auto goal=releasing()?throw_goal(position(*shoulder),upper,lower,outward,forward,progress):
+        arm_goal(position(*shoulder),upper,lower,outward,forward,1);
     if(!goal)return false;
-    const float t=std::clamp(raised_time_/.2f,0.f,1.f),weight=t*t*(3-2*t);
+    const float t=std::clamp(raised_time_/.2f,0.f,1.f);
+    const float follow=releasing()?std::clamp((1.f-progress)/.35f,0.f,1.f):1.f;
+    const float weight=t*t*(3-2*t)*follow;
     if(!aim(arena_,53,54,goal->elbow,weight)||!aim(arena_+64,54,56,goal->hand,weight))return false;
     const float wrist=std::clamp((raised_time_-.08f)/.18f,0.f,1.f);
-    return turn_wrist(wrist*wrist*(3-2*wrist));
+    const float sweep=releasing()?std::clamp(progress/.55f,0.f,1.f):0.f;
+    return turn_wrist(wrist*wrist*(3-2*wrist)*follow,unit(Vec3{0,0,1}*(1-sweep)+forward*sweep));
+}
+bool NativeArm::pose_torso(float progress,Vec3 outward) {
+    const float angle=throw_lean(progress);
+    if(angle==0)return true;
+    constexpr float weights[]{.3f,.4f,.3f};
+    for(unsigned i=0;i<torso_joints;++i){
+        const auto parent=parent_frame(3+i);if(!parent)return false;
+        // Native modifier quaternions rotate opposite to active world vectors.
+        // The outward/right axis therefore bends the upper body forward.
+        const auto local_axis=unit(local_vector(*parent,outward));
+        if(length_squared(local_axis)<.5f)return false;
+        write(arena_+torso_offset+i*64+0x10,delta_rotation(local_axis*(angle*weights[i])));
+    }
+    return true;
 }
 std::optional<Vec3> NativeArm::align_weapon(unsigned weapon) {
     if(!attached()||weapon!=weapon_||!valid(weapon,256)||read<unsigned>(weapon+0x24)!=weapon_class_||
@@ -253,15 +292,14 @@ std::optional<Vec3> NativeArm::align_weapon(unsigned weapon) {
     basis_(weapon+0xc0,weapon+0x40);
     // Actual Hoven-model shaft axis and tip, including its offset from the grip.
     return at+unit(read<Vec3>(weapon+0xc0))*.013592358f
-        -unit(read<Vec3>(weapon+0xd0))*.903450852f+unit(read<Vec3>(weapon+0xe0))*.203153592f;
+        -unit(read<Vec3>(weapon+0xd0))*(.903450852f*head_axial_)+unit(read<Vec3>(weapon+0xe0))*.203153592f;
 }
-void NativeArm::release(){if(attached())release_time_=.18f;}
+void NativeArm::release(){if(attached())release_time_=.25f;}
 void NativeArm::settle(float seconds) {
     if(release_time_<=0){reset();return;}
     if(!attached()){reset();return;}
     release_time_=std::max(0.f,release_time_-std::clamp(seconds,0.f,.1f));
-    for(unsigned i=0;i<3;++i)write(arena_+i*64+0x10,blend_rotation(rotations_[i],release_time_/.18f));
-    if(release_time_<=0)reset();
+    if(release_time_<=0)reset();else pose();
 }
 void NativeArm::unlink(unsigned owner,unsigned node) {
     unsigned link=owner+0x64;
@@ -275,6 +313,7 @@ void NativeArm::unlink(unsigned owner,unsigned node) {
 void NativeArm::reset(bool discard) {
     if(attached()){
         for(unsigned i=0;i<3;++i)unlink(owner_,arena_+i*64);
+        for(unsigned i=0;i<torso_joints;++i)unlink(owner_,arena_+torso_offset+i*64);
     }
         if(api_->loaded_level()==level_&&weapon_&&valid(weapon_,256)&&read<unsigned>(weapon_+0x24)==weapon_class_&&read<unsigned>(weapon_+0x38)==weapon_stamp_){
             if(read<float>(weapon_+12)==owned_radius_)write(weapon_+12,original_radius_);

@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #pragma once
+#include <array>
+#include <cstddef>
 #include <cstdint>
 #include <optional>
 namespace revolverator {
@@ -15,6 +17,7 @@ struct Target {
  bool operator==(const Target& b)const{return address==b.address&&pvars==b.pvars&&klass==b.klass&&stamp==b.stamp;}
  explicit operator bool()const{return address!=0;}
 };
+inline constexpr std::size_t maximum_flights=8;
 enum class Phase { Idle,Windup,Spinning,Flying,Recovery };
 enum class Motion { Strike,Raise,Release,Recover,DryFire };
 struct Settings {
@@ -26,7 +29,14 @@ struct Frame {
  bool equipped{},playing{},paused{},alive{},primary{},grounded{};
  Vec3 position{}; float yaw{};
 };
-struct Contact { Vec3 point{}; Target other{}; };
+struct Contact { Vec3 point{}; Target other{}; Vec3 normal{}; };
+enum class ImpactReason { Collision,FlightTimeout };
+struct ImpactContext {
+ ImpactReason reason=ImpactReason::Collision;
+ Vec3 point{},normal{};
+ std::optional<Target> other{};
+ float charge{};
+};
 // The controller never reads game memory or calls the SDK. The adapter owns all
 // native handles, collision queries, damage routing, pose changes and restoration.
 class World {
@@ -41,6 +51,17 @@ public:
  virtual void release(Target target,bool cancelled)=0;
  virtual std::optional<Contact> sweep(Target target,Vec3 from,Vec3 to)=0;
  virtual void impact(Target target,std::optional<Target> other,float charge)=0;
+ // Default seams retain compatibility with adapters which only implement the
+ // original controller. NativeWorld latches provenance and owns release recoil.
+ virtual void observe_frame(const Frame&){}
+ virtual bool can_launch()const{return true;}
+ virtual void launched(Target,float /* throw_charge */,float /* blast_charge */){}
+ virtual void impact_result(Target target,const ImpactContext& result){impact(target,result.other,result.charge);}
+ virtual void cancelled(){}
+ // Abandon one stale projectile, or the current gesture, without destroying
+ // unrelated flights. Full scene/death/reset teardown still uses cancelled().
+ virtual void discarded(Target){}
+ virtual void attack_cancelled(){}
  virtual void animate(Motion motion)=0;
 };
 struct Counters { std::uint64_t captures{},throws{},impacts{}; };
@@ -49,19 +70,35 @@ public:
  explicit Controller(World& world,Settings settings={}):world_(world),settings_(settings){}
  void tick(const Frame& frame);
  void cancel();
- Phase phase()const{return phase_;}
- Target target()const{return target_;}
- bool owns(Target target)const{return target_&&target==target_;}
+ void discard(Target target);
+ Phase phase()const;
+ Phase attack_phase()const{return phase_;}
+ Target target()const;
+ bool owns(Target target)const{return (target_&&target==target_)||flying(target);}
+ bool flying(Target target)const;
+ std::size_t flight_count()const;
  float charge()const;
+ float blast_charge()const;
  float spin_angle()const{return angle_;}
  const Counters& counters()const{return counters_;}
 private:
  World& world_; Settings settings_; Phase phase_=Phase::Idle;
- Target target_{}; Vec3 point_{},velocity_{};
- float timer_{},spin_time_{},angle_{},flight_charge_{};
- std::uint32_t epoch_{}; bool have_epoch_{},held_{};
+ Target target_{}; Vec3 point_{};
+ float timer_{},spin_time_{},angle_{};
+ struct Flight {
+  Target target{};Vec3 point{},velocity{};float elapsed{},charge{},blast_charge{},yaw{};
+  std::uint64_t sequence{};
+ };
+ std::array<Flight,maximum_flights> flights_{};
+ std::uint64_t sequence_{},reset_generation_{};
+ std::uint32_t epoch_{}; bool have_epoch_{},held_{},buffered_{},release_recovery_{};
  Counters counters_{};
  void recover();
+ void cancel_attack();
+ void advance_flights(const Frame& frame);
+ float recovery_seconds()const;
+ Flight* free_flight();
+ const Flight* displayed_flight()const;
 };
 bool capturable_class(int klass);
 }

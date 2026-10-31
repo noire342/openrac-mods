@@ -32,7 +32,21 @@ unsigned overlay(int, unsigned a) {
 
 void dummy() {}
 
-void* function(const char*) {
+const Disc* current_disc;
+unsigned general_cursor;
+
+void native_rectangle(int, int, int, int, std::uint64_t, int) {
+    const auto packet = get<unsigned>(general_cursor);
+    put<unsigned>(packet, 0x10000003);
+    put<unsigned>(packet + 52, 0xFFFFF0);
+    put<unsigned>(packet + 60, 0xFFFFF0);
+    put<unsigned>(general_cursor, packet + 64);
+}
+
+void* function(const char* name) {
+    if (std::strcmp(name, current_disc->rectangle) == 0) {
+        return reinterpret_cast<void*>(native_rectangle);
+    }
     return reinterpret_cast<void*>(dummy);
 }
 
@@ -50,6 +64,8 @@ void rectangle(unsigned at, int top, int bottom) {
 
 int main() {
     for (const auto& disc : kDiscs) {
+        std::memset(memory.data(), 0, 0x2000000);
+        current_disc = &disc;
         openrac_api api{};
         api.memory = memory.data();
         api.function = function;
@@ -58,6 +74,7 @@ int main() {
         NativeHud renderer(&api, disc);
         const unsigned start = 0x400000,
                        cursor = std::strcmp(disc.version, "pal") == 0 ? 0x161000 : 0x160F00;
+        general_cursor = cursor;
         rectangle(start, 28000, 30800);
         rectangle(start + 64, 29680, 30800);
         rectangle(start + 128, 30224, 30256);
@@ -82,8 +99,32 @@ int main() {
         put<unsigned>(start, 0x10000001);
         renderer.reflow_gauge(start, {512, 112, 42, 192});
         CHECK(get<unsigned>(start + 48) == before);
+
+        // PAL's level-0 DMA cursor and texture group are not a uniform offset from NTSC.
+        // Give the former, incorrect locations valid decoys: drawing into the wrong stream
+        // or reading a nearby depth must fail even when both addresses look plausible.
+        const bool pal = std::strcmp(disc.version, "pal") == 0;
+        const unsigned hud = pal ? 0x161280 : 0x1611C0,
+                       layer = pal ? 0x17E5D8 : 0x17E4D8;
+        put<unsigned>(cursor, 0x500000);
+        put<unsigned>(hud, 0x510000);
+        put<unsigned>(layer + 12, 0xFFFFF5);
+        if (pal) {
+            put<unsigned>(0x161240, 0x520000);
+            put<unsigned>(0x17E558 + 12, 0xFFFFF0);
+        }
+        renderer.draw_gauge({{Draw::Kind::Rectangle, 2, 3, 12, 8, 0x807F7F7F, {}}});
+        CHECK(get<unsigned>(cursor) == 0x500000);
+        CHECK(get<unsigned>(hud) == 0x510040);
+        CHECK(get<unsigned>(0x510000) == 0x10000003);
+        CHECK(get<unsigned>(0x510000 + 52) == 0xFFFFF6);
+        CHECK(get<unsigned>(0x510000 + 60) == 0xFFFFF6);
+        if (pal) {
+            CHECK(get<unsigned>(0x161240) == 0x520000);
+            CHECK(get<unsigned>(0x520000) == 0);
+        }
     }
     std::puts(
-        "native gauge header clearance, ammo ratio, original frame and depth preservation: ok"
+        "native gauge clearance, ammo ratio, frame preservation and regional HUD stream/depth: ok"
     );
 }

@@ -32,6 +32,17 @@ void quaternion_round_trip(Vec3 angles) {
 }
 }
 int main() {
+    require(throw_lean(0)==0&&throw_lean(1)==0,"release begins and ends without an additive spine bend");
+    require(throw_lean(-1)==0&&throw_lean(2)==0&&throw_lean(std::numeric_limits<float>::quiet_NaN())==0,
+        "invalid or inactive release progress leaves the spine unchanged");
+    float last_lean=0,peak_lean=0;
+    for(unsigned frame=0;frame<=60;++frame){
+        const float lean=throw_lean(frame/60.f);
+        require(std::isfinite(lean)&&lean>=0&&lean<=.2618f,"the throw bends forward by at most fifteen degrees");
+        require(std::abs(lean-last_lean)<.025f,"the spine gesture has no visible angular jump between frames");
+        last_lean=lean;peak_lean=std::max(peak_lean,lean);
+    }
+    require(peak_lean>.1396f,"the spine bend is visible without folding the torso");
     // Reaching around the head must preserve both bone lengths and select the
     // outward elbow solution across Ratchet's facing directions.
     for(int i=0;i<32;++i) {
@@ -51,6 +62,25 @@ int main() {
         require(segment_distance(skull,goal->elbow,goal->hand)>.21f,"forearm must clear the head volume");
     }
     require(!arm_goal({},0,.2f,{1,0,0},{0,1,0},1),"zero upper-arm length must be rejected");
+    for(unsigned facing=0;facing<32;++facing){
+        const float yaw=facing*6.283185307f/32;
+        const Vec3 outward{std::sin(yaw),-std::cos(yaw),0},forward{std::cos(yaw),std::sin(yaw),0};
+        const Vec3 shoulder=outward*.18f+Vec3{10,20,1.f},skull{10,20,1.23f};
+        const auto raised=arm_goal(shoulder,.207f,.17f,outward,forward,1);
+        auto previous=raised->hand;
+        for(unsigned frame=0;frame<=30;++frame){
+            const auto pose=throw_goal(shoulder,.207f,.17f,outward,forward,frame/30.f);
+            require(bool(pose),"every throw trajectory sample has a reachable two-bone pose");
+            require(std::abs(distance(shoulder,pose->elbow)-.207f)<.0002f&&std::abs(distance(pose->elbow,pose->hand)-.17f)<.0002f,
+                "the forward throw preserves both native bone lengths");
+            require(segment_distance(skull,shoulder,pose->elbow)>.19f&&segment_distance(skull,pose->elbow,pose->hand)>.19f,
+                "the throwing elbow and forearm stay outside the head");
+            require(distance(previous,pose->hand)<.04f,"the gesture has no hand teleport between frames");
+            if(!frame)require(near(pose->hand,raised->hand),"release starts at the exact held pose");
+            if(frame==18)require(dot(pose->hand-shoulder,forward)>.28f,"the release visibly reaches forward");
+            previous=pose->hand;
+        }
+    }
     require(!arm_goal({},.2f,-1,{1,0,0},{0,1,0},1),"negative lower-arm length must be rejected");
     require(!arm_goal({},std::numeric_limits<float>::quiet_NaN(),.2f,{1,0,0},{0,1,0},1),"nonfinite limb dimensions must be rejected");
 

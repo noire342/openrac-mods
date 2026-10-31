@@ -67,7 +67,7 @@ struct Fixture {
 int main(){
     {Fixture f;NativeArsenal arsenal(&f.api,f.registry,f.view);f.initialize(arsenal);
      require(arsenal.ready()&&arsenal.projected()==18&&!f.view.custom,"unowned custom weapon leaves native presentation active after initialization");
-     require(f.registry.walloper().owned&&f.registry.walloper().ammo==0&&f.registry.walloper().unlocked==7&&f.registry.walloper().acquired==2&&f.registry.walloper().text_variant==5,
+     require(f.registry.walloper().owned&&f.registry.walloper().ammo==0&&f.registry.walloper().unlocked==0&&f.registry.walloper().acquired==2&&f.registry.walloper().text_variant==5,
              "native flags and original unlimited-melee ammo remain distinct");
      require(!f.registry.owned(RevolveratorKey)&&f.registry.state(RevolveratorKey)->ammo==0,"metadata initialization never grants custom ownership or ammo");
      f.expect_native("default finish_level restores the native7500/no-ammo/icon60018 metadata");
@@ -141,5 +141,58 @@ int main(){
      f.put<int>(mode,0);f.put<int>(0x141660,18);f.put<int>(hero+0x20b8,-1);arsenal.observe_equipped();
      require(f.registry.equipped()==RevolveratorKey,"consumed pending switch retains the logical key while the previous actor is held");
      f.put<int>(0x141660,11);arsenal.observe_equipped();require(f.registry.equipped()==11,"a completed native gameplay switch to another item is observed");}
+    for(const char* version:{"pal","ntsc"}){
+     Fixture f;f.api.version=version;const auto& region=*RegionBindings::for_version(version);
+     const auto h=region.data(hero),equip=region.data(0x141660),m=region.level(0,mode),quick=region.data(favourites);
+     NativeArsenal arsenal(&f.api,f.registry,f.view);arsenal.begin_level();arsenal.finish_level();
+     auto restore=[&]{
+       auto snapshot=f.registry.snapshot();snapshot.equipped=RevolveratorKey;snapshot.quick={RevolveratorKey,0,0,0,0,0,0,0};
+       for(auto& r:snapshot.records)if(r.key==RevolveratorKey)r.state={true,7,117,true};
+       require(f.registry.restore(snapshot),"restore a Gold custom selection with earned XP and partial ammo");arsenal.mark_snapshot_restored();arsenal.restore_gameplay();
+       f.put<int>(equip,8);f.put<int>(h+0x10b8,8);f.put<int>(h+0x20b8,-1);f.put<int>(h+0x22a8,4);f.put<int>(h+0x2084,0);f.put<int>(m,0);
+     };
+     auto body_ready=[&]{f.put<unsigned>(h+0x2080,0x800000);f.put<unsigned short>(0x8000a6,0);f.put<unsigned char>(0x800020,0);f.put<unsigned>(0x800024,0x810000);};
+     restore();f.put<unsigned>(h+0x2080,0);arsenal.observe_equipped();
+     require(f.registry.equipped()==RevolveratorKey&&f.get<int>(equip)==8&&f.get<int>(h+0x20b8)==-1,"missing player body keeps the restored logical selection pending");
+     body_ready();f.put<int>(m,3);arsenal.observe_equipped();
+     require(f.registry.equipped()==RevolveratorKey&&f.get<int>(equip)==8,"a paused scene cannot consume the restored selection");
+     f.put<int>(m,0);f.put<int>(h+0x22a8,0);arsenal.observe_equipped();
+     require(f.get<int>(equip)==8,"a dead player cannot receive a native equip request");
+     f.put<int>(h+0x22a8,4);f.put<unsigned short>(0x8000a6,459);arsenal.observe_equipped();
+     require(f.get<int>(equip)==8,"an enemy body cannot be treated as Ratchet");
+     f.put<unsigned short>(0x8000a6,0);f.put<unsigned char>(0x800020,0x80);arsenal.observe_equipped();
+     require(f.get<int>(equip)==8,"a retired Ratchet body cannot consume the pending selection");
+     f.put<unsigned char>(0x800020,0);f.put<int>(h+0x2084,0x3d);arsenal.observe_equipped();
+     require(f.get<int>(equip)==8,"death animation state also postpones restoration with positive health");
+     f.put<int>(h+0x2084,0);f.level=2;const auto before=f.memory;arsenal.observe_equipped();
+     require(f.memory==before&&f.registry.equipped()==RevolveratorKey,"a different loaded overlay cannot receive stale equip writes");
+     f.level=1;arsenal.observe_equipped();
+     require(f.get<int>(equip)==18&&f.get<int>(h+0x20b8)==18&&f.registry.equipped()==RevolveratorKey,"a safe same-level restore queues the saved carrier before observing the native wrench fallback");
+     require(f.get<std::array<unsigned,8>>(quick)[0]==18&&f.registry.quick()[0]==RevolveratorKey,"restored logical favourites project back to the bounded native transport");
+     const auto* state=f.registry.state(RevolveratorKey);
+     require(state->ammo==7&&state->xp==117&&state->golden,"selection restoration does not grant, refill or alter earned XP/Gold");
+     f.put<int>(h+0x20b8,-1);arsenal.observe_equipped();
+     require(f.get<int>(h+0x20b8)==-1&&f.registry.equipped()==RevolveratorKey,"the queued selection is consumed once while the existing pending18 guard preserves identity");
+     f.put<int>(h+0x10b8,18);f.put<int>(equip,18);arsenal.observe_equipped();require(arsenal.revolverator_active(),"completed native equip enables the original restored logical weapon");
+     restore();body_ready();f.registry.equip(8);arsenal.observe_equipped();
+     require(f.registry.equipped()==8&&f.get<int>(h+0x20b8)==-1,"an explicit different selection cancels the old restoration request");
+     restore();body_ready();arsenal.reset();const auto cleared=f.memory;arsenal.observe_equipped();
+     require(f.memory==cleared,"teardown discards pending restoration and never writes after clear");
+     arsenal.begin_level();arsenal.finish_level();f.registry.equip(8);arsenal.mark_snapshot_restored();f.put<int>(equip,8);f.put<int>(h+0x20b8,-1);arsenal.observe_equipped();
+     require(f.registry.equipped()==8&&f.get<int>(h+0x20b8)==-1,"a new native campaign snapshot never resurrects the old custom selection");
+    }
+    for(const char* version:{"pal","ntsc"}){
+     Fixture f;f.api.version=version;const auto& region=*RegionBindings::for_version(version);
+     const auto skill=region.data(unlocked)+item;
+     f.put<unsigned char>(skill,0);
+     NativeArsenal arsenal(&f.api,f.registry,f.view);arsenal.begin_level();arsenal.finish_level();
+     require(f.registry.set_state(RevolveratorKey,{true,10,0})&&f.registry.equip(RevolveratorKey),"grant custom item for regional skill-point isolation");
+     arsenal.restore_gameplay();require(f.get<unsigned char>(skill)==0,"equipping a custom weapon must not grant the Pokitaru skill point");
+     f.put<unsigned char>(skill,1);arsenal.project(18);arsenal.project(RevolveratorKey);
+     require(f.get<unsigned char>(skill)==1,"skill point earned during a projected scope must remain earned");
+     auto legacy=f.registry.walloper();legacy.unlocked=7;f.registry.set_walloper(legacy);
+     arsenal.project(18);arsenal.reset();
+     require(f.get<unsigned char>(skill)==1,"legacy sidecar and teardown must never restore an unrelated skill-point byte");
+    }
     std::printf("native arsenal: %d ownership, projection, save-scope and teardown checks passed\n",checks);
 }

@@ -41,7 +41,7 @@ NativeWeaponMenu::NativeWeaponMenu(const openrac_api* api,GuestArena& arena,Arse
 NativeWeaponMenu::~NativeWeaponMenu(){reset();}
 bool NativeWeaponMenu::supported()const{
     return api_&&api_->memory&&api_->game&&api_->version&&
-        std::strcmp(api_->game,"rac1")==0&&std::strcmp(api_->version,"ntsc")==0&&
+        std::strcmp(api_->game,"rac1")==0&&RegionBindings::for_version(api_->version)==&bindings()&&
         api_->loaded_level()>=0&&api_->loaded_level()<19;
 }
 void NativeWeaponMenu::set_icon_scale(float value){
@@ -107,8 +107,11 @@ void NativeWeaponMenu::frame(){
     for(const auto address:addresses){
         if(!valid(address,0x60)||read<int>(address+0x40)!=3||read<int>(address+0x44)!=5||
            read<unsigned>(address+0x48)!=source)return;
-        if(api_->function_at(read<unsigned>(address))!=api_->function("FUN_0021b858")||
-           api_->function_at(read<unsigned>(address+4))!=api_->function("FUN_0021d948"))return;
+        // Widget callbacks already contain live guest entries. Translate only
+        // their expected semantic function names, never the stored pointers.
+        const auto update=find_function("FUN_0021b858"),draw=find_function("FUN_0021d948");
+        if(!update||!draw||api_->function_at(read<unsigned>(address))!=update||
+           api_->function_at(read<unsigned>(address+4))!=draw)return;
     }
     catalog_.clear();
     for(const auto& cell:native_)catalog_.push_back({cell,WeaponKey(cell.id)});
@@ -189,7 +192,15 @@ int NativeWeaponMenu::grid_update(unsigned screen,Call original){
     if(!scrolled&&(saved_buttons&Up)&&row==0&&after/int(Columns)+1==g->rows&&
        read<unsigned>(screen+0x4c)==0){g->start_row=int(maximum_start_row());fill(*g);}
     if(result!=0)return result;
-    if(saved_buttons&Cross){
+    const auto system=global(MenuSystem);
+    // PAL's four extra MenuSystem words are appended at+148..157. Its native
+    // grid update rejects Cross during select_cooldown and returns immediately
+    // after Back requests another page. Do not change logical equipment when
+    // that native confirmation would be rejected.
+    const bool pal=bindings().region()==Region::Pal;
+    const bool confirm_allowed=!(read<unsigned>(screen+0x30)&1u)&&
+        (!pal||(read<int>(system+0x148)==0&&read<unsigned>(system+8)==read<unsigned>(system+4)));
+    if((saved_buttons&Cross)&&confirm_allowed){
         const auto key=selected_key();
         if(key&&owned(key))model_.registry().equip(key);
         ScopedWrite<unsigned> confirm(*this,pressed_at(),Cross);

@@ -52,13 +52,29 @@ inline constexpr std::array<Strings,5> translations{{
   "Manten Circulo para atrapar a un enemigo con el taladro y hacerlo girar. Suelta para lanzarlo. Algunos enemigos no se pueden atrapar.",
   "Has recogido %d cartucho para el Revolverator",
   "Has recogido %d cartuchos para el Revolverator"},
- {"Revolverator",
+ {"Rotatore",
   "Tieni premuto Cerchio per afferrare un nemico con la trivella e farlo ruotare. Rilascia per lanciarlo. Alcuni nemici non possono essere afferrati.",
-  "Hai raccolto %d cartuccia per il Revolverator",
-  "Hai raccolto %d cartucce per il Revolverator"}
+  "Hai raccolto %d cartuccia per il Rotatore",
+  "Hai raccolto %d cartucce per il Rotatore"}
 }};
 
 constexpr const Strings& strings_for_language(int native_value) noexcept {
  return translations[static_cast<unsigned>(language_from_native(native_value))];
+}
+inline constexpr std::array<const char*,5> golden_names{{
+ "Gold Revolverator","Revolverator en or","Gold-Revolverator","Revolverator de oro","Rotatore d'oro"
+}};
+inline constexpr std::array<const char*,5> golden_descriptions{{
+ "Thrown enemies explode on impact. Spin them longer for a larger explosion.",
+ "Les ennemis lances explosent a l'impact. Faites-les tourner plus longtemps pour une explosion plus grande.",
+ "Geworfene Gegner explodieren beim Aufprall. Langeres Drehen vergrossert die Explosion.",
+ "Los enemigos lanzados explotan al impactar. Girarlos mas tiempo aumenta la explosion.",
+ "I nemici lanciati esplodono all'impatto. Una rotazione piu lunga aumenta il raggio dell'esplosione."
+}};
+constexpr const char* weapon_name_for_language(int native_value,bool golden) noexcept {
+ return golden?golden_names[static_cast<unsigned>(language_from_native(native_value))]:strings_for_language(native_value).weapon_name;
+}
+constexpr const char* description_for_language(int native_value,bool golden) noexcept {
+ return golden?golden_descriptions[static_cast<unsigned>(language_from_native(native_value))]:strings_for_language(native_value).description;
 }
 }

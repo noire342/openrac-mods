@@ -1,4 +1,40 @@
-# Single-package stock-client compatibility
+# Current PAL-reference package compatibility
+
+Revolverator0.3.1 / Rotatore targets the unchanged official Windows x64 OpenRAC
+0.10 client, with PAL Europe v2.00 (`SCES_509.16`) as the reference region and
+separate NTSC-U bindings. No uniform PAL offset or live-pointer conversion is
+used. Unknown keys, region mismatches and unrecognized executables fail closed.
+
+| Current input/component | Requirement |
+| --- | --- |
+| PAL official0.10 EXE SHA256 | `e720a59d130b4b2289a4eb15cad3e33f739a72a385992db171ef43490205fb0e` |
+| NTSC-U official0.10 EXE SHA256 | `f70a9f2bc6de39ed42b9f9f64fc5cea98ffad8b8bd7795c7adfb965a9875c95b` |
+| Revolverator |0.3.1, generic mod API1.1, public inventory/upgrade APIv3 |
+| Optional Weapon Experience |0.6.4, ownership/acquisition APIv4; bonuses off by default |
+| Private bundled utilities | Arsenal Compatibility0.1.0 and Arsenal File Overlay0.1.0 |
+| Extracted levels | Format4 from the matching regional game extraction |
+
+The ordinary native mod ZIP contains its assets and two utility libraries.
+The launcher installs one weapon card; the utilities are loaded privately.
+Source manifests and the client are not rewritten. Session-owned additive
+manifests point to the package's classes. Exact read-only file aliases and
+typed hook transactions retain ownership/cleanup guards.
+
+Logical key65554 / `noire342.revolverator` remains independent of original
+Walloper18. The Golden upgrade changes only that logical weapon's upgrade bit;
+ammo, XP and favourites remain in the same custom record. Codec2 reads previous
+codec1 sidecars and validates the associated native-save fingerprint. Regional
+card profiles remain separate; the mod does not migrate campaigns automatically.
+
+Read [PAL details and native scope](../revolverator/docs/PAL.md),
+[XP PAL validation](../weapon-xp/docs/PAL.md), and the final release receipt for
+the exact binaries tested. Recognition of an executable is distinct from a
+complete campaign playthrough. Windows native proof does not certify native
+Linux/macOS; the latter build jobs cover portable contracts and ELF exports.
+
+The standalone modules and their preserved0.10 validation below are unchanged.
+
+## Historical0.2 NTSC-U package
 
 The current native archive runs as one ordinary Revolverator mod in the official
 unchanged Windows x64 R&C1 NTSC-U client. Utility DLLs and assets are included

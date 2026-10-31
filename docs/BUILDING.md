@@ -10,10 +10,10 @@ cmake --build build --config Release --parallel
 ctest --test-dir build -C Release --output-on-failure
 ```
 
-`BUILD_WEAPON_XP` builds the 0.6.3-arsenal companion; `BUILD_REVOLVERATOR` builds
-additive 0.2. `BUILD_ARSENAL_COMPAT` defaults to the Revolverator option and builds
+`BUILD_WEAPON_XP` builds the 0.6.4 companion; `BUILD_REVOLVERATOR` builds
+additive 0.3.1 with PAL/NTSC bindings and the Gold upgrade. `BUILD_ARSENAL_COMPAT` defaults to the Revolverator option and builds
 the provider on Windows x64, or only its portable core/tests on Linux.
-The combined suite contains **42 groups: 19 Revolverator, 13 XP, 1 hook provider,
+The combined suite contains **52 groups: 29 Revolverator, 13 XP, 1 hook provider,
 1 file overlay, 5 skill points and 3 cinematics**.
 Disable individual options to build components separately.
 
@@ -40,18 +40,26 @@ packager includes their DLLs privately beside `revolverator.dll`; they are not
 independent launcher cards. `BUILD_ARSENAL_FILE_OVERLAY` defaults to the Revo
 option, and non-Windows builds test only that utility's portable core.
 
-The authored cartridge HUD/recipe are included in Git. Original drill art,
-meshes/textures and optional HD glyph header are excluded. Asset builders use
+The authored cartridge HUD/recipe and AI-assisted Golden recolour are included
+with their provenance. Original drill geometry and the optional generated HD glyph
+header are excluded from ordinary Git source. Asset builders use
 the player's own extraction. Corresponding-source archives for a distributed
 binary must include its exact generated inputs separately where required,
 plus the GPL JSON reader under `third_party/openrac`, utility code, pinned
 MinHook source and retained notices. The ordinary Git source snapshot excludes
 game-derived generated headers.
 
-The normal importer expects `revolverator-0.2.0-windows-x86_64.zip` and a release
+The normal importer expects `revolverator-0.3.1-windows-x86_64.zip` and a release
 `SHA256SUMS` entry. Repository discovery is limited by `openrac-mods.json` to
-the four public mods. Explicit release-tag URLs select prereleases;
+the four public mods. The 0.3.1 normal release is visible from the repository
+root; explicit release-tag URLs remain necessary only for historical prereleases.
 source builds and CI do not publish release assets.
+
+`weapon-xp-0.6.4-windows-x86_64.zip` is the separate optional companion.
+The filename must match the manifest version exactly. Source packaging includes
+`tests/installed-contracts.tsv`; its LF line endings are pinned alongside the
+unchanged vendored MinHook files so fixture parsing and upstream SHA256 locks
+survive Windows checkout settings.
 
 ## Artifact evidence
 

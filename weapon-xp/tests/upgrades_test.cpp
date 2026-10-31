@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
+#include <cmath>
 #include <cstring>
 #include <vector>
 
@@ -51,6 +52,9 @@ void present(unsigned trigger, int item) {
     put<short>(scene + 0x44, 1);
     put<unsigned>(scene + 0x178, 0x5A0000);
     put<short>(0x5A00A6, 0);
+    put<unsigned>(0x5A0078, 0x5B0000);
+    put<unsigned>(scene + 0x54, 0x5B1000);
+    put<float>(0x5B1000, 10.0f); // The native stage camera lies along +X from its hero.
     put<int>(disc->hero + 0x80, 987);
 }
 
@@ -107,6 +111,14 @@ int main() {
         put<int>(d.hero + 0x80, 456);
         put<int>(d.item_in_hand, 15);
         put<int>(vendor, 1234);
+        // The gameplay camera is along +Y; the acquisition stage must turn by pi/2.
+        const auto camera = select(0x166D80, 0x166C80);
+        put<float>(camera + 0x140, 0.0f);
+        put<float>(camera + 0x144, 10.0f);
+        if (std::strcmp(d.version, "pal") == 0) {
+            // This nearby old PAL mapping would incorrectly leave the stage facing +X.
+            put<float>(0x166D00 + 0x140, 10.0f);
+        }
         Progression state;
         state.award(10, 2480);
         state.award(16, kThresholds.back());
@@ -140,6 +152,9 @@ int main() {
             upgrades.tick(state, true);
             upgrades.tick(state, true);
             CHECK(upgrades.active() && scenes.size() == 1 && scenes[0] == 10);
+            CHECK(std::abs(get<float>(vendor + 0x80)) < .0001f);
+            CHECK(std::abs(get<float>(vendor + 0x84) - 1.0f) < .0001f);
+            CHECK(std::abs(get<float>(vendor + 0xB8) - 1.5707963f) < .0001f);
             CHECK(get<unsigned short>(0x550034) == 0x41);
             CHECK(
                 std::strcmp(reinterpret_cast<char*>(memory.data() + name), "Guanto Bomba v2") == 0

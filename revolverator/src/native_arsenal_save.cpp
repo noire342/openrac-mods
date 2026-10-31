@@ -7,6 +7,8 @@
 #include <iterator>
 #include <string>
 #include <vector>
+#include <stdexcept>
+#include <utility>
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
@@ -37,34 +39,43 @@ Path environment_path(const char* name){
     const auto* value=std::getenv(name);return value?Path(value):Path{};
 #endif
 }
-Path default_card_root(){
+Path default_card_root(const char* serial){
 #ifdef _WIN32
     auto root=environment_path("LOCALAPPDATA");
     if(root.empty())root=environment_path("USERPROFILE")/"AppData/Local";
-    return root/"openrac/memcard/SCUS_971.99";
+    return root/"openrac/memcard"/serial;
 #elif defined(__APPLE__)
-    return environment_path("HOME")/"Library/Application Support/OpenRAC/memcard/SCUS_971.99";
+    return environment_path("HOME")/"Library/Application Support/OpenRAC/memcard"/serial;
 #else
     auto root=environment_path("XDG_DATA_HOME");
     if(root.empty())root=environment_path("HOME")/".local/share";
-    return root/"openrac/memcard/SCUS_971.99";
+    return root/"openrac/memcard"/serial;
 #endif
 }
 }
 NativeArsenalSave::NativeArsenalSave(const openrac_api* api,openrac_mod* mod,NativeArsenal& arsenal)
-    :Memory(api),arsenal_(arsenal),mod_(mod),card_root_(default_card_root()){
+    :Memory(api),arsenal_(arsenal),mod_(mod),card_root_(default_card_root(bindings().card_serial())){
     const auto args=arguments();
     for(std::size_t i=1;i<args.size();++i){
         if(args[i]==Path("--no-card"))no_card_=true;
         if(args[i]==Path("--cards")&&i+1<args.size())card_root_=args[++i];
     }
 }
+NativeArsenalSave::NativeArsenalSave(const openrac_api* api,openrac_mod* mod,NativeArsenal& arsenal,Paths paths)
+    :Memory(api),arsenal_(arsenal),mod_(mod),card_root_(std::move(paths.card_root)),no_card_(paths.no_card){
+    if(card_root_.empty()&&!no_card_)throw std::invalid_argument("arsenal save: an explicit card root must not be empty");
+}
 std::filesystem::path NativeArsenalSave::active_save_path()const{
     if(no_card_)return {};
-    const int port=read<int>(native_state()),slot=read<int>(native_state()+0x14);
+    const auto& layout=bindings().memcard();const auto state=native_state();
+    // Both native drivers expose one card descriptor. active_card chooses that
+    // descriptor (0 or -1); its port chooses the physical first/second card.
+    // Physical port1 does not mean indexing past card[0] by card_stride.
+    if(read<int>(state+layout.active_card)!=0)return {};
+    const int port=read<int>(state+layout.port),slot=read<int>(state+layout.save_index);
     if(port<0||port>1||slot<0||slot>4)return {};
     auto root=card_root_;if(port)root+=Path(".slot2");
-    return root/"BASCUS-97199RATCHET"/("save"+std::to_string(slot)+".bin");
+    return root/bindings().card_directory()/("save"+std::to_string(slot)+".bin");
 }
 void NativeArsenalSave::report(const char* operation,arsenal::StoreStatus status)const{
     char text[192];std::snprintf(text,sizeof text,"arsenal %s: %s",operation,arsenal::store_status_message(status));
@@ -81,12 +92,14 @@ void NativeArsenalSave::begin_save(){
     // Native autosave declines to serialize while another operation is queued.
     // Preserve the snapshot belonging to that write instead of pairing newer
     // logical inventory with the older native packet.
-    const int operation=read<int>(native_state()+0xd4),queued=read<int>(native_state()+0xdc);
+    const auto& layout=bindings().memcard();
+    const int operation=read<int>(native_state()+layout.operation),queued=read<int>(native_state()+layout.pending_operation);
     if(pending_||operation>=3||queued>=0){captured_.reset();return;}
     arsenal_.commit();captured_=arsenal_.registry().snapshot();
 }
 void NativeArsenalSave::after_prepare(){
-    const int operation=read<int>(native_state()+0xd4),pending=read<int>(native_state()+0xdc);
+    const auto& layout=bindings().memcard();
+    const int operation=read<int>(native_state()+layout.operation),pending=read<int>(native_state()+layout.pending_operation);
     if(!captured_||!((operation>=15&&operation<=20)||(pending>=15&&pending<=20)))return;
     const auto path=active_save_path();
     if(!path.empty()){pending_=std::move(captured_);pending_path_=path;}
@@ -94,7 +107,8 @@ void NativeArsenalSave::after_prepare(){
 }
 void NativeArsenalSave::after_io(){
     if(!pending_)return;
-    const int operation=read<int>(native_state()+0xd4),pending=read<int>(native_state()+0xdc),error=read<int>(native_state()+0xe4);
+    const auto& layout=bindings().memcard();
+    const int operation=read<int>(native_state()+layout.operation),pending=read<int>(native_state()+layout.pending_operation),error=read<int>(native_state()+layout.error);
     if(operation>=3||pending>=0)return;
     if(error==0){
         arsenal::StoreStatus status;
@@ -107,7 +121,8 @@ void NativeArsenalSave::import_native_state(){
 }
 void NativeArsenalSave::after_restore_data(unsigned descriptors){
     if(descriptors!=global(0x1a04c0))return;
-    const int operation=read<int>(native_state()+0xd4),pending=read<int>(native_state()+0xdc);
+    const auto& layout=bindings().memcard();
+    const int operation=read<int>(native_state()+layout.operation),pending=read<int>(native_state()+layout.pending_operation);
     if(operation!=13&&operation!=14&&pending!=13&&pending!=14)return;
     auto state=vanilla_snapshot();const auto native_walloper=state.walloper;
     const auto path=active_save_path();arsenal::StoreStatus status=arsenal::StoreStatus::Missing;

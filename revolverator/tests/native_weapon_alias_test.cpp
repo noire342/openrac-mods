@@ -28,12 +28,14 @@ struct Fixture {
 int main(){
     {Fixture f;const auto before=f.bytes;NativeWeaponAlias alias(&f.api);alias.frame();
      require(alias.ready()&&f.get<std::uint8_t>(map+2017)==5,"a distinct render ID shares the existing native180 class slot");
-     unsigned changed=0;for(unsigned i=0;i<f.bytes.size();++i)if(f.bytes[i]!=before[i]){++changed;require(i==map+2017,"class mapping never edits resources/callbacks/counts");}
-     require(changed==1,"registration occupies one map byte only");
+     unsigned changed=0;for(unsigned i=0;i<f.bytes.size();++i)if(f.bytes[i]!=before[i]){++changed;require(i==map+2017||i==map+2018,"class mapping never edits resources/callbacks/counts");}
+     require(changed==2,"base and Golden registration occupy only two independent map bytes");
      require(!alias.apply(first,false)&&f.get<std::uint16_t>(first+0xa6)==180,"normal Walloper retains native appearance");
      require(alias.apply(first,true)&&alias.owns(first)&&f.get<std::uint16_t>(first+0xa6)==2017,"selected Revolverator receives its render identity");
      require(f.get<std::uint16_t>(second+0xa6)==180,"another native Walloper is unaffected");
      require(alias.apply(first,true)&&alias.owns(first),"pre-render application is idempotent");
+     require(alias.apply(first,true,true)&&alias.owns(first)&&f.get<std::uint16_t>(first+0xa6)==2018,"Golden selects its own material without changing the native actor");
+     require(alias.apply(first,true,false)&&f.get<std::uint16_t>(first+0xa6)==2017,"variant switches preserve the ownership lease");
      alias.frame();require(!alias.owns(first)&&f.get<std::uint16_t>(first+0xa6)==180,"next frame restores canonical class before native logic");
      alias.apply(first,true);alias.apply(second,true);
      require(f.get<std::uint16_t>(first+0xa6)==180&&f.get<std::uint16_t>(second+0xa6)==2017,"switching the held actor restores only the old owned alias");
@@ -46,6 +48,8 @@ int main(){
      alias.frame();require(f.get<std::uint16_t>(first+0xa6)==185,"another owner's later actor edit survives cleanup");}
     {Fixture f;f.put<std::uint8_t>(map+2017,5);const auto before=f.bytes;NativeWeaponAlias alias(&f.api);alias.frame();alias.reset();
      require(!alias.ready()&&f.bytes==before,"pre-existing alias mapping belongs to another owner even if it shares180");}
+    {Fixture f;f.put<std::uint8_t>(map+2018,7);const auto before=f.bytes;NativeWeaponAlias alias(&f.api);alias.frame();alias.reset();
+     require(!alias.ready()&&f.bytes==before,"a foreign Golden class mapping is never overwritten or partially claimed");}
     {Fixture f;NativeWeaponAlias alias(&f.api);alias.frame();f.put<std::uint8_t>(map+2017,7);alias.frame();alias.reset();
      require(f.get<std::uint8_t>(map+2017)==7&&!alias.ready(),"later mapping replacement survives reset");}
     {Fixture f;NativeWeaponAlias alias(&f.api);alias.frame();alias.apply(first,true);loaded=2;delta=0x600000;f.seed(9);alias.frame();

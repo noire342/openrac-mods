@@ -1,7 +1,9 @@
 # Arsenal File Overlay 0.1.0 — private bundled utility
 
 Read-only file-alias utility for the unchanged official OpenRAC Windows x64
-NTSC-U executable, SHA256
+NTSC-U executables: OpenRAC0.10.0 SHA256
+`f70a9f2bc6de39ed42b9f9f64fc5cea98ffad8b8bd7795c7adfb965a9875c95b`
+and legacy0.9.0 SHA256
 `b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081`.
 This prototype does not install assets, change the client, edit original
 manifests or provide weapons. The caller stages replacement manifests/assets.
@@ -11,6 +13,10 @@ staged copies. Native `--levels` can keep pointing at the original extraction;
 the staged JSON can refer to absolute mesh/texture paths owned by the mod.
 All other files and all write/create/truncate/delete requests pass through.
 No new game command-line option or SDK table extension is needed.
+The consumer preserves the original manifest version and unknown fields.
+OpenRAC0.10 requires freshly extracted format4 levels; a format3 extraction
+is rejected before mounting, with an instruction to use the official launcher's
+Check and play. The format number is never changed to disguise old data.
 
 ## Configuration contract
 

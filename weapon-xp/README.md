@@ -1,4 +1,8 @@
-# Weapon Experience 0.6.3-arsenal — preview companion
+# Weapon Experience 0.6.4
+
+PAL Europe v2.00 on official OpenRAC 0.10 for Windows is the reference region;
+the NTSC-U adapter remains supported. Regional HUD/camera corrections and scoped
+native gameplay evidence are described in [PAL validation](docs/PAL.md).
 
 Twelve weapons gain ten persistent levels. The default is progression only: original
 damage, ammo capacity, projectiles, aiming, colors, particles and weapon behavior.
@@ -28,11 +32,11 @@ and the compiled plain-C [consumer example](examples/rules_client.c).
 
 ## Additive arsenal companion
 
-This development source exposes API v4 hit-ownership filters and acquisition
-presentation helpers for Revolverator0.2. It excludes accepted custom hits from
+API v4 exposes hit-ownership filters and acquisition presentation helpers for
+Revolverator. It excludes accepted custom hits from
 native Walloper XP; Revolverator stores its independent progress in its own
-sidecar. Existing ABI v1/v2/v3 prefixes remain compatible. The latest published
-stable download remains0.6.1; preview packages are separate from the stable release.
+sidecar. Existing ABI v1/v2/v3 prefixes remain compatible. Install the companion
+separately when using both mods; their weapon progress stays independent.
 See `docs/API.md` and `examples/hit_owner.c`.
 
 ## Settings

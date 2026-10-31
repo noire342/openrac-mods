@@ -79,6 +79,21 @@ int main(){
                 "the head rotates in the same signed direction as the held enemy");
         }
         require(f.guest.used()==320,"frames do not leak guest heap arenas");
+        for(int i=0;i<10;++i){
+            rotor.update(weapon,20,Phase::Windup,0,0,.016f,true,false);
+            const auto q=f.get<std::array<float,4>>(head+0x10);const auto t=f.get<Vec3>(head+0x30);
+            const auto scale=f.get<Vec3>(head+0x20);
+            const auto transformed=[&](Vec3 p){const auto v=p+bind;
+                return native_rotate(q,{v.x*scale.x,v.y*scale.y,v.z*scale.z})+t;};
+            require(distance(transformed(pivot),pivot)<.001f,"head enlargement keeps the motor attachment fixed");
+            const auto grown=transformed(pivot+Vec3{200,-1200,0});
+            require(std::abs(distance(grown,pivot+Vec3{0,-1200*scale.y,0})-200*scale.x)<.002f,
+                "only the head grows, around its real shaft pivot with the native inverse bind");
+            for(unsigned joint=0;joint<4;++joint)
+                require(distance(f.get<Vec3>(arena+joint*64+0x20),{1,1,1})==0,"motor housing and grip retain their original dimensions");
+        }
+        for(int i=0;i<24;++i)rotor.update(weapon,20,Phase::Idle,0,0,.016f,true,false);
+        require(distance(f.get<Vec3>(head+0x20),{1,1,1})==0,"head restores original dimensions after the gesture");
         const float angle=rotor.angle();rotor.update(weapon,0,Phase::Idle,0,0,.03f,true,false);
         require(rotor.angle()==angle,"an empty native weapon is stationary");
         rotor.dry_fire();for(int i=0;i<10;++i)rotor.update(weapon,0,Phase::Idle,0,0,.03f,true,false);
@@ -104,6 +119,14 @@ int main(){
         rotor.update(weapon,20,Phase::Idle,0,0,.03f,true,false);
         require(f.guest.used()==0&&f.get<unsigned>(weapon+0x64)==original_node,
             "an incompatible native bind fails conservatively without editing the skeleton");
+    }
+    {
+        Fake f;NativeRotor rotor(&f.api,f.guest,false,true);
+        rotor.update(weapon,0,Phase::Idle,0,0,0,false,true);
+        const unsigned head=f.get<unsigned>(weapon+0x64),root=head-4*64;
+        require(f.get<unsigned char>(root+3)==0,"acquisition keeps the authored wrist/root pose instead of placing a rigid drill at the scene origin");
+        require(f.get<unsigned char>(head+3)==1,"acquisition still neutralizes the old glove fingers and keeps the drill head attached");
+        require(f.get<unsigned>(klass+0x14)==skeleton,"scene posing never replaces a shared native skeleton");
     }
     {
         Fake f;f.guest.reset();NativeRotor rotor(&f.api,f.guest);

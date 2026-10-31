@@ -11,7 +11,7 @@ import zipfile
 
 ROOT_FILES = {'CMakeLists.txt', 'openrac-mod.json', 'README.md', 'LICENSE', 'COPYING'}
 ROOT_DIRS = {'src', 'include', 'docs', 'tests', 'tools', 'examples', 'third_party'}
-SUFFIXES = {'.c', '.cpp', '.h', '.hpp', '.py', '.ps1', '.md', '.json', '.txt', '.cmake'}
+SUFFIXES = {'.c', '.cpp', '.h', '.hpp', '.py', '.ps1', '.md', '.json', '.txt', '.tsv', '.cmake'}
 PRIVATE_ASSET_NAMES = {'revolverator_hd_icon_data.hpp'}
 
 
@@ -31,6 +31,8 @@ def snapshot(source: Path) -> dict[str, bytes]:
             parts[0] in ROOT_DIRS and path.suffix.lower() in SUFFIXES) or (
             parts[:2] == ('assets', 'ammunition') and
             len(parts) == 3 and path.name in {'recipe.json', 'README.md'})
+        selected = selected or (parts[:2] == ('assets', 'golden') and len(parts) == 3
+                                 and path.name in {'moby_revolverator_gold.png', 'README.md'})
         if not selected or '__pycache__' in parts or path.name in PRIVATE_ASSET_NAMES:
             continue
         if path.is_symlink() or source not in path.resolve(strict=True).parents:

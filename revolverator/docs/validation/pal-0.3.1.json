@@ -1,0 +1,1287 @@
+{
+  "format": 1,
+  "version": "0.3.1",
+  "reference_region": "pal",
+  "disc_serial": "SCES_509.16",
+  "runtime_version": "0.10.0",
+  "windows_dll_sha256": "bd880b9a0dbe788c83a6022a614b4b569c36284660677e02a10b57071622a5aa",
+  "compat_dll_sha256": "9603bd048ae54b63143bc2a9e35596a581c3fc6a6415dd51e7bc81ca5afaf091",
+  "overlay_dll_sha256": "abbb81a5840bf26951333deb799c4613a24033b71edcc8f7d83f3950ec743d31",
+  "runtime_sha256": "e720a59d130b4b2289a4eb15cad3e33f739a72a385992db171ef43490205fb0e",
+  "native_gameplay_verified": true,
+  "full_campaign_verified": false,
+  "runtime_included": false,
+  "raw_disc_files_included": false,
+  "evidence_archive": "Receipt paths are relative to the development workspace. Private raw logs, saves and RAM dumps are not bundled; derived mod assets are not excluded by this statement.",
+  "verification_scope": "Windows x64 PAL Novalis acquisition, accepted native combat/XP, equipment switch during flight, and exact same-level sidecar resume.",
+  "current_binary_native_fixtures": [
+    {
+      "id": "pal-combat-release-03",
+      "scenario": "combatshort",
+      "map": "Novalis",
+      "passed": true,
+      "counts_as_current_binary_proof": true,
+      "artifacts": {
+        "windows_dll_sha256": "bd880b9a0dbe788c83a6022a614b4b569c36284660677e02a10b57071622a5aa",
+        "compat_dll_sha256": "9603bd048ae54b63143bc2a9e35596a581c3fc6a6415dd51e7bc81ca5afaf091",
+        "overlay_dll_sha256": "abbb81a5840bf26951333deb799c4613a24033b71edcc8f7d83f3950ec743d31",
+        "weapon_xp_sha256": "29406690a04910737cc14b02d1ef1cdea39d3c26650bf51b72ca71a1fbf758ea",
+        "probe_dll_sha256": "58b5ddfa4ad4ead01c798be641749d980883bc3010ef267e9ab94d53684f21c3",
+        "runtime_sha256": "e720a59d130b4b2289a4eb15cad3e33f739a72a385992db171ef43490205fb0e"
+      },
+      "checks_passed": 41,
+      "checks_failed": 0,
+      "checks": [
+        "native_DeltaSeconds_confirms_the_pinned_client_runs_at60Hz",
+        "owned_base_capacity20",
+        "gold_unowned_price50000_normal_zero_gold",
+        "guarded_teleport_to_native_gold_room_at335cm_interaction_distance",
+        "additional_native304_dome_live",
+        "gold_display_live_before_purchase",
+        "eleven_live_cases_preserve_all_ten_original_gold_offers",
+        "gold_display_matches_enlarged_native_shop_scale",
+        "gold_display_keeps_fixed_orientation",
+        "whole_weapon_visual_bounds_centered_in_dome_at_native_gold_display_height",
+        "cupola_uses_the_nearest_native_gold_case_light_sets_ambient_and_metal_lighting",
+        "purchase_deducts_exactly50000_normal_bolts",
+        "ten_native_gold_flags_and_collection_bits_preserved",
+        "gold_purchase_preserves_ammo_and_xp",
+        "native_walloper_state_independent",
+        "one_native_purchase_and_one_logical_transition",
+        "gold_purchase_plays_complete_native_acquisition",
+        "native_acquisition_renders_the_gold_rotatore_instead_of_the_walloper",
+        "native_acquisition_has_one_visible_ratchet_and_locked_input",
+        "purchase_event_not_replayed",
+        "only_display_retires_sold_dome_remains",
+        "held_model_renders_gold_class2018",
+        "purchase_currency_stable_after_input_release",
+        "native_gold_state_stable_after_purchase",
+        "return_to_original_native_combat_area",
+        "four_original_birdbots_available",
+        "one_native_controller_throw",
+        "blast_charge_matches_hold_until_auto_cap",
+        "exactly_one_native_explosion",
+        "area_damage_reaches_multiple_native_accepted_targets",
+        "native_death_bookkeeping_from_golden_hit",
+        "one_shot_costs_one_round_only",
+        "golden_kills_do_not_credit_native_walloper",
+        "gold_circle_attack_has_a_large_fast_native_drill_pulse",
+        "the_drill_stays_normal_sized_while_holding_an_enemy",
+        "revolverator_earns_actual_native_bolt_based_xp",
+        "native_motion_hooks_stop_only_ratchet_during_recoil",
+        "real_native_wrist_and_drill_sweep_forward_during_throw",
+        "recoil_has_short_bounded_duration_with_no_horizontal_drift",
+        "native_locomotion_resumes_after_recoil",
+        "native_gold_flags_preserved_through_combat"
+      ],
+      "result": {
+        "event": "result",
+        "mode": "combatshort",
+        "pass": true,
+        "checks": 41,
+        "failures": 0,
+        "host_frame": 1206,
+        "tick": 568,
+        "triangle_pulses": 1,
+        "purchase_events": 1,
+        "gold_transitions": 1,
+        "gold_render_views": 407,
+        "launch_blast": 0.111111,
+        "recoil_frames": 9,
+        "recoil_seconds": 0.149999,
+        "recoil_motion_samples": 9,
+        "max_recoil_speed": 0.0,
+        "max_recoil_displacement": 0.0,
+        "resumed_motion_samples": 48
+      },
+      "final_state": {
+        "golden": 1,
+        "ammo": 19,
+        "capacity": 20,
+        "xp": 117,
+        "walloper_xp": 0,
+        "bolts": 10000,
+        "held": 18,
+        "requested": 18,
+        "captures": 1,
+        "throws": 1,
+        "impacts": 1,
+        "explosions": 1,
+        "area_hits": 3,
+        "native_hits": 3,
+        "native_deaths": 3
+      },
+      "normal_process_exit_observed": true,
+      "exit_code": 0,
+      "original_input_files_checked": 107,
+      "original_input_files_changed": 0,
+      "actual_tick_timing": {
+        "event": "native_tick_timing",
+        "disc": "pal",
+        "source": "native_DeltaSeconds",
+        "samples": 30,
+        "expected_tick_hz": 60,
+        "mean_seconds": 0.016666667,
+        "minimum_seconds": 0.016666667,
+        "maximum_seconds": 0.016666667,
+        "verified": true
+      },
+      "receipts": {
+        "fixture.json": {
+          "path": "work/revolverator-pal-migration/runs/pal-combat-release-03/fixture.json",
+          "sha256": "33a126f92275900e94eb69174ea84833d2d8a136ca73df9295c5c0954d2de8ab"
+        },
+        "process-exit.json": {
+          "path": "work/revolverator-pal-migration/runs/pal-combat-release-03/process-exit.json",
+          "sha256": "32720fa6062c6c1ba9e641ca6583ce1138b8da273a2b9fe8e34a45db744bc0d2"
+        },
+        "original-inputs.json": {
+          "path": "work/revolverator-pal-migration/runs/pal-combat-release-03/original-inputs.json",
+          "sha256": "7b05726b43b6899cebfcab1a0bff7e97cc0bd5ea8b92f3469c4cd9fb4d91f06d"
+        }
+      },
+      "log": {
+        "path": "work/revolverator-pal-migration/runs/pal-combat-release-03/data/openrac-rac1-pal.log",
+        "sha256": "7ac4fe51b078d50aef52b18fe9bcb9de5c7ee139a5484a15098d8ad94145cb1a"
+      },
+      "native_bursts": [
+        {
+          "charge": 0.111,
+          "radius": 2.88,
+          "damage": 8.88,
+          "scale": 1.39,
+          "targets": 3
+        }
+      ]
+    },
+    {
+      "id": "pal-switch-final-01",
+      "scenario": "switch-flight",
+      "map": "Novalis",
+      "passed": true,
+      "counts_as_current_binary_proof": true,
+      "artifacts": {
+        "windows_dll_sha256": "bd880b9a0dbe788c83a6022a614b4b569c36284660677e02a10b57071622a5aa",
+        "compat_dll_sha256": "9603bd048ae54b63143bc2a9e35596a581c3fc6a6415dd51e7bc81ca5afaf091",
+        "overlay_dll_sha256": "abbb81a5840bf26951333deb799c4613a24033b71edcc8f7d83f3950ec743d31",
+        "weapon_xp_sha256": "29406690a04910737cc14b02d1ef1cdea39d3c26650bf51b72ca71a1fbf758ea",
+        "probe_dll_sha256": "58b5ddfa4ad4ead01c798be641749d980883bc3010ef267e9ab94d53684f21c3",
+        "runtime_sha256": "e720a59d130b4b2289a4eb15cad3e33f739a72a385992db171ef43490205fb0e"
+      },
+      "checks_passed": 40,
+      "checks_failed": 0,
+      "checks": [
+        "native_DeltaSeconds_confirms_the_pinned_client_runs_at60Hz",
+        "owned_base_capacity20",
+        "gold_unowned_price50000_normal_zero_gold",
+        "guarded_teleport_to_native_gold_room_at335cm_interaction_distance",
+        "additional_native304_dome_live",
+        "gold_display_live_before_purchase",
+        "eleven_live_cases_preserve_all_ten_original_gold_offers",
+        "gold_display_matches_enlarged_native_shop_scale",
+        "gold_display_keeps_fixed_orientation",
+        "whole_weapon_visual_bounds_centered_in_dome_at_native_gold_display_height",
+        "cupola_uses_the_nearest_native_gold_case_light_sets_ambient_and_metal_lighting",
+        "purchase_deducts_exactly50000_normal_bolts",
+        "ten_native_gold_flags_and_collection_bits_preserved",
+        "gold_purchase_preserves_ammo_and_xp",
+        "native_walloper_state_independent",
+        "one_native_purchase_and_one_logical_transition",
+        "gold_purchase_plays_complete_native_acquisition",
+        "native_acquisition_renders_the_gold_rotatore_instead_of_the_walloper",
+        "native_acquisition_has_one_visible_ratchet_and_locked_input",
+        "purchase_event_not_replayed",
+        "only_display_retires_sold_dome_remains",
+        "held_model_renders_gold_class2018",
+        "purchase_currency_stable_after_input_release",
+        "native_gold_state_stable_after_purchase",
+        "return_to_original_native_combat_area",
+        "four_original_birdbots_available",
+        "one_native_controller_throw",
+        "blast_charge_matches_hold_until_auto_cap",
+        "native_wrench_equip_function_available",
+        "exactly_one_native_explosion",
+        "area_damage_reaches_multiple_native_accepted_targets",
+        "native_death_bookkeeping_from_golden_hit",
+        "one_shot_costs_one_round_only",
+        "golden_kills_do_not_credit_native_walloper",
+        "gold_circle_attack_has_a_large_fast_native_drill_pulse",
+        "the_drill_stays_normal_sized_while_holding_an_enemy",
+        "revolverator_earns_actual_native_bolt_based_xp",
+        "launched_enemy_completes_after_actual_wrench_equip",
+        "equip_switch_clears_recoil",
+        "native_gold_flags_preserved_through_combat"
+      ],
+      "result": {
+        "event": "result",
+        "mode": "switch-flight",
+        "pass": true,
+        "checks": 40,
+        "failures": 0,
+        "host_frame": 1206,
+        "tick": 568,
+        "triangle_pulses": 1,
+        "purchase_events": 1,
+        "gold_transitions": 1,
+        "gold_render_views": 242,
+        "launch_blast": 0.111111,
+        "recoil_frames": 0,
+        "recoil_seconds": 0.0,
+        "recoil_motion_samples": 0,
+        "max_recoil_speed": 0.0,
+        "max_recoil_displacement": 0.0,
+        "resumed_motion_samples": 66
+      },
+      "final_state": {
+        "golden": 1,
+        "ammo": 19,
+        "capacity": 20,
+        "xp": 117,
+        "walloper_xp": 0,
+        "bolts": 10000,
+        "held": 8,
+        "requested": 8,
+        "captures": 1,
+        "throws": 1,
+        "impacts": 1,
+        "explosions": 1,
+        "area_hits": 3,
+        "native_hits": 3,
+        "native_deaths": 3
+      },
+      "normal_process_exit_observed": true,
+      "exit_code": 0,
+      "original_input_files_checked": 107,
+      "original_input_files_changed": 0,
+      "actual_tick_timing": {
+        "event": "native_tick_timing",
+        "disc": "pal",
+        "source": "native_DeltaSeconds",
+        "samples": 30,
+        "expected_tick_hz": 60,
+        "mean_seconds": 0.016666667,
+        "minimum_seconds": 0.016666667,
+        "maximum_seconds": 0.016666667,
+        "verified": true
+      },
+      "receipts": {
+        "fixture.json": {
+          "path": "work/revolverator-pal-migration/runs/pal-switch-final-01/fixture.json",
+          "sha256": "6e59597bfc90dcb45c9f67494215b3744c945839cf9c3c0b14eaa8b298b25d87"
+        },
+        "process-exit.json": {
+          "path": "work/revolverator-pal-migration/runs/pal-switch-final-01/process-exit.json",
+          "sha256": "23feda9bd3195aa98bf927f75f466f397fb350609dcb376032a2ded8c925f1bc"
+        },
+        "original-inputs.json": {
+          "path": "work/revolverator-pal-migration/runs/pal-switch-final-01/original-inputs.json",
+          "sha256": "7b05726b43b6899cebfcab1a0bff7e97cc0bd5ea8b92f3469c4cd9fb4d91f06d"
+        }
+      },
+      "log": {
+        "path": "work/revolverator-pal-migration/runs/pal-switch-final-01/data/openrac-rac1-pal.log",
+        "sha256": "5156dac7ef7630b2d07da9702d74b36745634ed48b76f063ea30939c28f0b341"
+      },
+      "native_bursts": [
+        {
+          "charge": 0.111,
+          "radius": 2.88,
+          "damage": 8.88,
+          "scale": 1.39,
+          "targets": 3
+        }
+      ]
+    },
+    {
+      "id": "pal-reload-02",
+      "scenario": "reload",
+      "map": "Novalis",
+      "passed": true,
+      "counts_as_current_binary_proof": true,
+      "artifacts": {
+        "windows_dll_sha256": "bd880b9a0dbe788c83a6022a614b4b569c36284660677e02a10b57071622a5aa",
+        "compat_dll_sha256": "9603bd048ae54b63143bc2a9e35596a581c3fc6a6415dd51e7bc81ca5afaf091",
+        "overlay_dll_sha256": "abbb81a5840bf26951333deb799c4613a24033b71edcc8f7d83f3950ec743d31",
+        "weapon_xp_sha256": "6074bae6770ef3647c531c2906d4248c2e309a07cb8b49b94434024a5a95514b",
+        "probe_dll_sha256": "58b5ddfa4ad4ead01c798be641749d980883bc3010ef267e9ab94d53684f21c3",
+        "runtime_sha256": "e720a59d130b4b2289a4eb15cad3e33f739a72a385992db171ef43490205fb0e"
+      },
+      "checks_passed": 10,
+      "checks_failed": 0,
+      "checks": [
+        "native_DeltaSeconds_confirms_the_pinned_client_runs_at60Hz",
+        "fresh_process_starts_without_custom_ownership",
+        "native_reload_completed_without_card_error",
+        "fresh_process_restores_golden_and_exact_ammo_from_sidecar",
+        "fresh_process_restores_exact_real_earned_revolverator_xp",
+        "fresh_process_restores_exact_native_walloper_xp",
+        "native_bolt_balance_restored_with_golden_save",
+        "fresh_process_restores_exact_eight_logical_favourites",
+        "restored_favourites_project_to_native_quick_select",
+        "restored_logical_selection_completes_native_carrier_equip_and_gold_updates"
+      ],
+      "result": {
+        "event": "result",
+        "mode": "reload",
+        "pass": true,
+        "checks": 10,
+        "failures": 0,
+        "host_frame": 823,
+        "tick": 480,
+        "triangle_pulses": 0,
+        "purchase_events": 0,
+        "gold_transitions": 1,
+        "gold_render_views": 406,
+        "launch_blast": 0.0,
+        "recoil_frames": 0,
+        "recoil_seconds": 0.0,
+        "recoil_motion_samples": 0,
+        "max_recoil_speed": 0.0,
+        "max_recoil_displacement": 0.0,
+        "resumed_motion_samples": 0
+      },
+      "final_state": {
+        "golden": 1,
+        "ammo": 7,
+        "capacity": 20,
+        "xp": 117,
+        "walloper_xp": 0,
+        "bolts": 10058,
+        "held": 18,
+        "requested": 18,
+        "captures": 0,
+        "throws": 0,
+        "impacts": 0,
+        "explosions": 0,
+        "area_hits": 0,
+        "native_hits": 0,
+        "native_deaths": 0
+      },
+      "normal_process_exit_observed": true,
+      "exit_code": 0,
+      "original_input_files_checked": 107,
+      "original_input_files_changed": 0,
+      "actual_tick_timing": {
+        "event": "native_tick_timing",
+        "disc": "pal",
+        "source": "native_DeltaSeconds",
+        "samples": 30,
+        "expected_tick_hz": 60,
+        "mean_seconds": 0.016666667,
+        "minimum_seconds": 0.016666667,
+        "maximum_seconds": 0.016666667,
+        "verified": true
+      },
+      "receipts": {
+        "fixture.json": {
+          "path": "work/revolverator-pal-migration/runs/pal-reload-02/fixture.json",
+          "sha256": "3acd7d4217564363c1467116a71ec5154a04048a2a1662bc4cf75247646303a0"
+        },
+        "process-exit.json": {
+          "path": "work/revolverator-pal-migration/runs/pal-reload-02/process-exit.json",
+          "sha256": "6f8ee2bc7e02ae0d73f8af4ab3f1582f827263265b345fb3a7c34f7762f66625"
+        },
+        "original-inputs.json": {
+          "path": "work/revolverator-pal-migration/runs/pal-reload-02/original-inputs.json",
+          "sha256": "7b05726b43b6899cebfcab1a0bff7e97cc0bd5ea8b92f3469c4cd9fb4d91f06d"
+        }
+      },
+      "log": {
+        "path": "work/revolverator-pal-migration/runs/pal-reload-02/data/openrac-rac1-pal.log",
+        "sha256": "8dabd3bd1cccc603319850799df9383a70d6095e88a1b0fbb3b35e2f726f5d33"
+      },
+      "native_restored_selection": {
+        "logical_key": 65554,
+        "basis": "held18_and_gold_update_requires_active_custom_key",
+        "held": 18,
+        "requested": 18,
+        "gold_update_views": 406,
+        "verified": true,
+        "quick": [
+          65554,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "native_quick": [
+          18,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    }
+  ],
+  "historical_native_fixtures": [
+    {
+      "id": "pal-save-03",
+      "scenario": "save",
+      "map": "Novalis",
+      "passed": true,
+      "counts_as_current_binary_proof": false,
+      "artifacts": {
+        "windows_dll_sha256": "3d9ca9838d655fd15155dc6f2cd6a449e4e2e39de42d1b9ba45ac62875c61a91",
+        "compat_dll_sha256": "9603bd048ae54b63143bc2a9e35596a581c3fc6a6415dd51e7bc81ca5afaf091",
+        "overlay_dll_sha256": "abbb81a5840bf26951333deb799c4613a24033b71edcc8f7d83f3950ec743d31",
+        "weapon_xp_sha256": "6074bae6770ef3647c531c2906d4248c2e309a07cb8b49b94434024a5a95514b",
+        "probe_dll_sha256": "ee72eae9303f784b7f8657d78dbe2e5f58da4c2f3c88f88329d0f3f84eefaac4",
+        "runtime_sha256": "e720a59d130b4b2289a4eb15cad3e33f739a72a385992db171ef43490205fb0e"
+      },
+      "checks_passed": 50,
+      "checks_failed": 0,
+      "checks": [
+        "native_DeltaSeconds_confirms_the_pinned_client_runs_at60Hz",
+        "owned_base_capacity20",
+        "gold_unowned_price50000_normal_zero_gold",
+        "guarded_teleport_to_native_gold_room_at335cm_interaction_distance",
+        "additional_native304_dome_live",
+        "gold_display_live_before_purchase",
+        "eleven_live_cases_preserve_all_ten_original_gold_offers",
+        "gold_display_matches_enlarged_native_shop_scale",
+        "gold_display_keeps_fixed_orientation",
+        "whole_weapon_visual_bounds_centered_in_dome_at_native_gold_display_height",
+        "cupola_uses_the_nearest_native_gold_case_light_sets_ambient_and_metal_lighting",
+        "purchase_deducts_exactly50000_normal_bolts",
+        "ten_native_gold_flags_and_collection_bits_preserved",
+        "gold_purchase_preserves_ammo_and_xp",
+        "native_walloper_state_independent",
+        "one_native_purchase_and_one_logical_transition",
+        "gold_purchase_plays_complete_native_acquisition",
+        "native_acquisition_renders_the_gold_rotatore_instead_of_the_walloper",
+        "native_acquisition_has_one_visible_ratchet_and_locked_input",
+        "purchase_event_not_replayed",
+        "only_display_retires_sold_dome_remains",
+        "held_model_renders_gold_class2018",
+        "purchase_currency_stable_after_input_release",
+        "native_gold_state_stable_after_purchase",
+        "return_to_original_native_combat_area",
+        "four_original_birdbots_available",
+        "one_native_controller_throw",
+        "blast_charge_matches_hold_until_auto_cap",
+        "exactly_one_native_explosion",
+        "area_damage_reaches_multiple_native_accepted_targets",
+        "native_death_bookkeeping_from_golden_hit",
+        "one_shot_costs_one_round_only",
+        "golden_kills_do_not_credit_native_walloper",
+        "gold_circle_attack_has_a_large_fast_native_drill_pulse",
+        "the_drill_stays_normal_sized_while_holding_an_enemy",
+        "revolverator_earns_actual_native_bolt_based_xp",
+        "native_motion_hooks_stop_only_ratchet_during_recoil",
+        "real_native_wrist_and_drill_sweep_forward_during_throw",
+        "recoil_has_short_bounded_duration_with_no_horizontal_drift",
+        "native_locomotion_resumes_after_recoil",
+        "native_gold_flags_preserved_through_combat",
+        "fresh_regional_card_is_present_formatted_and_has_native_required_space",
+        "native_regional_directory_icons_and_five_save_slots_created",
+        "save_uses_real_earned_enemy_xp",
+        "persistent_native_whole_save_buffer_allocated",
+        "native_full_save_request_accepted",
+        "native_save_completed_without_card_error",
+        "saved_gold_ammunition_snapshot_is_seven",
+        "save_preserves_actual_earned_xp_and_native_walloper_xp",
+        "save_preserves_postcombat_economy_and_native_gold"
+      ],
+      "result": {
+        "event": "result",
+        "mode": "save",
+        "pass": true,
+        "checks": 50,
+        "failures": 0,
+        "host_frame": 1892,
+        "tick": 1344,
+        "triangle_pulses": 1,
+        "purchase_events": 1,
+        "gold_transitions": 1,
+        "gold_render_views": 1183,
+        "launch_blast": 0.111111,
+        "recoil_frames": 9,
+        "recoil_seconds": 0.149999,
+        "recoil_motion_samples": 9,
+        "max_recoil_speed": 0.0,
+        "max_recoil_displacement": 0.0,
+        "resumed_motion_samples": 48
+      },
+      "final_state": {
+        "golden": 1,
+        "ammo": 7,
+        "capacity": 20,
+        "xp": 117,
+        "walloper_xp": 0,
+        "bolts": 10058,
+        "held": 18,
+        "requested": 18,
+        "captures": 1,
+        "throws": 1,
+        "impacts": 1,
+        "explosions": 1,
+        "area_hits": 3,
+        "native_hits": 3,
+        "native_deaths": 3
+      },
+      "normal_process_exit_observed": true,
+      "exit_code": 0,
+      "original_input_files_checked": 107,
+      "original_input_files_changed": 0,
+      "actual_tick_timing": {
+        "event": "native_tick_timing",
+        "disc": "pal",
+        "source": "native_DeltaSeconds",
+        "samples": 30,
+        "expected_tick_hz": 60,
+        "mean_seconds": 0.016666667,
+        "minimum_seconds": 0.016666667,
+        "maximum_seconds": 0.016666667,
+        "verified": true
+      },
+      "receipts": {
+        "fixture.json": {
+          "path": "work/revolverator-pal-migration/runs/pal-save-03/fixture.json",
+          "sha256": "3918296eb2b7cd42ac7895eebd30e91b9a736da72d8e4ad33ffb33ca50559a2e"
+        },
+        "process-exit.json": {
+          "path": "work/revolverator-pal-migration/runs/pal-save-03/process-exit.json",
+          "sha256": "390677f80e2954ea972ffd36879904ed43561fcd25961f056f5794bdc292913f"
+        },
+        "original-inputs.json": {
+          "path": "work/revolverator-pal-migration/runs/pal-save-03/original-inputs.json",
+          "sha256": "7b05726b43b6899cebfcab1a0bff7e97cc0bd5ea8b92f3469c4cd9fb4d91f06d"
+        }
+      },
+      "log": {
+        "path": "work/revolverator-pal-migration/runs/pal-save-03/data/openrac-rac1-pal.log",
+        "sha256": "ae35b901e274d9cdd521d1c499b7ab12f0c83c959eb5f103e6d9ece561f753fe"
+      },
+      "native_bursts": [
+        {
+          "charge": 0.111,
+          "radius": 2.88,
+          "damage": 8.88,
+          "scale": 1.39,
+          "targets": 3
+        }
+      ],
+      "saved_snapshot": {
+        "xp": 117,
+        "walloper_xp": 0,
+        "bolts": 10058,
+        "ammo": 7,
+        "golden": 1,
+        "earned_xp": true
+      },
+      "native_save_completion": {
+        "operation": 2,
+        "pending": -1,
+        "error": 0,
+        "busy": 0,
+        "substep": 3,
+        "type": 2,
+        "free": 7000,
+        "format": 1,
+        "save_index": 0,
+        "active_card": 0,
+        "header_errors": 0
+      },
+      "native_card_create_completed": {
+        "operation": 0,
+        "pending": -1,
+        "error": 0,
+        "busy": 1,
+        "substep": 21,
+        "type": 2,
+        "free": 7000,
+        "format": 1,
+        "save_index": -1,
+        "active_card": -1,
+        "header_errors": 0
+      }
+    },
+    {
+      "id": "pal-rapid-02",
+      "scenario": "rapid",
+      "map": "Novalis",
+      "passed": true,
+      "counts_as_current_binary_proof": false,
+      "artifacts": {
+        "windows_dll_sha256": "3d9ca9838d655fd15155dc6f2cd6a449e4e2e39de42d1b9ba45ac62875c61a91",
+        "compat_dll_sha256": "9603bd048ae54b63143bc2a9e35596a581c3fc6a6415dd51e7bc81ca5afaf091",
+        "overlay_dll_sha256": "abbb81a5840bf26951333deb799c4613a24033b71edcc8f7d83f3950ec743d31",
+        "weapon_xp_sha256": "6074bae6770ef3647c531c2906d4248c2e309a07cb8b49b94434024a5a95514b",
+        "probe_dll_sha256": "9574504917974e4a7b4838cdee4c51209c7c520a14d7a883de1f9ead9335d17c",
+        "runtime_sha256": "e720a59d130b4b2289a4eb15cad3e33f739a72a385992db171ef43490205fb0e"
+      },
+      "checks_passed": 37,
+      "checks_failed": 0,
+      "checks": [
+        "native_DeltaSeconds_confirms_the_pinned_client_runs_at60Hz",
+        "owned_base_capacity20",
+        "gold_unowned_price50000_normal_zero_gold",
+        "guarded_teleport_to_native_gold_room_at335cm_interaction_distance",
+        "additional_native304_dome_live",
+        "gold_display_live_before_purchase",
+        "eleven_live_cases_preserve_all_ten_original_gold_offers",
+        "gold_display_matches_enlarged_native_shop_scale",
+        "gold_display_keeps_fixed_orientation",
+        "whole_weapon_visual_bounds_centered_in_dome_at_native_gold_display_height",
+        "cupola_uses_the_nearest_native_gold_case_light_sets_ambient_and_metal_lighting",
+        "purchase_deducts_exactly50000_normal_bolts",
+        "ten_native_gold_flags_and_collection_bits_preserved",
+        "gold_purchase_preserves_ammo_and_xp",
+        "native_walloper_state_independent",
+        "one_native_purchase_and_one_logical_transition",
+        "gold_purchase_plays_complete_native_acquisition",
+        "native_acquisition_renders_the_gold_rotatore_instead_of_the_walloper",
+        "native_acquisition_has_one_visible_ratchet_and_locked_input",
+        "purchase_event_not_replayed",
+        "only_display_retires_sold_dome_remains",
+        "held_model_renders_gold_class2018",
+        "purchase_currency_stable_after_input_release",
+        "native_gold_state_stable_after_purchase",
+        "return_to_original_native_combat_area",
+        "four_original_birdbots_available",
+        "one_native_controller_throw",
+        "blast_charge_matches_hold_until_auto_cap",
+        "turn_in_place_for_an_independent_second_capture",
+        "second_press_buffer_starts_the_next_attack_within150ms",
+        "native_first_projectile_and_second_captive_coexist",
+        "two_distinct_live_projectiles_share_the_first_flight_window",
+        "two_captures_consume_exactly_two_rounds",
+        "two_actual_native_collisions_produce_exactly_two_independent_blasts",
+        "each_released_projectile_has_its_own_accepted_explosive_self_hit_and_blast_generation",
+        "rapid_reuse_preserves_accepted_native_damage_deaths_and_xp",
+        "rapid_reuse_preserves_native_walloper_and_gold_state"
+      ],
+      "result": {
+        "event": "result",
+        "mode": "rapid",
+        "pass": true,
+        "checks": 37,
+        "failures": 0,
+        "host_frame": 1231,
+        "tick": 593,
+        "triangle_pulses": 1,
+        "purchase_events": 1,
+        "gold_transitions": 1,
+        "gold_render_views": 432,
+        "launch_blast": 0.111111,
+        "recoil_frames": 0,
+        "recoil_seconds": 0.0,
+        "recoil_motion_samples": 18,
+        "max_recoil_speed": 0.0,
+        "max_recoil_displacement": 0.0,
+        "resumed_motion_samples": 0
+      },
+      "final_state": {
+        "golden": 1,
+        "ammo": 18,
+        "capacity": 20,
+        "xp": 117,
+        "walloper_xp": 0,
+        "bolts": 10001,
+        "held": 18,
+        "requested": 18,
+        "captures": 2,
+        "throws": 2,
+        "impacts": 2,
+        "explosions": 2,
+        "area_hits": 3,
+        "native_hits": 3,
+        "native_deaths": 3
+      },
+      "normal_process_exit_observed": true,
+      "exit_code": 0,
+      "original_input_files_checked": 107,
+      "original_input_files_changed": 0,
+      "actual_tick_timing": {
+        "event": "native_tick_timing",
+        "disc": "pal",
+        "source": "native_DeltaSeconds",
+        "samples": 30,
+        "expected_tick_hz": 60,
+        "mean_seconds": 0.016666667,
+        "minimum_seconds": 0.016666667,
+        "maximum_seconds": 0.016666667,
+        "verified": true
+      },
+      "receipts": {
+        "fixture.json": {
+          "path": "work/revolverator-pal-migration/runs/pal-rapid-02/fixture.json",
+          "sha256": "8886ea4608baeaee30830705b491eef771ddfa6e68fd9e91a6798d0adb554051"
+        },
+        "process-exit.json": {
+          "path": "work/revolverator-pal-migration/runs/pal-rapid-02/process-exit.json",
+          "sha256": "7083b4a30b47f750fae3a3fc1ce06bed20657168f8ff01327333fcdb0fe08304"
+        },
+        "original-inputs.json": {
+          "path": "work/revolverator-pal-migration/runs/pal-rapid-02/original-inputs.json",
+          "sha256": "10717ec8c68d25abb97bcf713bf14e2debfe33afcccbedacbdef5cd8e33a3b1d"
+        }
+      },
+      "log": {
+        "path": "work/revolverator-pal-migration/runs/pal-rapid-02/data/openrac-rac1-pal.log",
+        "sha256": "54dbef5d37fdc1770cfbfa7965b3328ea3dbbc5a00b71481329c8f962f2bcfce"
+      },
+      "native_bursts": [
+        {
+          "charge": 0.111,
+          "radius": 2.88,
+          "damage": 8.88,
+          "scale": 1.39,
+          "targets": 2
+        },
+        {
+          "charge": 0.111,
+          "radius": 2.88,
+          "damage": 8.88,
+          "scale": 1.39,
+          "targets": 1
+        }
+      ],
+      "independent_native_collisions_verified": true
+    },
+    {
+      "id": "pal-combatlong-01",
+      "scenario": "combatlong",
+      "map": "Novalis",
+      "passed": true,
+      "counts_as_current_binary_proof": false,
+      "artifacts": {
+        "windows_dll_sha256": "ed4847cc4f3b0daefc115a7acb7667e685e18781e4d9536be4eb1e2a4c743552",
+        "compat_dll_sha256": "9603bd048ae54b63143bc2a9e35596a581c3fc6a6415dd51e7bc81ca5afaf091",
+        "overlay_dll_sha256": "abbb81a5840bf26951333deb799c4613a24033b71edcc8f7d83f3950ec743d31",
+        "weapon_xp_sha256": "6074bae6770ef3647c531c2906d4248c2e309a07cb8b49b94434024a5a95514b",
+        "probe_dll_sha256": "bb62cedbcbff626bdc166cbc4449186bfaf67c5b7f2284c6f3a8cea5d5b14f31",
+        "runtime_sha256": "e720a59d130b4b2289a4eb15cad3e33f739a72a385992db171ef43490205fb0e"
+      },
+      "checks_passed": 41,
+      "checks_failed": 0,
+      "checks": [
+        "native_DeltaSeconds_confirms_the_pinned_client_runs_at60Hz",
+        "owned_base_capacity20",
+        "gold_unowned_price50000_normal_zero_gold",
+        "guarded_teleport_to_native_gold_room_at335cm_interaction_distance",
+        "additional_native304_dome_live",
+        "gold_display_live_before_purchase",
+        "eleven_live_cases_preserve_all_ten_original_gold_offers",
+        "gold_display_matches_enlarged_native_shop_scale",
+        "gold_display_keeps_fixed_orientation",
+        "whole_weapon_visual_bounds_centered_in_dome_at_native_gold_display_height",
+        "cupola_uses_the_nearest_native_gold_case_light_sets_ambient_and_metal_lighting",
+        "purchase_deducts_exactly50000_normal_bolts",
+        "ten_native_gold_flags_and_collection_bits_preserved",
+        "gold_purchase_preserves_ammo_and_xp",
+        "native_walloper_state_independent",
+        "one_native_purchase_and_one_logical_transition",
+        "gold_purchase_plays_complete_native_acquisition",
+        "native_acquisition_renders_the_gold_rotatore_instead_of_the_walloper",
+        "native_acquisition_has_one_visible_ratchet_and_locked_input",
+        "purchase_event_not_replayed",
+        "only_display_retires_sold_dome_remains",
+        "held_model_renders_gold_class2018",
+        "purchase_currency_stable_after_input_release",
+        "native_gold_state_stable_after_purchase",
+        "return_to_original_native_combat_area",
+        "four_original_birdbots_available",
+        "one_native_controller_throw",
+        "blast_charge_matches_hold_until_auto_cap",
+        "exactly_one_native_explosion",
+        "area_damage_reaches_multiple_native_accepted_targets",
+        "native_death_bookkeeping_from_golden_hit",
+        "one_shot_costs_one_round_only",
+        "golden_kills_do_not_credit_native_walloper",
+        "gold_circle_attack_has_a_large_fast_native_drill_pulse",
+        "the_drill_stays_normal_sized_while_holding_an_enemy",
+        "revolverator_earns_actual_native_bolt_based_xp",
+        "native_motion_hooks_stop_only_ratchet_during_recoil",
+        "real_native_wrist_and_drill_sweep_forward_during_throw",
+        "recoil_has_short_bounded_duration_with_no_horizontal_drift",
+        "native_locomotion_resumes_after_recoil",
+        "native_gold_flags_preserved_through_combat"
+      ],
+      "result": {
+        "event": "result",
+        "mode": "combatlong",
+        "pass": true,
+        "checks": 41,
+        "failures": 0,
+        "host_frame": 1366,
+        "tick": 728,
+        "triangle_pulses": 1,
+        "purchase_events": 1,
+        "gold_transitions": 1,
+        "gold_render_views": 567,
+        "launch_blast": 1.0,
+        "recoil_frames": 9,
+        "recoil_seconds": 0.149999,
+        "recoil_motion_samples": 9,
+        "max_recoil_speed": 0.0,
+        "max_recoil_displacement": 0.0,
+        "resumed_motion_samples": 46
+      },
+      "final_state": {
+        "golden": 1,
+        "ammo": 19,
+        "capacity": 20,
+        "xp": 156,
+        "walloper_xp": 0,
+        "bolts": 10000,
+        "held": 18,
+        "requested": 18,
+        "captures": 1,
+        "throws": 1,
+        "impacts": 1,
+        "explosions": 1,
+        "area_hits": 5,
+        "native_hits": 5,
+        "native_deaths": 5
+      },
+      "normal_process_exit_observed": true,
+      "exit_code": 0,
+      "original_input_files_checked": 107,
+      "original_input_files_changed": 0,
+      "actual_tick_timing": {
+        "event": "native_tick_timing",
+        "disc": "pal",
+        "source": "native_DeltaSeconds",
+        "samples": 30,
+        "expected_tick_hz": 60,
+        "mean_seconds": 0.016666667,
+        "minimum_seconds": 0.016666667,
+        "maximum_seconds": 0.016666667,
+        "verified": true
+      },
+      "receipts": {
+        "fixture.json": {
+          "path": "work/revolverator-pal-migration/runs/pal-combatlong-01/fixture.json",
+          "sha256": "ed1fcf0929f62f0a65ef69840caa45b2cc2f00af9d57baf0d0d986dd2ec675d1"
+        },
+        "process-exit.json": {
+          "path": "work/revolverator-pal-migration/runs/pal-combatlong-01/process-exit.json",
+          "sha256": "57475a681afa2c07f3f98cd1426ab9ac0d5308530c28c6a6c72fdb913b4ea2d9"
+        },
+        "original-inputs.json": {
+          "path": "work/revolverator-pal-migration/runs/pal-combatlong-01/original-inputs.json",
+          "sha256": "7b05726b43b6899cebfcab1a0bff7e97cc0bd5ea8b92f3469c4cd9fb4d91f06d"
+        }
+      },
+      "log": {
+        "path": "work/revolverator-pal-migration/runs/pal-combatlong-01/data/openrac-rac1-pal.log",
+        "sha256": "a64fc1dc1a0b8fc8d8376bba72acce57a24d3c85a44970acb4d841da0fe89157"
+      },
+      "native_bursts": [
+        {
+          "charge": 1.0,
+          "radius": 6.0,
+          "damage": 16.0,
+          "scale": 3.0,
+          "targets": 5
+        }
+      ]
+    },
+    {
+      "id": "pal-leveling-01",
+      "scenario": "leveling",
+      "map": "Novalis",
+      "passed": true,
+      "counts_as_current_binary_proof": false,
+      "artifacts": {
+        "windows_dll_sha256": "ed4847cc4f3b0daefc115a7acb7667e685e18781e4d9536be4eb1e2a4c743552",
+        "compat_dll_sha256": "9603bd048ae54b63143bc2a9e35596a581c3fc6a6415dd51e7bc81ca5afaf091",
+        "overlay_dll_sha256": "abbb81a5840bf26951333deb799c4613a24033b71edcc8f7d83f3950ec743d31",
+        "weapon_xp_sha256": "6074bae6770ef3647c531c2906d4248c2e309a07cb8b49b94434024a5a95514b",
+        "probe_dll_sha256": "bb62cedbcbff626bdc166cbc4449186bfaf67c5b7f2284c6f3a8cea5d5b14f31",
+        "runtime_sha256": "e720a59d130b4b2289a4eb15cad3e33f739a72a385992db171ef43490205fb0e"
+      },
+      "checks_passed": 45,
+      "checks_failed": 0,
+      "checks": [
+        "native_DeltaSeconds_confirms_the_pinned_client_runs_at60Hz",
+        "capture_original_session_rules_for_levelup_fixture",
+        "lower_only_session_thresholds_without_seeding_or_awarding_xp",
+        "owned_base_capacity20",
+        "gold_unowned_price50000_normal_zero_gold",
+        "guarded_teleport_to_native_gold_room_at335cm_interaction_distance",
+        "additional_native304_dome_live",
+        "gold_display_live_before_purchase",
+        "eleven_live_cases_preserve_all_ten_original_gold_offers",
+        "gold_display_matches_enlarged_native_shop_scale",
+        "gold_display_keeps_fixed_orientation",
+        "whole_weapon_visual_bounds_centered_in_dome_at_native_gold_display_height",
+        "cupola_uses_the_nearest_native_gold_case_light_sets_ambient_and_metal_lighting",
+        "purchase_deducts_exactly50000_normal_bolts",
+        "ten_native_gold_flags_and_collection_bits_preserved",
+        "gold_purchase_preserves_ammo_and_xp",
+        "native_walloper_state_independent",
+        "one_native_purchase_and_one_logical_transition",
+        "gold_purchase_plays_complete_native_acquisition",
+        "native_acquisition_renders_the_gold_rotatore_instead_of_the_walloper",
+        "native_acquisition_has_one_visible_ratchet_and_locked_input",
+        "purchase_event_not_replayed",
+        "only_display_retires_sold_dome_remains",
+        "held_model_renders_gold_class2018",
+        "purchase_currency_stable_after_input_release",
+        "native_gold_state_stable_after_purchase",
+        "return_to_original_native_combat_area",
+        "four_original_birdbots_available",
+        "one_native_controller_throw",
+        "blast_charge_matches_hold_until_auto_cap",
+        "exactly_one_native_explosion",
+        "area_damage_reaches_multiple_native_accepted_targets",
+        "native_death_bookkeeping_from_golden_hit",
+        "one_shot_costs_one_round_only",
+        "golden_kills_do_not_credit_native_walloper",
+        "gold_circle_attack_has_a_large_fast_native_drill_pulse",
+        "the_drill_stays_normal_sized_while_holding_an_enemy",
+        "revolverator_earns_actual_native_bolt_based_xp",
+        "actual_enemy_xp_triggers_exactly_one_additional_v2_acquisition",
+        "levelup_keeps_gold_model_and_one_locked_visible_ratchet",
+        "native_motion_hooks_stop_only_ratchet_during_recoil",
+        "real_native_wrist_and_drill_sweep_forward_during_throw",
+        "recoil_has_short_bounded_duration_with_no_horizontal_drift",
+        "native_locomotion_resumes_after_recoil",
+        "native_gold_flags_preserved_through_combat"
+      ],
+      "result": {
+        "event": "result",
+        "mode": "leveling",
+        "pass": true,
+        "checks": 45,
+        "failures": 0,
+        "host_frame": 1411,
+        "tick": 568,
+        "triangle_pulses": 1,
+        "purchase_events": 1,
+        "gold_transitions": 1,
+        "gold_render_views": 406,
+        "launch_blast": 0.111111,
+        "recoil_frames": 9,
+        "recoil_seconds": 0.149999,
+        "recoil_motion_samples": 9,
+        "max_recoil_speed": 0.0,
+        "max_recoil_displacement": 0.0,
+        "resumed_motion_samples": 48
+      },
+      "final_state": {
+        "golden": 1,
+        "ammo": 19,
+        "capacity": 20,
+        "xp": 117,
+        "walloper_xp": 0,
+        "bolts": 10012,
+        "held": 18,
+        "requested": 18,
+        "captures": 1,
+        "throws": 1,
+        "impacts": 1,
+        "explosions": 1,
+        "area_hits": 3,
+        "native_hits": 3,
+        "native_deaths": 3
+      },
+      "normal_process_exit_observed": true,
+      "exit_code": 0,
+      "original_input_files_checked": 107,
+      "original_input_files_changed": 0,
+      "actual_tick_timing": {
+        "event": "native_tick_timing",
+        "disc": "pal",
+        "source": "native_DeltaSeconds",
+        "samples": 30,
+        "expected_tick_hz": 60,
+        "mean_seconds": 0.016666667,
+        "minimum_seconds": 0.016666667,
+        "maximum_seconds": 0.016666667,
+        "verified": true
+      },
+      "receipts": {
+        "fixture.json": {
+          "path": "work/revolverator-pal-migration/runs/pal-leveling-01/fixture.json",
+          "sha256": "d46155193e3caca7a585db352212d8538b4ebec6af0317a95deaaf4adc2e5d11"
+        },
+        "process-exit.json": {
+          "path": "work/revolverator-pal-migration/runs/pal-leveling-01/process-exit.json",
+          "sha256": "72e619cf2098b3d2c9d2422d7fa4d4ca04f6ea446dd5aa82f49eebebc9f512a1"
+        },
+        "original-inputs.json": {
+          "path": "work/revolverator-pal-migration/runs/pal-leveling-01/original-inputs.json",
+          "sha256": "7b05726b43b6899cebfcab1a0bff7e97cc0bd5ea8b92f3469c4cd9fb4d91f06d"
+        }
+      },
+      "log": {
+        "path": "work/revolverator-pal-migration/runs/pal-leveling-01/data/openrac-rac1-pal.log",
+        "sha256": "3cea37745f375a0fdb81f8d87e52f8f124b96a53392792f73871b49414b5a78e"
+      },
+      "native_bursts": [
+        {
+          "charge": 0.111,
+          "radius": 2.88,
+          "damage": 8.88,
+          "scale": 1.39,
+          "targets": 3
+        }
+      ]
+    },
+    {
+      "id": "pal-icons-clean-01",
+      "scenario": "shop",
+      "map": "Novalis",
+      "passed": true,
+      "counts_as_current_binary_proof": false,
+      "artifacts": {
+        "windows_dll_sha256": "3d9ca9838d655fd15155dc6f2cd6a449e4e2e39de42d1b9ba45ac62875c61a91",
+        "compat_dll_sha256": "9603bd048ae54b63143bc2a9e35596a581c3fc6a6415dd51e7bc81ca5afaf091",
+        "overlay_dll_sha256": "abbb81a5840bf26951333deb799c4613a24033b71edcc8f7d83f3950ec743d31",
+        "probe_dll_sha256": "ee72eae9303f784b7f8657d78dbe2e5f58da4c2f3c88f88329d0f3f84eefaac4",
+        "runtime_sha256": "e720a59d130b4b2289a4eb15cad3e33f739a72a385992db171ef43490205fb0e"
+      },
+      "checks_passed": 24,
+      "checks_failed": 0,
+      "checks": [
+        "native_DeltaSeconds_confirms_the_pinned_client_runs_at60Hz",
+        "owned_base_capacity20",
+        "gold_unowned_price50000_normal_zero_gold",
+        "guarded_teleport_to_native_gold_room_at335cm_interaction_distance",
+        "additional_native304_dome_live",
+        "gold_display_live_before_purchase",
+        "eleven_live_cases_preserve_all_ten_original_gold_offers",
+        "gold_display_matches_enlarged_native_shop_scale",
+        "gold_display_keeps_fixed_orientation",
+        "whole_weapon_visual_bounds_centered_in_dome_at_native_gold_display_height",
+        "cupola_uses_the_nearest_native_gold_case_light_sets_ambient_and_metal_lighting",
+        "purchase_deducts_exactly50000_normal_bolts",
+        "ten_native_gold_flags_and_collection_bits_preserved",
+        "gold_purchase_preserves_ammo_and_xp",
+        "native_walloper_state_independent",
+        "one_native_purchase_and_one_logical_transition",
+        "gold_purchase_plays_complete_native_acquisition",
+        "native_acquisition_renders_the_gold_rotatore_instead_of_the_walloper",
+        "native_acquisition_has_one_visible_ratchet_and_locked_input",
+        "purchase_event_not_replayed",
+        "only_display_retires_sold_dome_remains",
+        "held_model_renders_gold_class2018",
+        "purchase_currency_stable_after_input_release",
+        "native_gold_state_stable_after_purchase"
+      ],
+      "result": {
+        "event": "result",
+        "mode": "shop",
+        "pass": true,
+        "checks": 24,
+        "failures": 0,
+        "host_frame": 949,
+        "tick": 311,
+        "triangle_pulses": 1,
+        "purchase_events": 1,
+        "gold_transitions": 1,
+        "gold_render_views": 150,
+        "launch_blast": 0.0,
+        "recoil_frames": 0,
+        "recoil_seconds": 0.0,
+        "recoil_motion_samples": 0,
+        "max_recoil_speed": 0.0,
+        "max_recoil_displacement": 0.0,
+        "resumed_motion_samples": 0
+      },
+      "final_state": {
+        "golden": 1,
+        "ammo": 20,
+        "capacity": 20,
+        "xp": 0,
+        "walloper_xp": 0,
+        "bolts": 10000,
+        "held": 18,
+        "requested": 18,
+        "captures": 0,
+        "throws": 0,
+        "impacts": 0,
+        "explosions": 0,
+        "area_hits": 0,
+        "native_hits": 0,
+        "native_deaths": 0
+      },
+      "normal_process_exit_observed": true,
+      "exit_code": 0,
+      "original_input_files_checked": 107,
+      "original_input_files_changed": 0,
+      "actual_tick_timing": {
+        "event": "native_tick_timing",
+        "disc": "pal",
+        "source": "native_DeltaSeconds",
+        "samples": 30,
+        "expected_tick_hz": 60,
+        "mean_seconds": 0.016666667,
+        "minimum_seconds": 0.016666667,
+        "maximum_seconds": 0.016666667,
+        "verified": true
+      },
+      "receipts": {
+        "fixture.json": {
+          "path": "work/revolverator-pal-migration/runs/pal-icons-clean-01/fixture.json",
+          "sha256": "fc1f28c6104c72c88590f5bd3d999dd966ca3e05822653e056e1e14dcfb5c7f3"
+        },
+        "process-exit.json": {
+          "path": "work/revolverator-pal-migration/runs/pal-icons-clean-01/process-exit.json",
+          "sha256": "ba49e4419fc8624e1f5e05c24ffcc120cbdbf9d149fa04e3f17d59cd3528a7cb"
+        },
+        "original-inputs.json": {
+          "path": "work/revolverator-pal-migration/runs/pal-icons-clean-01/original-inputs.json",
+          "sha256": "7b05726b43b6899cebfcab1a0bff7e97cc0bd5ea8b92f3469c4cd9fb4d91f06d"
+        }
+      },
+      "log": {
+        "path": "work/revolverator-pal-migration/runs/pal-icons-clean-01/data/openrac-rac1-pal.log",
+        "sha256": "6b5ac9e808c913e94b2d29e8d20c3576e7959b3ab5cb8259a78d0702c8a3baa5"
+      }
+    }
+  ],
+  "historical_scope": "Earlier hashes are regression evidence only. They are not relabeled as tests of the current DLL.",
+  "companion": {
+    "version": "0.6.4",
+    "abi": 4,
+    "windows_dll_sha256": "29406690a04910737cc14b02d1ef1cdea39d3c26650bf51b72ca71a1fbf758ea",
+    "separate_validation": "Weapon XP has its own native and host receipts. Current combat/switch use0.6.4; the Revo reload fixture used the earlier companion hash recorded in its artifacts.",
+    "validation_receipt": {
+      "path": "work/revolverator-golden/weapon-xp/docs/validation/pal-0.10.0-0.6.4.json",
+      "sha256": "1b45fd7ae782944cc2c9d5c1a71f4278031a8e7d8b11b4a185528961beb4d45c"
+    }
+  },
+  "host_tests": {
+    "native_adapter_windows": {
+      "passed": 31,
+      "failed": 0,
+      "receipt": {
+        "path": "work/revolverator-pal-migration/ctest-pal-031-final.log",
+        "sha256": "2920005cb59ce7c4799ddb81c3b9f0a0b08a8c9b82f43f168888c7e9e04df7c2"
+      }
+    },
+    "public_tree_windows": {
+      "passed": 52,
+      "failed": 0,
+      "receipt": {
+        "path": "work/revolverator-pal-publication/build-pal031-windows/Testing/Temporary/LastTest.log",
+        "sha256": "b77edf2bb460fdfd1a99a417e3f959f86f1d98a0e49f81d0ffa510cab7ef85a6"
+      }
+    },
+    "public_tree_linux": {
+      "passed": 52,
+      "failed": 0,
+      "full_run_passed": 52,
+      "full_run_failed": 0,
+      "full_run_receipt": {
+        "path": "work/publication-tools/pal031-linux-tests-final.log",
+        "sha256": "c5ebe4b701a11b339ad9747c5e8451eb739533b4d44832e166b8c521e67c4938",
+        "bytes": 6398
+      },
+      "available_receipt_scope": "Complete clean final52-group CTest execution after LF checkout normalization; no runtime code changes.",
+      "historical_first_attempt": {
+        "passed": 51,
+        "failed": 1,
+        "receipt": {
+          "path": "work/publication-tools/pal031-linux-tests.log",
+          "sha256": "18575b6691151e4568009ccdcc1b3e5c46b8bc5e9c6e1f94e0e3e985b47a4174"
+        },
+        "reason": "Windows-checkout CRLF in the TSV fixture; fixed by LF normalization before the complete final run."
+      }
+    }
+  },
+  "asset_validation": {
+    "importer": {
+      "passed": 21,
+      "failed": 0,
+      "receipt": {
+        "path": "work/revolverator-pal-migration/level-check/levels-check.log",
+        "sha256": "519034c72fc53074a1760cc02fbe4dd6eea8aee9e303723a454fe763cecf6429"
+      },
+      "scope": "Import/draw validation, not gameplay on21 levels."
+    },
+    "skeletons": {
+      "gameplay_levels": 19,
+      "walloper_skins_preserved": true,
+      "gold_geometry_and_uv_preserved": true,
+      "hero_joints_53_54_56_match": true,
+      "receipt": {
+        "path": "work/revolverator-pal-migration/review/pal-asset-skeletons.json",
+        "sha256": "b902b2cf0afa47165f4941f6cac2849b5721d31b74ffa20ca4d388b0a2ddef89"
+      },
+      "scope": "Static attachment/skeleton evidence only."
+    }
+  },
+  "historical_visual_review": {
+    "fixture": "pal-icons-clean-01",
+    "windows_dll_sha256": "3d9ca9838d655fd15155dc6f2cd6a449e4e2e39de42d1b9ba45ac62875c61a91",
+    "gold_shop_checks_passed": 24,
+    "native_input_reports": 60,
+    "wheel_mode8_frames": 60,
+    "native_input_forced": false,
+    "manual_screenshot_review_recorded": true,
+    "review": "Inspected native frame1055.png: clean Gold background and black drill glyph in the actual weapon wheel; no top/left fringe. Native ammunition HUD uses cartridge, separate from weapon tile.",
+    "reference_checks": {
+      "gold_active0eq4": true,
+      "gold_active1eq4": true,
+      "ammo2diff0": true,
+      "ammo3diff0": true
+    },
+    "receipt": {
+      "path": "work/revolverator-pal-migration/runs/pal-icons-clean-01/icon-gold-report.json",
+      "sha256": "1ad2537a5c63df698117371e26d254bb824024764a5002d25bc8fa581a4c57e0"
+    },
+    "screenshot": {
+      "path": "work/revolverator-pal-migration/runs/pal-icons-clean-01/shots/frame1055.png",
+      "sha256": "66cdd33496a4f121dd1d96d0c3feb5707a0a09bf4bf93f162bc9509c7cd8ccd7"
+    },
+    "scope": "Recorded review of this screenshot/build; not every HUD state or a current-binary visual campaign pass."
+  },
+  "save_chain": {
+    "created_natively_on_pal": true,
+    "copied_ntsc_save_bytes": false,
+    "producer_fixture": "pal-save-03",
+    "producer_windows_dll_sha256": "3d9ca9838d655fd15155dc6f2cd6a449e4e2e39de42d1b9ba45ac62875c61a91",
+    "consumer_fixture": "pal-reload-02",
+    "consumer_windows_dll_sha256": "bd880b9a0dbe788c83a6022a614b4b569c36284660677e02a10b57071622a5aa",
+    "state": {
+      "golden": true,
+      "ammo": 7,
+      "xp": 117,
+      "bolts": 10058,
+      "equipped": 65554,
+      "quick": [
+        65554,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "sidecar_crc_valid": true,
+    "sidecar": {
+      "path": "work/revolverator-pal-migration/runs/pal-save-03/cards/BESCES-50916RATCHET/save0.bin.arsenal",
+      "sha256": "d155329cda48771a220bec4dbb00537ddc86762de2ff8ee50eeaad74f130f11c"
+    },
+    "scope": "Producer/consumer hashes are intentionally explicit; this is not a fresh save written by the current DLL."
+  },
+  "not_verified": [
+    "Full campaign, every planet, every enemy/boss and every native weapon.",
+    "Current-binary NTSC gameplay and native Linux/macOS gameplay.",
+    "Automatic PAL/NTSC save migration; regional cards remain separate.",
+    "Current DLL replays of historical full-charge, V2 acquisition, rapid, fresh-card creation and icon-review fixtures.",
+    "Every weapon level throughV10 or long-term progression balance in a complete playthrough.",
+    "Native timeout gameplay in rapid mode; timeout exclusion has separate host coverage."
+  ],
+  "excluded_failed_fixtures": {
+    "pal-gold-shop-01": "Observer loaded before the gameplay mod; its hook counters were not trustworthy.",
+    "pal-rapid-01": "The fixture assumed a miss, while the native flight actually collided a second time.",
+    "pal-save-01": "Incorrect NTSC driver-field offsets on PAL prevented readiness observation.",
+    "pal-save-02": "Native PAL card creation succeeded, but the old HUD allocator could not supply the full-save buffer.",
+    "pal-reload-01": "Data restored, but the old data-only receipt did not prove restoration of the selected weapon/favourites."
+  }
+}
