@@ -1,0 +1,42 @@
+name: Clank PAL build and test
+on:
+  push:
+    paths: ['clank-unleashed/**', '.github/workflows/clank.yml']
+  pull_request:
+    paths: ['clank-unleashed/**', '.github/workflows/clank.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  standalone:
+    name: Clank / SDK 1.10.1 / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-24.04]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Fetch pinned SDK
+        run: python clank-unleashed/tools/fetch_sdk.py
+      - name: Configure standalone
+        run: cmake -S clank-unleashed -B build-clank -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON -DCLANK_BUILD_QA=OFF
+      - name: Build
+        run: cmake --build build-clank --config Release --parallel
+      - name: Test
+        run: ctest --test-dir build-clank -C Release --output-on-failure
+      - name: Package audited sources
+        run: python clank-unleashed/tools/package_source.py dist-clank/clank-unleashed-source.zip
+      - name: Package Windows mod
+        if: runner.os == 'Windows'
+        run: python clank-unleashed/.sdk/openrac-mod-sdk-1.10.1/tools/package_mod.py build-clank/package/clank_unleashed -o dist-clank
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: clank-${{ matrix.os }}
+          path: |
+            build-clank/Testing/Temporary/LastTest.log
+            dist-clank/

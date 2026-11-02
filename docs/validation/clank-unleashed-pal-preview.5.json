@@ -1,0 +1,247 @@
+{
+  "format": 1,
+  "mod": "clank-unleashed",
+  "version": "0.1.0-preview.5",
+  "date": "2026-11-02",
+  "status": "PAL preview",
+  "release": "https://github.com/noire342/openrac-mods/releases/tag/clank-unleashed-v0.1.0-preview.5",
+  "openrac": {
+    "version": "0.10.0",
+    "commit": "d015ea1c6925de90b4be91ddb349af83361d9d4b",
+    "exe_sha256": "e720a59d130b4b2289a4eb15cad3e33f739a72a385992db171ef43490205fb0e",
+    "disc": "PAL Europe v2.00 SCES_509.16"
+  },
+  "dll_sha256": "a7902f67247a56b9d87cb62941ca58b5db4d2f6bd0e393e889a2bc0e48a37cc4",
+  "artifacts": [
+    {
+      "path": "work/publication-skill-cinematic/dist/clank-unleashed-0.1.0-preview.5-windows-x86_64.zip",
+      "sha256": "93a60187820427cc89fd831da61a4dd959ccdaa4c29dde8d6a2e426ffa52171f"
+    },
+    {
+      "path": "work/publication-skill-cinematic/dist/clank-unleashed-0.1.0-preview.5-source.zip",
+      "sha256": "7ea642aa59f9284d3defc19a214ab87023ba31207dc2ab197671f0e57a89f8ce"
+    }
+  ],
+  "source_files": 83,
+  "host_tests": {
+    "passed": 6,
+    "failed": 0,
+    "standalone_qa_plugin": false,
+    "evidence": [
+      {
+        "path": "work/clank-lab/pal-v5-test.log",
+        "sha256": "ef154806b458cdc04c4b7d4f0f15e4791a904ef8291b538c65c967cc5bb23a60"
+      },
+      {
+        "path": "work/clank-lab/pal-preview5-release-configure.log",
+        "sha256": "615f63097ae48d4008f1d33d1b5ebe6e491db98fdc9fc4d667fcfe78f1c18302"
+      },
+      {
+        "path": "work/clank-lab/pal-preview5-release-build.log",
+        "sha256": "ee35816d41ab7ba141029969489e44223f1de4d4a47d69f67ae8b7ec9273ce3f"
+      },
+      {
+        "path": "work/clank-lab/pal-preview5-release-test.log",
+        "sha256": "a44c47696a01cb1a6004ec05d34cfde72574507736ad955c85d733d419666209"
+      }
+    ]
+  },
+  "native_runs": [
+    {
+      "name": "v5-release-native",
+      "settings": {
+        "warp": "222.745,182.583,26.3",
+        "state": "",
+        "level": 2,
+        "press": "100:4000:5,k30:f08:5,c90:1002:3,c180:1000:100,c220:1000:15:128:0,c350:8:3,c500:8:3,c1400:1002:3,c1500:1000:3",
+        "oxygen": true,
+        "seconds": 0.0,
+        "distance": 5.0,
+        "audio": true
+      },
+      "frames": 2811,
+      "clank_frames": 1223,
+      "paused_frames": 154,
+      "paused_values": [
+        7811
+      ],
+      "native_11_unit_steps": 875,
+      "full_displayed_charge": 9989,
+      "native_warning_handles": [
+        39,
+        40,
+        41,
+        43,
+        44
+      ],
+      "no_native_oxygen_texture": true,
+      "glide_frames": 0,
+      "final_body_class": 0,
+      "final_health": 4,
+      "exit_code": null,
+      "evidence": [
+        {
+          "path": "work/clank-lab/qa-pal-v5-release-native/run.json",
+          "sha256": "b8ca0fe8a7bd2af4d2a5d676301cc2f54fdee899f76c0da8d3b6a9745434d399"
+        },
+        {
+          "path": "work/clank-lab/qa-pal-v5-release-native/probe.jsonl",
+          "sha256": "6d5de4fb5e24b7d1fc2d7692d4ea67aa81be53b30a09fcf09b4bf8a11dc865c5"
+        },
+        {
+          "path": "work/clank-lab/qa-pal-v5-release-native/trace.jsonl",
+          "sha256": "044f2d81649ed9cf8ff5849f69249da05c537df5fb5284e00bf8f57b051e3444"
+        },
+        {
+          "path": "work/clank-lab/qa-pal-v5-release-native/data/openrac-rac1-pal.log",
+          "sha256": "11d05b0902d3bcc23839c8a73abd55a45745507c3e5d4cd68fde571dc8df265f"
+        }
+      ]
+    },
+    {
+      "name": "v5-release-return",
+      "settings": {
+        "warp": "222.745,182.583,26.3",
+        "audio": false,
+        "seconds": 0.0,
+        "state": "",
+        "level": 2,
+        "distance": 5.0,
+        "press": "100:4000:5,k30:f08:5,c90:1002:3,c650:1000:3",
+        "oxygen": true
+      },
+      "frames": 1956,
+      "clank_frames": 560,
+      "paused_frames": 0,
+      "paused_values": [],
+      "native_11_unit_steps": 149,
+      "full_displayed_charge": 10000,
+      "native_warning_handles": [],
+      "no_native_oxygen_texture": true,
+      "glide_frames": 0,
+      "final_body_class": 0,
+      "final_health": 4,
+      "exit_code": null,
+      "evidence": [
+        {
+          "path": "work/clank-lab/qa-pal-v5-release-return/run.json",
+          "sha256": "8544c6c693f6d70b4c56685874dd6d2153847e5fbde9a2e2c925322d023142b2"
+        },
+        {
+          "path": "work/clank-lab/qa-pal-v5-release-return/probe.jsonl",
+          "sha256": "cc84996419bee499e2525cfbfab6d1d815db7b54baff5457a691d725fee8e9fe"
+        },
+        {
+          "path": "work/clank-lab/qa-pal-v5-release-return/trace.jsonl",
+          "sha256": "34a5969054c5e243256d545aa889b52275cf4f28862ad05550c00e9eb380a3be"
+        },
+        {
+          "path": "work/clank-lab/qa-pal-v5-release-return/data/openrac-rac1-pal.log",
+          "sha256": "ca1143befdc37f48207169c683a8716f41fca2507f4697275841019dd0708ac0"
+        }
+      ]
+    },
+    {
+      "name": "v5-release-shutdown",
+      "settings": {
+        "seconds": 0.0,
+        "press": "100:4000:5,k30:f08:5,c90:1002:3,c140:0:65:255:128,c230:1000:140,c270:1000:15:128:0,c420:4000:4,c440:4000:60",
+        "level": 1,
+        "distance": 25.0,
+        "audio": false,
+        "state": "",
+        "warp": "",
+        "oxygen": false
+      },
+      "frames": 1163,
+      "clank_frames": 610,
+      "paused_frames": 0,
+      "paused_values": [],
+      "native_11_unit_steps": 0,
+      "full_displayed_charge": 0,
+      "native_warning_handles": [],
+      "no_native_oxygen_texture": true,
+      "glide_frames": 41,
+      "final_body_class": 87,
+      "final_health": 4,
+      "exit_code": 0,
+      "evidence": [
+        {
+          "path": "work/clank-lab/qa-pal-v5-release-shutdown/run.json",
+          "sha256": "e97ba06f762147d7ce9288a7ca7cb4dca4034e96fef272078c2d61c0074e0917"
+        },
+        {
+          "path": "work/clank-lab/qa-pal-v5-release-shutdown/probe.jsonl",
+          "sha256": "69e033519ed5fa7b21f6459759261d5b01f4356b21c89ce3db38067e2724d077"
+        },
+        {
+          "path": "work/clank-lab/qa-pal-v5-release-shutdown/trace.jsonl",
+          "sha256": "9644f76e88e21cda3ad8c9f6a353efa9d089ecff080479c1374ae1a9d92426cc"
+        },
+        {
+          "path": "work/clank-lab/qa-pal-v5-release-shutdown/data/openrac-rac1-pal.log",
+          "sha256": "810819e6ceda3a825cde1657973eefe86644e4ee7e1fca5e568142300a0c4a23"
+        }
+      ]
+    }
+  ],
+  "audio_output": {
+    "baseline": {
+      "frames": 144000,
+      "peak": 0.0,
+      "rms": 0.0,
+      "channel_rms": [
+        0.0,
+        0.0
+      ],
+      "nonzero_frames": 0,
+      "near_full_scale_samples": 0,
+      "nonfinite_samples": 0
+    },
+    "capture": {
+      "frames": 192000,
+      "peak": 0.303253173828125,
+      "rms": 0.027264678814756478,
+      "channel_rms": [
+        0.025770630692797728,
+        0.02868100443567298
+      ],
+      "nonzero_frames": 191971,
+      "near_full_scale_samples": 0,
+      "nonfinite_samples": 0
+    },
+    "seconds": 4.0,
+    "endpoint_unchanged": true,
+    "microphone_used": false,
+    "evidence": [
+      {
+        "path": "work/clank-lab/v5-audio-baseline/capture.json",
+        "sha256": "70035c7edd69b377613168005afc183f9d7c485085b7373a4f53ffb0e5ddb4d6"
+      },
+      {
+        "path": "work/clank-lab/v5-release-output/capture.json",
+        "sha256": "35b81a35f9abc585edefe366d902a1c5ab8820a5877a9ca53fd55d8a33b50f48"
+      }
+    ]
+  },
+  "visual_evidence": [
+    {
+      "path": "work/clank-lab/qa-pal-v5-release-native/shots/frame1440.png",
+      "sha256": "00fabc55c66b5ebfbec30e64ccaa0ed2b3b4df569c0c482aab02f57d29f57ce9"
+    },
+    {
+      "path": "work/clank-lab/qa-pal-v5-release-native/shots/frame1800.png",
+      "sha256": "04fcd79753ed6d18c58a926874adf88cbcea5dc5280fd84cf6c97a3c6c66b97c"
+    },
+    {
+      "path": "work/clank-lab/qa-pal-v5-release-native/shots/frame2070.png",
+      "sha256": "00f971e15d7b3ffd9406749dda5b6ca3670a7e7ddd1abeb3eb756961907d54d0"
+    }
+  ],
+  "limits": [
+    "Preview native fixtures cover Aridia and Novalis, not the whole campaign or every mod stack.",
+    "Output loopback is not acoustic speaker/headphone listening proof. Captured game media is not distributed.",
+    "Detached saves and live hot-unload are not certified. Terminal process teardown is release-only.",
+    "Older development fixtures, including the failed shutdown candidate, are excluded from this exact-DLL proof."
+  ]
+}

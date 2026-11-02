@@ -1,0 +1,55 @@
+{
+  "format": 2,
+  "id": "clank-unleashed",
+  "name": "Clank libero",
+  "version": "0.1.0-preview.5",
+  "author": "noire342",
+  "homepage": "https://github.com/noire342/openrac-mods/tree/main/clank-unleashed",
+  "description": "L3 + Triangolo stacca Clank e passa il controllo a lui. Triangolo vicino a Ratchet permette di risalire sulla sua schiena.",
+  "license": "GPL-3.0-or-later",
+  "api": "1.9",
+  "games": {
+    "rac1": [
+      "pal"
+    ]
+  },
+  "hooks": [
+    "rac1.level.load_gameplay"
+  ],
+  "load": {
+    "after": [
+      "weapon-xp",
+      "cinematic-journeys"
+    ]
+  },
+  "settings": [
+    {
+      "key": "distance_oxygen",
+      "name": "Energia lontano da Ratchet",
+      "type": "bool",
+      "default": false,
+      "description": "Fuori dal raggio impostato, Clank consuma energia. La cella elettrica lampeggia in rosso quando la carica è bassa. A zero ritorna al checkpoint; vicino a Ratchet si ricarica in 3 secondi."
+    },
+    {
+      "key": "maximum_distance",
+      "name": "Distanza massima da Ratchet",
+      "type": "float",
+      "default": 25.0,
+      "min": 5.0,
+      "max": 100.0,
+      "step": 1.0,
+      "description": "Raggio in unità di gioco oltre il quale si consuma energia, se la meccanica è attiva."
+    },
+    {
+      "key": "oxygen_seconds",
+      "name": "Autonomia fuori dal raggio (0 = originale)",
+      "type": "float",
+      "default": 0.0,
+      "min": 0.0,
+      "max": 120.0,
+      "step": 1.0,
+      "description": "0 usa esattamente il consumo nativo di Ratchet. Per un tempo personalizzato scegli da 1 a 120 secondi. In pausa il consumo si ferma."
+    }
+  ],
+  "homepage": "https://github.com/noire342/openrac-mods/tree/main/clank-unleashed"
+}

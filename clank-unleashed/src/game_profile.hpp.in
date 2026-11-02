@@ -1,0 +1,48 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Generated from compatibility.json and the mod manifest by CMake.
+#pragma once
+#include <cstdint>
+#include <array>
+namespace clank::profile {
+inline constexpr char region[]="@profile_region@";
+inline constexpr char version[]="@profile_version@";
+inline constexpr char payload_sha256[]="@profile_payload_sha256@";
+inline constexpr std::uint64_t disc_bytes=@profile_disc_bytes@ULL;
+inline constexpr std::uint32_t hero=@profile_hero@;
+inline constexpr std::uint32_t class_count=@profile_resident_class_count@;
+inline constexpr std::uint32_t class_map=@profile_class_to_slot@;
+inline constexpr std::uint32_t class_resources=@profile_class_resources@;
+inline constexpr std::uint32_t moby_pool=@profile_moby_pool@;
+inline constexpr char register_class[]="@profile_register_class@";
+inline constexpr char on_killed[]="@profile_on_killed@";
+inline constexpr char vehicle_update[]="@profile_vehicle_update@";
+inline constexpr char terrain_update[]="@profile_terrain_update@";
+inline constexpr char exit_full[]="@profile_exit_full@";
+inline constexpr char hud_show[]="@profile_hud_show@";
+inline constexpr char hud_remove[]="@profile_hud_remove@";
+inline constexpr char scale_ticks[]="@profile_hud_scale_ticks@";
+inline constexpr char gadgebot_icon_sha256[]="@profile_hud_icon_sha256@";
+inline constexpr std::uint32_t game_time_step=@profile_hud_game_time_step@;
+inline constexpr std::uint32_t air_offset=@profile_hud_air_offset@;
+inline constexpr char icon_lookup[]="@profile_hud_icon_lookup@";
+inline constexpr char oxygen_warning[]="@profile_hud_warning@";
+inline constexpr std::uint32_t rendered_frame_count=@profile_hud_rendered_frame_count@;
+inline constexpr std::uint32_t frame_scale_sq=@profile_hud_frame_scale_sq@;
+inline constexpr char allocate_voice[]="@profile_hud_allocate_voice@";
+inline constexpr std::uint32_t voice_pool=@profile_hud_voice_pool@;
+inline constexpr char alarm_bank_load[]="@profile_hud_alarm_bank_load@";
+inline constexpr char alarm_bank_unload[]="@profile_hud_alarm_bank_unload@";
+inline constexpr char alarm_voice_kill[]="@profile_hud_alarm_voice_kill@";
+inline constexpr char alarm_bank_sha256[]="@profile_hud_alarm_bank_sha256@";
+inline constexpr char alarm_definition_sha256[]="@profile_hud_alarm_definition_sha256@";
+inline constexpr char hud_align[]="@profile_hud_align@";
+inline constexpr char hud_slide[]="@profile_hud_slide@";
+inline constexpr char hud_frame[]="@profile_hud_frame@";
+inline constexpr char hud_sprite[]="@profile_hud_sprite@";
+inline constexpr char hud_rect[]="@profile_hud_rect@";
+inline constexpr std::uint32_t meter_width=@profile_hud_width@;
+inline constexpr std::uint32_t meter_height=@profile_hud_height@;
+struct Companion {std::uint32_t id;std::uint8_t sequences;};
+inline constexpr std::array<Companion,@companion_count@> companions{{@profile_companions@}};
+inline constexpr const char* full_functions[]{"@profile_state@","@profile_motion@","@profile_transitions@","@profile_hit@","@profile_capsule@"};
+}

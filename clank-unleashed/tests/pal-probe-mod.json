@@ -1,0 +1,12 @@
+{
+  "format": 2,
+  "id": "clank-pal-qa",
+  "name": "Clank PAL isolated QA probe",
+  "version": "0.0.1",
+  "author": "Local QA",
+  "description": "Private PAL telemetry and explicitly enabled fixtures; never ship this plugin.",
+  "license": "GPL-3.0-or-later",
+  "api": "1.9",
+  "games": {"rac1": ["pal"]},
+  "load": {"after": ["clank-unleashed"]}
+}

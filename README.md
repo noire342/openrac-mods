@@ -6,7 +6,16 @@ My Ratchet & Clank mods for the native OpenRAC port. Revolverator adds a separat
 weapon alongside the original Walloper, with native menus, 20 rounds and its own
 progress. Weapon Experience adds ten persistent weapon levels.
 Skill Points: RetroAchievements brings the achievement set into the native
-Skill Points menu. Cinematic Journeys prevents accidental cutscene skipping.
+Skill Points menu. Cinematic Journeys prevents accidental cutscene skipping. Clank Unleashed adds
+optional independent Clank control and an electrical distance reserve on PAL.
+
+## Install Clank Unleashed / Clank libero (PAL preview)
+
+Use **official OpenRAC 0.10.0**, Windows x64, and your own **PAL Europe v2.00 / SCES_509.16** disc and extracted data. Add this repository in the launcher's Mods page, select **Clank libero**, install it and enable it. If an older NTSC preview is installed, update it first.
+
+[Download preview.5](https://github.com/noire342/openrac-mods/releases/tag/clank-unleashed-v0.1.0-preview.5) or import `clank-unleashed-0.1.0-preview.5-windows-x86_64.zip` locally. **L3 + Triangle** detaches Clank; **Triangle near Ratchet** rejoins him. Native melee, glide/propeller and the Gadgebot wheel are retained. The optional distance reserve uses the original glass HUD and electrical particles, with a native audible alarm. Its default consumption matches Ratchet's original oxygen rate.
+
+This is a preview tested in Aridia and Novalis, not a full-campaign certification. It includes no disc artwork or audio and needs no engine patch. See [controls, settings and building](clank-unleashed/README.md) and [validation scope](clank-unleashed/docs/validation-pal-0.10.0.md).
 
 ## Install Skill Points and Cinematic Journeys
 
@@ -56,6 +65,7 @@ not make it PAL-compatible.
 | [Weapon Experience](weapon-xp/README.md) |0.6.4 | Optional API v4 progression companion with PAL HUD/camera corrections |
 | [Skill Points: RetroAchievements](skill-points-ra/README.md) |0.1.3 | Native menu, offline rules and read-only/event C API v1 |
 | [Cinematic Journeys](cinematic-journeys/README.md) |0.1.1 | Cutscene protection and configurable original flight animation |
+| [Clank Unleashed](clank-unleashed/README.md) |0.1.0-preview.5 PAL | Independent native Clank control, Gadgebot wheel and optional electrical reserve |
 | [Arsenal compatibility](arsenal-compat/README.md) |0.1.0 | Private bundled native-hook utility |
 | [File overlay](arsenal-file-overlay/README.md) |0.1.0 | Private bundled read-only manifest alias utility |
 

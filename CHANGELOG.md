@@ -1,5 +1,13 @@
 # Changelog
 
+## Clank Unleashed 0.1.0-preview.5 — 2026-11-02
+
+- Add standalone PAL 0.10.0 Clank control with L3+Triangle detach and Triangle rejoin.
+- Preserve native melee, movement, glide propeller and Gadgebot command wheel.
+- Add optional electrical distance reserve in the original HUD, with an independent counter, electrical slide-out and a native alarm imported from the player's disc when a planet lacks it.
+- Ship source snapshots, exact build/native validation and checksums; no disc assets are included. Aridia/Novalis proof does not certify the full campaign.
+
+
 ## Rotatore / Revolverator 0.3.1 and Weapon Experience 0.6.4
 
 - Make PAL Europe v2.00 on official Windows OpenRAC 0.10 the reference region,
