@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 3.20)
 project(space_voyages LANGUAGES C CXX)
+# Keep the exact corresponding baseline source bytes. GCC diagnoses its compact
+# one-line statements differently from MSVC; retain that warning without making
+# it fatal in the existing strict CPU fixtures. All other strict warnings stay.
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+ add_compile_options(-Wno-error=misleading-indentation)
+endif()
 if(NOT OpenRACMod_DIR)
  set(OpenRACMod_DIR "${CMAKE_CURRENT_SOURCE_DIR}/support/sdk-1.14/cmake")
 endif()
