@@ -9,6 +9,18 @@ Skill Points: RetroAchievements brings the achievement set into the native
 Skill Points menu. Cinematic Journeys prevents accidental cutscene skipping. Clank Unleashed adds
 optional independent Clank control and an electrical distance reserve on PAL.
 
+## Space Voyages 0.8.0 (separate bridge required)
+
+[Space Voyages](space-voyages/README.md) adds free interplanetary ship flight,
+asteroid fields, collisions, engine flames and armed-ship lasers. The public
+[0.8.0 release](https://github.com/noire342/openrac-mods/releases/tag/space-voyages-v0.8.0)
+contains the unchanged PAL flight baseline, corresponding source, receipts and
+checksums. **It requires a separately built SDK 1.14-02 OpenRAC bridge and scene
+resources generated from your own disc; official OpenRAC 0.10.0 alone is not
+compatible.** Bridge source is included, game binaries/art/audio are not.
+See its README for controls, setup, API and the limits of native validation.
+This release does not include later atmospheric-flight experiments.
+
 ## Recupero componenti / Robot Salvage (development source)
 
 [Recupero componenti](robot-salvage/README.md) retains real robot fragments as
@@ -101,7 +113,7 @@ normal purchase starts at Hoven for 15,000 bolts, pickups give 2, ammo costs 25 
 
 ## Compatibility and source
 
-The current reference is the unchanged official Windows x64 PAL client 0.10.0,
+For the other catalog mods below, the current reference is the unchanged official Windows x64 PAL client 0.10.0,
 SHA256 `e720a59d130b4b2289a4eb15cad3e33f739a72a385992db171ef43490205fb0e`.
 The corresponding NTSC-U 0.10 client is also recognized through an explicit
 region profile. Unknown/mismatched builds fail clearly. The plugin reads source

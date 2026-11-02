@@ -1,0 +1,10 @@
+{
+  "api": "1.14",
+  "experimental": true,
+  "upstream_sdk_release_metadata": "1.10.1",
+  "source_commit": "6fdf807afa4f0d18bf9f6e246e0497047f975949",
+  "published": false,
+  "note": "Private headers and CMake configuration; upstream SDK release tags and lockfiles are not republished.",
+  "interface_introduced_commit": "c9d2b7a552f2a4def541eabf75f250420a8592e9",
+  "header_unchanged_from_114_01": true
+}

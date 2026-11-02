@@ -1,5 +1,11 @@
 # Build preview source
 
+Build Space Voyages separately with the frozen extended SDK in its own folder:
+`cmake -S space-voyages -B build-space`, then build and run CTest there.
+See [its complete instructions](../space-voyages/README.md#build-api-and-validation)
+and [source-only runtime bridge](../space-voyages/engine/README.md). It is
+independent of the ordinary catalog build and the SDK lock described below.
+
 Requirements: CMake 3.20+, Python 3, a C++20 compiler and pinned OpenRAC mod SDK 1.3.0.
 The SDK fetcher verifies the URL/SHA256 recorded in `sdk.lock`.
 

@@ -1,5 +1,10 @@
 # Current PAL-reference package compatibility
 
+Space Voyages 0.8.0 has a separate requirement: the source-built OpenRAC
+SDK 1.14-02 bridge plus owned-disc scene assets. It cannot run in official
+0.10.0 alone. See [its exact baseline and limits](../space-voyages/validation/RELEASE.md).
+The official-client compatibility described below applies to the other mods.
+
 Revolverator0.3.1 / Rotatore targets the unchanged official Windows x64 OpenRAC
 0.10 client, with PAL Europe v2.00 (`SCES_509.16`) as the reference region and
 separate NTSC-U bindings. No uniform PAL offset or live-pointer conversion is

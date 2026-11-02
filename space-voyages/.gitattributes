@@ -1,0 +1,2 @@
+# Preserve source, SDK and engine patch hashes from the frozen baseline.
+* -text

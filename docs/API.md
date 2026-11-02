@@ -1,5 +1,14 @@
 # Mod APIs
 
+## Space Voyages API v1
+
+[`space_voyages_api.h`](../space-voyages/include/space_voyages_api.h) exposes
+read-only voyage snapshots and subscriptions through the already loaded
+`openrac_space_voyages_query(1)` service. See its
+[API guide](../space-voyages/docs/API.md) for thread/lifetime rules and the
+[destination architecture](../space-voyages/docs/CUSTOM_DESTINATIONS.md).
+The optional Garage consumers do not bundle the Garage provider or content.
+
 ## Skill Points API v1
 
 [`skill_points_api.h`](../skill-points-ra/include/skill_points_api.h) exposes a

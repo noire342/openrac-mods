@@ -1,0 +1,10 @@
+{
+  "upstream": "https://github.com/OpenRAC/OpenRAC",
+  "game_assets_included": false,
+  "bridge_commit": "6fdf807afa4f0d18bf9f6e246e0497047f975949",
+  "runtime_included": false,
+  "patch_sha256": "8c516d86aa78d411fbe9ee00c6b4e1bea82d2dd054277a2fefb839f015b64937",
+  "base_commit": "d015ea1c6925de90b4be91ddb349af83361d9d4b",
+  "runtime_sha256_pal": "fa0c4eacc9a0a8ee9ecf2619597a2c915334b68e94ea185d6105ce09a1682e5f",
+  "tree": "a3e70dc420e5e3468fb8ba0d379975d72ab95870"
+}

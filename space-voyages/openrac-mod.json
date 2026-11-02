@@ -1,0 +1,81 @@
+{
+  "api": "1.13",
+  "author": "noire342",
+  "description": "Free interplanetary flight, asteroids, ship damage and lasers. Requires separately built OpenRAC SDK 1.14-02 bridge and locally generated owned-disc scene assets; official 0.10.0 alone is unsupported. PAL baseline; see README for scope.",
+  "format": 2,
+  "games": {
+    "rac1": [
+      "pal",
+      "ntsc"
+    ]
+  },
+  "hooks": [
+    "rac1.space.transition",
+    "rac1.memcard.save_data",
+    "rac1.level.initialize_runtime"
+  ],
+  "id": "space-voyages",
+  "license": "GPL-3.0-or-later",
+  "load": {
+    "after": [
+      "cinematic-journeys",
+      "weapon-xp",
+      "veldin-garage-preview"
+    ]
+  },
+  "name": "Space Voyages",
+  "plugin": {
+    "windows-x86_64": "lib/windows-x86_64/space_voyages.dll"
+  },
+  "settings": [
+    {
+      "default": "",
+      "key": "assets_directory",
+      "name": "Locally prepared scene assets",
+      "type": "string"
+    },
+    {
+      "default": false,
+      "key": "direct_vertical",
+      "name": "Direct vertical control (up climbs)",
+      "type": "bool"
+    },
+    {
+      "default": true,
+      "key": "asteroids_enabled",
+      "name": "Campi di asteroidi",
+      "type": "bool"
+    },
+    {
+      "default": true,
+      "key": "asteroid_contacts",
+      "name": "Contatti con gli asteroidi",
+      "type": "bool"
+    },
+    {
+      "default": true,
+      "key": "asteroid_damage",
+      "name": "Danni alla nave negli urti",
+      "type": "bool"
+    },
+    {
+      "default": true,
+      "key": "engine_flames",
+      "name": "Fiamme dei propulsori",
+      "type": "bool"
+    },
+    {
+      "default": true,
+      "key": "ship_weapons",
+      "name": "Laser delle navi armate",
+      "type": "bool"
+    },
+    {
+      "default": false,
+      "key": "trace",
+      "name": "Diagnostic logging",
+      "type": "bool"
+    }
+  ],
+  "version": "0.8.0"
+}

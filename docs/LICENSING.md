@@ -1,5 +1,11 @@
 # Licensing scope
 
+Space Voyages follows this GPL implementation policy. Its frozen extended
+OpenRAC SDK retains the MIT text in `space-voyages/support/sdk-1.14/LICENSE`;
+its engine patch retains upstream GPL and file-level notices. Explicit MIT
+interop/API headers keep their notices. No extracted game resources or engine
+executable are distributed in its release.
+
 Mod implementations, authored assets/recipes, tests and project-specific build
 scripts use [GPL-3.0-or-later](../LICENSE), Copyright (c) 2026 noire342, following
 the upstream `OpenRAC/rac1-mods` convention. The earlier MIT policy is superseded
