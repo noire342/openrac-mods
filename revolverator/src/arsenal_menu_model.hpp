@@ -13,5 +13,6 @@ public:
     virtual void project(arsenal::WeaponKey key)=0;
     virtual void commit()=0;
     virtual void restore_gameplay()=0;
+    virtual bool native_owned(arsenal::WeaponKey,bool&)const{return false;}
 };
 }

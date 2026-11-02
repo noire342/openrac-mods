@@ -53,8 +53,10 @@ void NativeWeaponAlias::restore_previews(){
     for(auto& preview:previews_)restore_visual(preview);
     previews_.clear();
 }
-void NativeWeaponAlias::frame() {
-    restore_visual(visual_);restore_previews();
+void NativeWeaponAlias::frame(bool preserve_held) {
+    if(!preserve_held||!visual_valid(visual_)||read<std::uint16_t>(visual_.address+0xa6)!=visual_.render_class)
+        restore_visual(visual_);
+    restore_previews();
     ensure_mapping();
 }
 bool NativeWeaponAlias::ensure_mapping(){

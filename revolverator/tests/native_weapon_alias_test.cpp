@@ -36,6 +36,7 @@ int main(){
      require(alias.apply(first,true)&&alias.owns(first),"pre-render application is idempotent");
      require(alias.apply(first,true,true)&&alias.owns(first)&&f.get<std::uint16_t>(first+0xa6)==2018,"Golden selects its own material without changing the native actor");
      require(alias.apply(first,true,false)&&f.get<std::uint16_t>(first+0xa6)==2017,"variant switches preserve the ownership lease");
+     alias.frame(true);require(alias.owns(first)&&f.get<std::uint16_t>(first+0xa6)==2017,"render-owned held identity survives a skipped native update at pause entry");
      alias.frame();require(!alias.owns(first)&&f.get<std::uint16_t>(first+0xa6)==180,"next frame restores canonical class before native logic");
      alias.apply(first,true);alias.apply(second,true);
      require(f.get<std::uint16_t>(first+0xa6)==180&&f.get<std::uint16_t>(second+0xa6)==2017,"switching the held actor restores only the old owned alias");

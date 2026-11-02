@@ -195,11 +195,12 @@ int NativeWeaponMenu::grid_update(unsigned screen,Call original){
     const auto system=global(MenuSystem);
     // PAL's four extra MenuSystem words are appended at+148..157. Its native
     // grid update rejects Cross during select_cooldown and returns immediately
-    // after Back requests another page. Do not change logical equipment when
-    // that native confirmation would be rejected.
+    // after Back requests another page. A stable page has next == 0: the
+    // native page transition clears next when it installs current. Requiring
+    // next == current would discard every ordinary PAL equip confirmation.
     const bool pal=bindings().region()==Region::Pal;
     const bool confirm_allowed=!(read<unsigned>(screen+0x30)&1u)&&
-        (!pal||(read<int>(system+0x148)==0&&read<unsigned>(system+8)==read<unsigned>(system+4)));
+        (!pal||(read<int>(system+0x148)==0&&read<unsigned>(system+8)==0));
     if((saved_buttons&Cross)&&confirm_allowed){
         const auto key=selected_key();
         if(key&&owned(key))model_.registry().equip(key);

@@ -86,6 +86,7 @@ int main(){
 
     require(std::strcmp(pal.function("FUN_L00_00233db8"),"func_L00_00234638")==0,"native ammo resolves the PAL function name");
     require(std::strcmp(pal.function("FUN_L01_002aea70"),"func_L01_002AFD00")==0,"acquisition resolves its PAL function family");
+    require(std::strcmp(pal.function("FUN_L00_00263d40"),"func_L00_00264DB8")==0,"completed weapon title copies through the PAL native subtitle function");
     require(std::strcmp(pal.function("FUN_L00_00260860"),"func_L00_002618D8")==0,"isolated fixtures grant items through the PAL native function");
     require(std::strcmp(pal.function("FUN_0020b178"),"func_0020BFC8")==0,"reviewed changed save families have an explicit binding");
     const char* stable="Vendor_BuildItemList";const char* pal_name="func_001FFAB8";

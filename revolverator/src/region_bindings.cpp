@@ -79,6 +79,7 @@ constexpr FunctionName functions[] = {
     {"FUN_L00_00259a88","func_L00_0025AAC0"},
     {"FUN_L00_0025f090","func_L00_00260108"},
     {"FUN_L00_00260860","func_L00_002618D8"}, // native grant used by isolated QA fixtures
+    {"FUN_L00_00263d40","func_L00_00264DB8"}, // native acquisition/level-up subtitle copies localized text
     {"FUN_L00_0029b680","func_L00_0029C9E8"},
     {"FUN_L00_0029ba78","func_L00_0029CDE0"}, // counterpart changes between discs; preserve the typed call boundary
     {"FUN_L00_002a5dd8","func_L00_002A7078"},

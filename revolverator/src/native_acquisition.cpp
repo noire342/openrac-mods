@@ -16,8 +16,9 @@ template<std::size_t N>bool finite(const std::array<float,N>& values){
 NativeAcquisition::NativeAcquisition(const openrac_api* api,openrac_mod* mod,GuestArena& arena,Context context)
     :Memory(api),mod_(mod),arena_(arena),context_(context){}
 NativeAcquisition::~NativeAcquisition(){reset();}
-bool NativeAcquisition::request()noexcept{
-    if(requests_>=maximum_pending)return false;
+bool NativeAcquisition::request(unsigned level)noexcept{
+    if(requests_>=maximum_pending||level==1||level>10)return false;
+    request_levels_[(request_head_+requests_)%maximum_pending]=level;
     ++requests_;return true;
 }
 bool NativeAcquisition::supported()const{
@@ -177,6 +178,8 @@ void NativeAcquisition::restore_context()noexcept{
     if(owned&&context_.restore)try{context_.restore(context_.user);}catch(...){}
 }
 void NativeAcquisition::finish(bool place_player)noexcept{
+    const bool completed=place_player&&body_valid()&&read<int>(mode_)==0;
+    const unsigned completed_level=requests_?request_levels_[request_head_]:0;
     if(same_level()){
         if(place_player&&body_valid()&&read<int>(mode_)==0){
             write(buffer_+0x100,position_);write(buffer_+0x110,rotation_);
@@ -196,9 +199,12 @@ void NativeAcquisition::finish(bool place_player)noexcept{
         if(read<unsigned>(vendor_+0x28)==buffer_)std::memcpy(api_->memory+vendor_,vendor_snapshot_.data(),vendor_snapshot_.size());
     }else hidden_=false;
     presenting_=preparing_=false;quiet_=settled_=0;body_={};
-    if(requests_)--requests_;
+    if(requests_){--requests_;request_head_=(request_head_+1)%maximum_pending;}
     cooldown_seconds_=.5f;
     restore_context();
+    // The stock vendor animation does not emit an item title. Use its native
+    // subtitle channel once after a successful scene, never on reset/travel.
+    if(completed&&context_.complete)try{context_.complete(context_.user,completed_level);}catch(...){}
 }
 void NativeAcquisition::filter_report(unsigned char* report,int size)const noexcept{
     if(!active()||!report||size<6)return;
@@ -208,7 +214,7 @@ void NativeAcquisition::filter_report(unsigned char* report,int size)const noexc
 }
 void NativeAcquisition::reset()noexcept{
     if(presenting_)finish(false);else restore_context();
-    requests_=quiet_=settled_=0;cooldown_seconds_=0;preparing_=presenting_=hidden_=reported_=false;
+    requests_=request_head_=quiet_=settled_=0;request_levels_={};cooldown_seconds_=0;preparing_=presenting_=hidden_=reported_=false;
     level_=-1;buffer_=hero_=vendor_=scene_=mode_=0;body_={};present_=nullptr;place_=nullptr;
 }
 }

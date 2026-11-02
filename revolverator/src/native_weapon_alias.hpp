@@ -24,10 +24,11 @@ public:
     NativeWeaponAlias(const NativeWeaponAlias&)=delete;
     NativeWeaponAlias& operator=(const NativeWeaponAlias&)=delete;
 
-    // Call once at the start of mods::frame, after the previous native draw was
-    // captured and before the next native update. This returns the held actor
-    // to class180 and maintains the separate class-id mapping.
-    void frame();
+    // A render owner may retain the valid held projection across frame entry:
+    // pause can start after mods::frame and omit the item's native update.
+    // Native callbacks then canonicalize only around their own update boundary.
+    // Previews always restore, including their scoped panel fitting scale.
+    void frame(bool preserve_held=false);
     // actual_held must be hero.items[0].moby. The caller decides the logical
     // identity; an ordinary Walloper must always pass revolverator=false.
     bool apply(unsigned actual_held,bool revolverator,bool golden=false);

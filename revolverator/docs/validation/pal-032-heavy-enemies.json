@@ -1,0 +1,1744 @@
+{
+  "format": 1,
+  "kind": "native-PAL-heavy-target-and-commander-policy-validation",
+  "scope": "Official OpenRAC0.10 PAL Europev2.00 SCES_509.16, isolated level6/8/12 fixtures",
+  "revolverator_sha256": "9d9ba8704588b5838589d6d0042e7a8cc8ee972b4e0fee24cf3c26672fce7a52",
+  "native_checks_passed": 33,
+  "accepted_scenarios": 3,
+  "scenarios": [
+    {
+      "name": "pal-heavy-snapper-final-01",
+      "passed": true,
+      "native_checks": 13,
+      "native_result": {
+        "event": "result",
+        "pass": true,
+        "checks": 13,
+        "failures": 0,
+        "class": 1048,
+        "walloper_damage": 3.0,
+        "rotatore_damage": 3.0,
+        "walloper_health": [
+          4.0,
+          1.0
+        ],
+        "rotatore_health": [
+          4.0,
+          -5.0
+        ],
+        "walloper_hits": 11,
+        "rotatore_hits": 69
+      },
+      "exit_code": 0,
+      "original_inputs_checked": 107,
+      "original_inputs_changed": 0,
+      "original_manifest_sha256": "7b05726b43b6899cebfcab1a0bff7e97cc0bd5ea8b92f3469c4cd9fb4d91f06d",
+      "fixture_sha256": "744cd3acc774c4a8eb343fe3f2908185811036bbc7f49e126f6b878a0b092df1",
+      "log_sha256": "f587512007e5b45efd4bf221cc856d3e106df5bbc6868bf0c2d44e5394cf55f7",
+      "artifacts": {
+        "revolverator/lib/windows-x86_64/arsenal_compat.dll": {
+          "sha256": "9603bd048ae54b63143bc2a9e35596a581c3fc6a6415dd51e7bc81ca5afaf091",
+          "matches_fixture_pin": true
+        },
+        "revolverator/lib/windows-x86_64/revolverator.dll": {
+          "sha256": "9d9ba8704588b5838589d6d0042e7a8cc8ee972b4e0fee24cf3c26672fce7a52",
+          "matches_fixture_pin": true
+        },
+        "runtime": {
+          "sha256": "e720a59d130b4b2289a4eb15cad3e33f739a72a385992db171ef43490205fb0e",
+          "matches_fixture_pin": true
+        },
+        "revolverator/lib/windows-x86_64/arsenal_file_overlay.dll": {
+          "sha256": "abbb81a5840bf26951333deb799c4613a24033b71edcc8f7d83f3950ec743d31",
+          "matches_fixture_pin": true
+        },
+        "pal-heavy-enemy-qa/lib/windows-x86_64/pal_heavy_enemy_qa.dll": {
+          "sha256": "098832db3b5247d8f600a4e61ddeefb3a7be93c23d69a6adf089c87a7ebf9b44",
+          "matches_fixture_pin": true
+        }
+      },
+      "failed_checks": [],
+      "native_walloper_packets": [
+        {
+          "event": "accepted_hit",
+          "frame": 1290,
+          "index": 0,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 180,
+          "hp_before_native_handler": 4.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1291,
+          "index": 0,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 180,
+          "hp_before_native_handler": 1.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1292,
+          "index": 0,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 180,
+          "hp_before_native_handler": 1.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1293,
+          "index": 0,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 180,
+          "hp_before_native_handler": 1.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1294,
+          "index": 0,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 180,
+          "hp_before_native_handler": 1.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1295,
+          "index": 0,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 180,
+          "hp_before_native_handler": 1.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1296,
+          "index": 0,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 180,
+          "hp_before_native_handler": 1.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1297,
+          "index": 0,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 180,
+          "hp_before_native_handler": 1.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1298,
+          "index": 0,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 180,
+          "hp_before_native_handler": 1.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1299,
+          "index": 0,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 180,
+          "hp_before_native_handler": 1.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1300,
+          "index": 0,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 180,
+          "hp_before_native_handler": 1.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1540,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 2017,
+          "hp_before_native_handler": 4.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1541,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 2017,
+          "hp_before_native_handler": 1.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1542,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 2017,
+          "hp_before_native_handler": 1.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1543,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 2017,
+          "hp_before_native_handler": 1.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1544,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 2017,
+          "hp_before_native_handler": 1.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1545,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 2017,
+          "hp_before_native_handler": 1.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1546,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 2017,
+          "hp_before_native_handler": 1.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1547,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 2017,
+          "hp_before_native_handler": 1.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1548,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 2017,
+          "hp_before_native_handler": 1.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1549,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 2017,
+          "hp_before_native_handler": 1.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1550,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 2017,
+          "hp_before_native_handler": 1.0
+        }
+      ],
+      "other_packets_excluded_from_weapon_comparison": [
+        {
+          "event": "accepted_hit",
+          "frame": 1574,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": 1.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1575,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1576,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1601,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1602,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1603,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1604,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1605,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1606,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1607,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1608,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1609,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1610,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1611,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1612,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1613,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1614,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1615,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1616,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1617,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1618,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1619,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1620,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1621,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1622,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1623,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1624,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1625,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1626,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1627,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1628,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1629,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1630,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1631,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1632,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1633,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1634,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1635,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1636,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1637,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1638,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1639,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1640,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1641,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1642,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1643,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1644,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1645,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1646,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1647,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1648,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1649,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1650,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1651,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1652,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1653,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1654,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1655,
+          "index": 1,
+          "class": 1048,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 6.0,
+          "flags": 65536,
+          "source_class": 46207,
+          "hp_before_native_handler": -5.0
+        }
+      ],
+      "observed_final_samples": [
+        {
+          "event": "sample",
+          "frame": 1586,
+          "stage": 4,
+          "index": 1,
+          "level": 6,
+          "target": 32800256,
+          "class": 1048,
+          "state": 17,
+          "health": -5.0,
+          "hero_state": 0,
+          "hero_hp": 4,
+          "held": 18,
+          "model": 2017,
+          "phase": 0,
+          "captures": 0,
+          "ammo": 20,
+          "hits": 14,
+          "native_hits": 11,
+          "custom_hits": 0,
+          "position": [
+            248.278,
+            329.785,
+            142.867
+          ],
+          "hero": [
+            242.893,
+            329.19,
+            142.0
+          ]
+        },
+        {
+          "event": "sample",
+          "frame": 1616,
+          "stage": 4,
+          "index": 1,
+          "level": 6,
+          "target": 32800256,
+          "class": 1048,
+          "state": 17,
+          "health": -5.0,
+          "hero_state": 0,
+          "hero_hp": 4,
+          "held": 18,
+          "model": 2017,
+          "phase": 0,
+          "captures": 0,
+          "ammo": 20,
+          "hits": 29,
+          "native_hits": 11,
+          "custom_hits": 0,
+          "position": [
+            247.433,
+            329.851,
+            142.146
+          ],
+          "hero": [
+            242.893,
+            329.19,
+            142.0
+          ]
+        },
+        {
+          "event": "sample",
+          "frame": 1656,
+          "stage": 5,
+          "index": 1,
+          "level": 6,
+          "target": 32800256,
+          "class": 1048,
+          "state": 17,
+          "health": -5.0,
+          "hero_state": 22,
+          "hero_hp": 3,
+          "held": 18,
+          "model": 2017,
+          "phase": 0,
+          "captures": 0,
+          "ammo": 20,
+          "hits": 69,
+          "native_hits": 11,
+          "custom_hits": 0,
+          "position": [
+            247.446,
+            329.96,
+            142.021
+          ],
+          "hero": [
+            244.848,
+            329.749,
+            142.0
+          ]
+        }
+      ],
+      "setup": "Two original class1048 Alien Snapper actors, original positions. Native weapon ownership/equipment and Ratchet position are fixture setup; actual Circle input and native GetHit apply health changes.",
+      "first_own_hit_health_observations": {
+        "0": [
+          4.0,
+          1.0
+        ],
+        "1": [
+          4.0,
+          1.0
+        ]
+      },
+      "health_note": "Both original weapons deliver native damage3, with own-hit observations4 then1. The final custom target value -5 includes a later other-source flags0x10000/damage6 event and is not attributed to Rotatore or used as DPS proof."
+    },
+    {
+      "name": "pal-heavy-commander-safe-floor-01",
+      "passed": true,
+      "native_checks": 7,
+      "native_result": {
+        "event": "result",
+        "pass": true,
+        "checks": 7,
+        "failures": 0,
+        "class": 1371,
+        "walloper_damage": 0.0,
+        "rotatore_damage": 0.0,
+        "walloper_health": [
+          0.0,
+          0.0
+        ],
+        "rotatore_health": [
+          0.0,
+          0.0
+        ],
+        "walloper_hits": 0,
+        "rotatore_hits": 0
+      },
+      "exit_code": 0,
+      "original_inputs_checked": 107,
+      "original_inputs_changed": 0,
+      "original_manifest_sha256": "10717ec8c68d25abb97bcf713bf14e2debfe33afcccbedacbdef5cd8e33a3b1d",
+      "fixture_sha256": "5acb0f4f2ef768f66cde7fcfff7727ab8ad7352ca5d43373855195ffcf1a0f77",
+      "log_sha256": "e6009601db54dc96bb70d3d6a9bd7c7bb9c09671daa8496dec61285dd76fee02",
+      "artifacts": {
+        "revolverator/lib/windows-x86_64/revolverator.dll": {
+          "sha256": "9d9ba8704588b5838589d6d0042e7a8cc8ee972b4e0fee24cf3c26672fce7a52",
+          "matches_fixture_pin": true
+        },
+        "revolverator/lib/windows-x86_64/arsenal_file_overlay.dll": {
+          "sha256": "abbb81a5840bf26951333deb799c4613a24033b71edcc8f7d83f3950ec743d31",
+          "matches_fixture_pin": true
+        },
+        "runtime": {
+          "sha256": "e720a59d130b4b2289a4eb15cad3e33f739a72a385992db171ef43490205fb0e",
+          "matches_fixture_pin": true
+        },
+        "pal-heavy-enemy-qa/lib/windows-x86_64/pal_heavy_enemy_qa.dll": {
+          "sha256": "8489d64ec6f05fc63edbeffb9f3d38ad1d202f3d0026e6c6af55ea311b58462f",
+          "matches_fixture_pin": true
+        },
+        "revolverator/lib/windows-x86_64/arsenal_compat.dll": {
+          "sha256": "9603bd048ae54b63143bc2a9e35596a581c3fc6a6415dd51e7bc81ca5afaf091",
+          "matches_fixture_pin": true
+        }
+      },
+      "failed_checks": [],
+      "native_walloper_packets": [],
+      "other_packets_excluded_from_weapon_comparison": [],
+      "observed_final_samples": [
+        {
+          "event": "sample",
+          "frame": 1624,
+          "stage": 12,
+          "index": 0,
+          "level": 12,
+          "target": 32198272,
+          "class": 1371,
+          "state": 0,
+          "health": 0.0,
+          "hero_state": 0,
+          "hero_hp": 4,
+          "held": 18,
+          "model": 2017,
+          "phase": 4,
+          "captures": 1,
+          "ammo": 19,
+          "hits": 0,
+          "native_hits": 0,
+          "custom_hits": 0,
+          "position": [
+            312.458,
+            301.873,
+            33.693
+          ],
+          "hero": [
+            306.334,
+            302.546,
+            31.722
+          ]
+        },
+        {
+          "event": "sample",
+          "frame": 1654,
+          "stage": 12,
+          "index": 0,
+          "level": 12,
+          "target": 32198272,
+          "class": 1371,
+          "state": 0,
+          "health": 0.0,
+          "hero_state": 0,
+          "hero_hp": 4,
+          "held": 18,
+          "model": 2017,
+          "phase": 0,
+          "captures": 1,
+          "ammo": 19,
+          "hits": 0,
+          "native_hits": 0,
+          "custom_hits": 0,
+          "position": [
+            312.458,
+            301.873,
+            33.693
+          ],
+          "hero": [
+            306.334,
+            302.546,
+            31.722
+          ]
+        },
+        {
+          "event": "sample",
+          "frame": 1684,
+          "stage": 12,
+          "index": 0,
+          "level": 12,
+          "target": 32198272,
+          "class": 1371,
+          "state": 0,
+          "health": 0.0,
+          "hero_state": 0,
+          "hero_hp": 4,
+          "held": 18,
+          "model": 2017,
+          "phase": 0,
+          "captures": 1,
+          "ammo": 19,
+          "hits": 0,
+          "native_hits": 0,
+          "custom_hits": 0,
+          "position": [
+            312.458,
+            301.873,
+            33.693
+          ],
+          "hero": [
+            306.334,
+            302.546,
+            31.722
+          ]
+        }
+      ],
+      "setup": "A real class1371 actor was created by official PAL func_L12_00309A50, using the live Ratchet body as constructor source. Native class/pvars initialization, collision, update and renderer remain genuine. It is placed at the native Hoven spawn floor; it is not a campaign-mounted helicopter gunner test.",
+      "commander": {
+        "event": "commander_summary",
+        "hold_samples": 88,
+        "held_native_calls": 88,
+        "held_native_motion": 0,
+        "max_hold_distance": 2.147681
+      },
+      "native_flight_ended": true,
+      "native_collision_restore_fields_logged": false,
+      "reviewed_screenshot": {
+        "path": "pal-heavy-commander-safe-floor-01/shots/frame1500.png",
+        "sha256": "4913c2a0488495099448313913b6f0183ac185f16ac606fa63e4f12632869732",
+        "reviewed": true
+      }
+    },
+    {
+      "name": "pal-heavy-tank-accepted-pair-01",
+      "passed": true,
+      "native_checks": 13,
+      "native_result": {
+        "event": "result",
+        "pass": true,
+        "checks": 13,
+        "failures": 0,
+        "class": 253,
+        "walloper_damage": 3.0,
+        "rotatore_damage": 3.0,
+        "walloper_health": [
+          9.0,
+          6.0
+        ],
+        "rotatore_health": [
+          6.0,
+          3.0
+        ],
+        "walloper_hits": 11,
+        "rotatore_hits": 11
+      },
+      "exit_code": 0,
+      "original_inputs_checked": 107,
+      "original_inputs_changed": 0,
+      "original_manifest_sha256": "7b05726b43b6899cebfcab1a0bff7e97cc0bd5ea8b92f3469c4cd9fb4d91f06d",
+      "fixture_sha256": "1b7f747ddba3d3f77d3593547bdcd43c53058b0a6a63e854e5d745b1df7dc5d1",
+      "log_sha256": "318f341401e6572ee85b3cc9dd48f1f873fb55b6ddac68d054ba1f72889af6f6",
+      "artifacts": {
+        "revolverator/lib/windows-x86_64/arsenal_file_overlay.dll": {
+          "sha256": "abbb81a5840bf26951333deb799c4613a24033b71edcc8f7d83f3950ec743d31",
+          "matches_fixture_pin": true
+        },
+        "runtime": {
+          "sha256": "e720a59d130b4b2289a4eb15cad3e33f739a72a385992db171ef43490205fb0e",
+          "matches_fixture_pin": true
+        },
+        "pal-heavy-enemy-qa/lib/windows-x86_64/pal_heavy_enemy_qa.dll": {
+          "sha256": "556e8652eed4789b438c87b8a64d51be952b8db75f3f82907d4076a581abe6a6",
+          "matches_fixture_pin": true
+        },
+        "revolverator/lib/windows-x86_64/revolverator.dll": {
+          "sha256": "9d9ba8704588b5838589d6d0042e7a8cc8ee972b4e0fee24cf3c26672fce7a52",
+          "matches_fixture_pin": true
+        },
+        "revolverator/lib/windows-x86_64/arsenal_compat.dll": {
+          "sha256": "9603bd048ae54b63143bc2a9e35596a581c3fc6a6415dd51e7bc81ca5afaf091",
+          "matches_fixture_pin": true
+        }
+      },
+      "failed_checks": [],
+      "native_walloper_packets": [
+        {
+          "event": "accepted_hit",
+          "frame": 1170,
+          "index": 0,
+          "class": 253,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 180,
+          "hp_before_native_handler": 9.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1171,
+          "index": 0,
+          "class": 253,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 180,
+          "hp_before_native_handler": 6.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1172,
+          "index": 0,
+          "class": 253,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 180,
+          "hp_before_native_handler": 6.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1173,
+          "index": 0,
+          "class": 253,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 180,
+          "hp_before_native_handler": 6.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1174,
+          "index": 0,
+          "class": 253,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 180,
+          "hp_before_native_handler": 6.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1175,
+          "index": 0,
+          "class": 253,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 180,
+          "hp_before_native_handler": 6.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1176,
+          "index": 0,
+          "class": 253,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 180,
+          "hp_before_native_handler": 6.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1177,
+          "index": 0,
+          "class": 253,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 180,
+          "hp_before_native_handler": 6.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1178,
+          "index": 0,
+          "class": 253,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 180,
+          "hp_before_native_handler": 6.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1179,
+          "index": 0,
+          "class": 253,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 180,
+          "hp_before_native_handler": 6.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1180,
+          "index": 0,
+          "class": 253,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 180,
+          "hp_before_native_handler": 6.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1315,
+          "index": 1,
+          "class": 253,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 2017,
+          "hp_before_native_handler": 6.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1316,
+          "index": 1,
+          "class": 253,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 2017,
+          "hp_before_native_handler": 3.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1317,
+          "index": 1,
+          "class": 253,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 2017,
+          "hp_before_native_handler": 3.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1318,
+          "index": 1,
+          "class": 253,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 2017,
+          "hp_before_native_handler": 3.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1319,
+          "index": 1,
+          "class": 253,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 2017,
+          "hp_before_native_handler": 3.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1320,
+          "index": 1,
+          "class": 253,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 2017,
+          "hp_before_native_handler": 3.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1321,
+          "index": 1,
+          "class": 253,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 2017,
+          "hp_before_native_handler": 3.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1322,
+          "index": 1,
+          "class": 253,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 2017,
+          "hp_before_native_handler": 3.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1323,
+          "index": 1,
+          "class": 253,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 2017,
+          "hp_before_native_handler": 3.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1324,
+          "index": 1,
+          "class": 253,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 2017,
+          "hp_before_native_handler": 3.0
+        },
+        {
+          "event": "accepted_hit",
+          "frame": 1325,
+          "index": 1,
+          "class": 253,
+          "mask": 3342336,
+          "keep": 0,
+          "damage": 3.0,
+          "flags": 196608,
+          "source_class": 2017,
+          "hp_before_native_handler": 3.0
+        }
+      ],
+      "other_packets_excluded_from_weapon_comparison": [],
+      "observed_final_samples": [
+        {
+          "event": "sample",
+          "frame": 1361,
+          "stage": 4,
+          "index": 1,
+          "level": 8,
+          "target": 29231168,
+          "class": 253,
+          "state": 3,
+          "health": 3.0,
+          "hero_state": 0,
+          "hero_hp": 4,
+          "held": 18,
+          "model": 2017,
+          "phase": 0,
+          "captures": 0,
+          "ammo": 19,
+          "hits": 11,
+          "native_hits": 11,
+          "custom_hits": 0,
+          "position": [
+            300.338,
+            290.231,
+            28.75
+          ],
+          "hero": [
+            304.703,
+            290.01,
+            28.75
+          ]
+        },
+        {
+          "event": "sample",
+          "frame": 1391,
+          "stage": 4,
+          "index": 1,
+          "level": 8,
+          "target": 29231168,
+          "class": 253,
+          "state": 3,
+          "health": 3.0,
+          "hero_state": 22,
+          "hero_hp": 3,
+          "held": 18,
+          "model": 2017,
+          "phase": 0,
+          "captures": 0,
+          "ammo": 19,
+          "hits": 11,
+          "native_hits": 11,
+          "custom_hits": 0,
+          "position": [
+            299.344,
+            290.347,
+            28.75
+          ],
+          "hero": [
+            304.625,
+            289.956,
+            28.785
+          ]
+        },
+        {
+          "event": "sample",
+          "frame": 1431,
+          "stage": 5,
+          "index": 1,
+          "level": 8,
+          "target": 29231168,
+          "class": 253,
+          "state": 3,
+          "health": 3.0,
+          "hero_state": 0,
+          "hero_hp": 3,
+          "held": 18,
+          "model": 2017,
+          "phase": 0,
+          "captures": 0,
+          "ammo": 19,
+          "hits": 11,
+          "native_hits": 11,
+          "custom_hits": 0,
+          "position": [
+            298.02,
+            290.502,
+            28.75
+          ],
+          "hero": [
+            302.871,
+            288.739,
+            28.75
+          ]
+        }
+      ],
+      "setup": "The same original Batalia class253 tank is struck once by original Walloper, then by Rotatore, using native position setup and Circle input. Health9->6->3, native damage3 per activation. Earlier fixture waits let Ratchet die before the second attack; accepted run only shortens private equipment waits. No health/state seed."
+    }
+  ],
+  "os_ui_automation_used": false,
+  "enemy_health_written": false,
+  "user_saves_copied": false,
+  "conclusions": [
+    "Alien Snapper1048 is not captured; native melee damage3 matches original Walloper.",
+    "Original Batalia bomber tank253 remains uncapturable; native Walloper and Rotatore each reduce health by3.",
+    "Blarg Commander1371 is captured and held for88 samples;88 native update callbacks do not move it while frozen, and release increments throws once and ends the native flight."
+  ],
+  "limitations": [
+    "These are targeted native fixtures, not whole-campaign or every mounted Commander-parent behavior coverage.",
+    "Golden enemy-family classification is covered by host tests and separate accepted Gold regression fixtures; this receipt does not claim a Gold1048 damage test.",
+    "Toxic Crab1202 direct-Orxon attempts did not reach a stable usable Ratchet weapon state and are excluded; its unchanged noncapture classification is host/source verified.",
+    "Exact native collision restore words were not logged for the accepted Commander fixture; phaseIdle after the throw is recorded, alongside separate native World lifecycle tests."
+  ],
+  "excluded_runs": [
+    "pal-heavy-snapper-discovery-01",
+    "pal-heavy-crab-discovery-01",
+    "pal-heavy-tank-discovery-01",
+    "pal-heavy-snapper-discovery-02",
+    "pal-heavy-crab-discovery-02",
+    "pal-heavy-tank-discovery-02",
+    "pal-heavy-crab-final-01",
+    "pal-heavy-tank-final-01",
+    "pal-heavy-commander-commander-discovery-01",
+    "pal-heavy-tank-safe-floor-01",
+    "pal-heavy-tank-same-tank-tap-01",
+    "pal-heavy-tank-native-pair-01"
+  ],
+  "pass": true
+}

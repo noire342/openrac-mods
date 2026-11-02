@@ -4,6 +4,7 @@
 #include "memory.hpp"
 #include "native_arena.hpp"
 #include "rotor_controller.hpp"
+#include "equip_assembly.hpp"
 #include <array>
 
 namespace revolverator {
@@ -17,12 +18,17 @@ public:
     // Apply again inside the native held-item update, before its render snapshot.
     // It never advances time: idle, capture and enemy synchronization tick once.
     void apply();
+    // Cosmetic equip envelope. It never changes rotor timing or attack state;
+    // the visual owner updates the envelope and then calls apply().
+    void set_assembly_pose(const EquipAssemblyPose&);
     void reset(bool discard=false);
     float angle()const{return controller_.angle();}
     const RotorController& controller()const{return controller_;}
+    bool owns(unsigned actor)const{return owner_==actor&&attached();}
 private:
     GuestArena& guest_;
     RotorController controller_;
+    EquipAssemblyPose assembly_{};
     unsigned arena_{},owner_{},klass_{},stamp_{},vars_{};
     int level_=-1,arena_level_=-1;
     bool pending_dry_{};

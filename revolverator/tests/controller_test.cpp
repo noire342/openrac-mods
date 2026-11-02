@@ -77,6 +77,8 @@ int main(){
  {Fake w;Controller c(w);auto f=frame();w.available=false;f.primary=true;steps(c,f,100);CHECK(w.takes==0&&w.hits==0);}
  {Fake w;Controller c(w);auto f=frame();spin(c,f);f.primary=false;steps(c,f,120);CHECK(w.restores==1&&w.hits==1);}
  CHECK(capturable_class(459));CHECK(!capturable_class(1422));CHECK(!capturable_class(11));CHECK(!capturable_class(1106));CHECK(!capturable_class(-1));
+ for(int heavy:{253,625,1048,1202,1454})CHECK(!capturable_class(heavy));
+ CHECK(capturable_class(1371));
  {Fake w;w.ammo=0;Controller c(w);auto f=frame();f.primary=true;steps(c,f,100);CHECK(c.phase()==Phase::Idle&&w.motions.size()==1&&w.motions[0]==Motion::DryFire&&w.takes==0&&w.queries==0&&w.ammo==0&&w.attempts==1);
   f.primary=false;c.tick(f);f.primary=true;steps(c,f,100);CHECK(w.motions.size()==2&&w.motions[1]==Motion::DryFire&&w.attempts==2&&w.takes==0&&w.queries==0);}
  {Fake w;w.ammo=1;Controller c(w);auto f=frame();spin(c,f);CHECK(w.ammo==0);steps(c,f,400);f.primary=false;steps(c,f,30);f.primary=true;steps(c,f,30);CHECK(w.takes==1&&w.ammo==0);}

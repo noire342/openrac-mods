@@ -5,7 +5,8 @@
 #include "native_vendor.hpp"
 #include "native_vendor_icons.hpp"
 #include "native_class_alias.hpp"
-#include "native_weapon_alias.hpp"
+#include "native_weapon_visual.hpp"
+#include "native_equip_audio.hpp"
 #include "native_weapon_menu.hpp"
 #include "native_arsenal_save.hpp"
 #include "native_arsenal_xp.hpp"
@@ -30,29 +31,29 @@ using namespace revolverator;
 int grant(unsigned key,int equip);
 struct Session {
  const openrac_api* api;openrac_mod* mod;GuestArena arena,core_arena;arsenal::Registry registry;
- NativeAmmunition ammunition;NativeAmmoAlias alias;NativeWeaponAlias weapon_alias;NativeVendor vendor;NativeVendorIcons vendor_icons;NativeRotor rotor,preview_rotor,scene_rotor;NativeWorld world;Controller controller;Presentation presentation;
+ NativeAmmunition ammunition;NativeAmmoAlias alias;NativeVendor vendor;NativeVendorIcons vendor_icons;NativeWeaponVisual visuals;NativeEquipAudio equip_audio;NativeWorld world;Controller controller;Presentation presentation;
  NativeArsenal arsenal;NativeWeaponMenu menu;NativeArsenalSave saves;NativeArsenalXP xp;
  NativeGoldVendor gold_vendor;NativeAcquisition acquisition;
  bool primary=false;unsigned epoch=0;int level=-1;
  bool golden()const{const auto* state=registry.state(arsenal::RevolveratorKey);return state&&state->owned&&state->golden;}
  unsigned grant_override=0,native_save_depth=0;bool new_game_plus=false;
  std::deque<NativeArsenalXP::LevelUp> animations,events;
- Session(const openrac_api* a,openrac_mod* m):api(a),mod(m),ammunition(a,&arena,true),alias(a),weapon_alias(a),vendor(a),vendor_icons(a,vendor),rotor(a,core_arena),preview_rotor(a,arena,true),scene_rotor(a,arena,true,true),world(a,m,ammunition,rotor,core_arena),controller(world),presentation(a,m,&arena,true),arsenal(a,registry,presentation),menu(a,arena,arsenal),saves(a,m,arsenal),xp(a,m,arsenal),gold_vendor(a,m,registry,weapon_alias),acquisition(a,m,arena,{this,
+ Session(const openrac_api* a,openrac_mod* m):api(a),mod(m),ammunition(a,&arena,true),alias(a),vendor(a),vendor_icons(a,vendor),visuals(a,arena,core_arena),equip_audio(a),world(a,m,ammunition,visuals.held_rotor(),core_arena),controller(world),presentation(a,m,&arena,true),arsenal(a,registry,presentation),menu(a,arena,arsenal),saves(a,m,arsenal),xp(a,m,arsenal),gold_vendor(a,m,registry,visuals.native_alias()),acquisition(a,m,arena,{this,
   +[](void* user){auto& s=*static_cast<Session*>(user);s.presentation.set_golden(s.golden());s.arsenal.project(arsenal::RevolveratorKey);},
   +[](void* user){static_cast<Session*>(user)->restore_context();},
   +[](void* user,unsigned actor){auto& s=*static_cast<Session*>(user);
-   s.scene_rotor.update(actor,0,Phase::Idle,0,0,0,false,true);
-   const bool applied=s.weapon_alias.apply_preview(actor,true,s.golden());
-   if(!applied&&s.api->setting_bool(s.mod,"trace"))s.api->log(s.mod,OPENRAC_LOG_WARN,"Acquisition weapon is not ready for the Rotatore model");}}){
+   const bool applied=s.visuals.publish_preview(NativeWeaponVisual::Preview::Acquisition,actor,true,s.golden());
+   if(!applied&&s.api->setting_bool(s.mod,"trace"))s.api->log(s.mod,OPENRAC_LOG_WARN,"Acquisition weapon is not ready for the Rotatore model");},
+  +[](void* user,unsigned level){static_cast<Session*>(user)->presentation.notify_acquisition(level);}}){
   registry.register_weapon({arsenal::RevolveratorKey,"noire342.revolverator",18,60037,NativeAmmunition::capacity,15000,12});vendor.set_arsenal(&arsenal);
  }
  ~Session(){before_load();}
  void before_load(){
   acquisition.reset();gold_vendor.reset();
-  controller.cancel();rotor.reset(true);preview_rotor.reset(true);scene_rotor.reset(true);world.reset();menu.reset();weapon_alias.reset();arsenal.reset();presentation.reset();vendor.reset();alias.reset();ammunition.reset();core_arena.reset();arena.reset();xp.reset();animations.clear();events.clear();
+  controller.cancel();visuals.reset();world.reset();menu.reset();arsenal.reset();presentation.reset();vendor.reset();alias.reset();ammunition.reset();core_arena.reset();arena.reset();xp.reset();animations.clear();events.clear();
  }
  void prepare_level(){
-  arsenal.begin_level();ammunition.frame();alias.frame();weapon_alias.frame();vendor.set_preview_class(alias.ready()?NativeAmmoAlias::native_class:225);vendor.frame();
+  arsenal.begin_level();ammunition.frame();alias.frame();visuals.begin_native_frame();vendor.set_preview_class(alias.ready()?NativeAmmoAlias::native_class:225);vendor.frame();
   presentation.select_identity(false);arsenal.finish_level();menu.frame();registry.seal();
   if(registry.descriptor(registry.equipped())){
    world.write<int>(world.global(0x141660),18);world.write<int>(world.hero()+0x20b8,18);
@@ -96,7 +97,7 @@ struct Session {
    xp.ready()&&(xp.flags()&WEAPON_XP_VERSIONED_NAMES));
   world.set_damage_multiplier(stats.damage_multiplier);
   if(!animations.empty()){
-   if(!(xp.flags()&WEAPON_XP_LEVEL_UP_ANIMATION)||acquisition.request())animations.pop_front();
+   if(!(xp.flags()&WEAPON_XP_LEVEL_UP_ANIMATION)||acquisition.request(animations.front().new_level))animations.pop_front();
   }
   restore_context();
  }
@@ -106,14 +107,13 @@ struct Session {
   if(current!=level){before_load();level=current;++epoch;primary=false;}
   if(current<0||current>18)return;
   if(!arsenal.ready())prepare_level();
-  weapon_alias.frame();arsenal.commit();arsenal.observe_equipped();restore_context();unlock_starting_weapon();progression();
+  visuals.begin_native_frame();arsenal.commit();arsenal.observe_equipped();restore_context();unlock_starting_weapon();progression();
   gold_vendor.frame();
   if(gold_vendor.poll_purchase()){
    acquisition.request();
    api->log(mod,OPENRAC_LOG_INFO,"Golden Revolverator purchased:50000 normal bolts,0 gold bolts; ammunition and XP preserved");
   }
-  if(world.read<int>(world.mode())!=3)preview_rotor.reset();
-  if(world.read<int>(world.mode())!=5)scene_rotor.reset();
+  visuals.set_mode(world.read<int>(world.mode()));
   ammunition.frame();alias.frame();vendor.set_preview_class(alias.ready()?NativeAmmoAlias::native_class:225);vendor.frame();menu.frame();
   world.set_active(arsenal.revolverator_active());
   world.set_golden(golden());presentation.set_golden(golden());
@@ -122,12 +122,13 @@ struct Session {
    !controller.flight_count()&&!world.release_recoil_active();
   acquisition.frame(safe,xp.acquisition_presentation_active()>0);
   if(acquisition.active()){primary=false;f=world.snapshot(false,epoch);}
-  world.set_drill_head_scale(rotor.controller().radial_scale(),rotor.controller().axial_scale());
+  world.set_drill_head_scale(visuals.controller().radial_scale(),visuals.controller().axial_scale());
   controller.tick(f);
   if(controller.attack_phase()!=Phase::Spinning&&!f.paused)world.pose(controller.attack_phase(),controller.spin_angle());
-  if(f.equipped)rotor.update(world.weapon(),ammunition.count(),controller.attack_phase(),controller.charge(),controller.spin_angle(),f.seconds,f.playing,f.paused);
-  else rotor.reset();
-  world.set_drill_head_scale(rotor.controller().radial_scale(),rotor.controller().axial_scale());
+  visuals.update_held({world.weapon(),ammunition.count(),controller.attack_phase(),controller.charge(),controller.spin_angle(),f,golden(),arsenal.equipped_revolverator()});
+  if(const auto event=visuals.poll_equip())equip_audio.play(event->actor);
+  else if(f.equipped)equip_audio.suppress_native_appearance(world.weapon());
+  world.set_drill_head_scale(visuals.controller().radial_scale(),visuals.controller().axial_scale());
   arsenal.commit();
   presentation.frame(f.equipped);
  }
@@ -197,10 +198,10 @@ public:
  }
 };
 void canonicalize_weapon(unsigned moby){
- if(session&&session->weapon_alias.owns(moby))session->world.write<std::uint16_t>(moby+0xa6,NativeWeaponAlias::source_class);
+ if(session)session->visuals.prepare_native(moby);
 }
-void motion_input(){motion_input_original();if(session)session->world.enforce_release_recoil();}
-void planar_velocity(float angle){planar_velocity_original(angle);if(session)session->world.enforce_release_recoil();}
+void motion_input(){motion_input_original();if(session){session->world.enforce_carry_speed();session->world.enforce_release_recoil();}}
+void planar_velocity(float angle){planar_velocity_original(angle);if(session){session->world.enforce_carry_speed();session->world.enforce_release_recoil();}}
 void gold_offer(unsigned moby){if(!session||!session->gold_vendor.update(moby))gold_offer_original(moby);}
 void pad(U32 address,U32 report,int size){
  if(session&&address==session->world.global(0x13c940)&&size>0&&Memory::valid(report,unsigned(size)))
@@ -231,19 +232,20 @@ void walloper(U32 moby){
   s.arsenal.projected()==arsenal::RevolveratorKey&&
    (s.world.read<int>(s.world.mode())==5||s.acquisition.presenting());
  if(!custom){
-  if(held)s.weapon_alias.apply(moby,false);else s.weapon_alias.apply_preview(moby,false);
+  if(held)s.visuals.publish_held(moby,false,s.golden());
+  else s.visuals.publish_preview(NativeWeaponVisual::Preview::Acquisition,moby,false,s.golden());
   walloper_original(moby);return;
  }
  if(held){
+  s.equip_audio.suppress_native_appearance(moby);
   if(s.controller.attack_phase()==Phase::Spinning)s.world.align_weapon(s.controller.spin_angle());
   else s.world.align_release();
-  s.rotor.apply();const bool applied=s.weapon_alias.apply(moby,true,s.golden());
+  const bool applied=s.visuals.publish_held(moby,true,s.golden());
   static unsigned traced=0;if(traced<8&&s.api->setting_bool(s.mod,"trace")){
-   char text[160];std::snprintf(text,sizeof text,"weapon render alias held=%08x applied=%d class=%u ready=%d",moby,int(applied),unsigned(s.world.read<unsigned short>(moby+0xa6)),int(s.weapon_alias.ready()));s.api->log(s.mod,OPENRAC_LOG_INFO,text);++traced;
+   char text[160];std::snprintf(text,sizeof text,"weapon render alias held=%08x applied=%d class=%u ready=%d",moby,int(applied),unsigned(s.world.read<unsigned short>(moby+0xa6)),int(s.visuals.ready()));s.api->log(s.mod,OPENRAC_LOG_INFO,text);++traced;
   }
  }else{
-  s.scene_rotor.update(moby,0,Phase::Idle,0,0,0,false,true);
-  s.weapon_alias.apply_preview(moby,true,s.golden());
+  s.visuals.publish_preview(NativeWeaponVisual::Preview::Acquisition,moby,true,s.golden());
  }
 }
 void ammo_pickup(U32 moby){
@@ -261,6 +263,10 @@ void build_vendor(int skip){
  if(session)session->vendor.after_build(skip);
 }
 U32 load(int full){
+ // Other mods may use this native callback as an owned menu/actor relay.
+ // A real gameplay-load argument is a small flag; forward foreign guest
+ // callback arguments without destroying this mod's level-owned state.
+ if(unsigned(full)>18u)return load_original(full);
  if(session)session->before_load();
  const auto out=load_original(full);
  auto end=out;
@@ -283,7 +289,7 @@ U32 load(int full){
 U32 get_hit(U32 moby,int mask,int keep){
  if(session)session->xp.before_hit();
  const auto hit=hit_original(moby,mask,keep);
- if(session&&session->arsenal.revolverator_active()&&capturable_class(int(session->world.token(moby).klass))&&session->controller.attack_phase()!=Phase::Idle&&session->world.blocks_native_hit(hit)){
+ if(session&&session->arsenal.revolverator_active()&&session->controller.attack_phase()!=Phase::Idle&&session->world.blocks_native_hit(session->world.token(moby),hit)){
   session->xp.block_hit(moby);if(keep)hit_original(moby,mask,0);return 0;
  }
  if(session&&hit)session->xp.confirm_hit(moby,hit);
@@ -365,9 +371,9 @@ void preview_pose(unsigned moby){
  canonicalize_weapon(moby);preview_pose_original(moby);
  if(session){
   const bool custom=session->arsenal.projected()==arsenal::RevolveratorKey;
-  const bool applied=session->weapon_alias.apply_preview(moby,custom,session->golden());
+  const bool applied=session->visuals.publish_preview(NativeWeaponVisual::Preview::Equipped,moby,custom,session->golden());
   static unsigned traced=0;if(custom&&traced<8&&session->api->setting_bool(session->mod,"trace")){
-   char text[160];std::snprintf(text,sizeof text,"weapon preview alias moby=%08x applied=%d class=%u ready=%d",moby,int(applied),unsigned(session->world.read<unsigned short>(moby+0xa6)),int(session->weapon_alias.ready()));session->api->log(session->mod,OPENRAC_LOG_INFO,text);++traced;
+   char text[160];std::snprintf(text,sizeof text,"weapon preview alias moby=%08x applied=%d class=%u ready=%d",moby,int(applied),unsigned(session->world.read<unsigned short>(moby+0xa6)),int(session->visuals.ready()));session->api->log(session->mod,OPENRAC_LOG_INFO,text);++traced;
   }
  }
 }
@@ -376,17 +382,12 @@ template<MenuCall* Original>int draw_selected_preview(unsigned screen){
  auto& s=*session;const auto key=s.menu.selected_key();
  ArsenalScope view(s.arsenal,key?key:s.registry.equipped());
  const bool custom=key==arsenal::RevolveratorKey;
- if(!custom)s.preview_rotor.reset();
+ if(!custom)s.visuals.clear_preview(NativeWeaponVisual::Preview::Standalone);
  if(Memory::valid(screen,0x4c))for(unsigned offset:{0x44u,0x48u}){
   const auto moby=s.world.read<unsigned>(screen+offset);
   if(!Memory::valid(moby,256))continue;
-  // The isolated rotating model has no Ratchet hand pose. Neutralize its
-  // Walloper finger skeleton just as the held drill does, keeping the head
-  // attached to the housing. The actual held actor uses its separate rotor.
-  if(custom&&(s.world.read<unsigned short>(moby+0xa6)==180||s.weapon_alias.owns(moby)))
-   s.preview_rotor.update(moby,0,Phase::Idle,0,0,0,false,true);
-  if(s.weapon_alias.apply_preview(moby,custom,s.golden())&&custom)
-   s.weapon_alias.fit_preview(moby,s.world.read<int>(s.world.global(0x1d5bf0))==5?0.65f:1.f);
+  s.visuals.publish_preview(NativeWeaponVisual::Preview::Standalone,moby,custom,s.golden(),
+   s.world.read<int>(s.world.global(0x1d5bf0))==5?0.65f:1.f);
   s.alias.apply_preview(moby,custom);
  }
  return (*Original)(screen);
@@ -450,7 +451,7 @@ int autosave(int port,int slot){
 void save_io(){save_io_original();if(session)session->saves.after_io();}
 void before_restore(){
  if(!session)return;
- auto& s=*session;s.controller.cancel();s.rotor.reset(true);s.weapon_alias.frame();s.world.reset();s.primary=false;
+ auto& s=*session;s.controller.cancel();s.visuals.held_rotor().reset(true);s.visuals.restore_native();s.world.reset();s.primary=false;
  s.arsenal.project(arsenal::NativeWalloperKey);
 }
 void restore(unsigned source){
@@ -486,7 +487,7 @@ int get_state(revolverator_state_v1* out){
 int cancel(){if(!session)return 0;session->controller.cancel();return 1;}
 int get_mechanics(revolverator_mechanics_v1* out){
  if(!session||!out||out->size<sizeof(*out))return 0;
- const auto& motor=session->rotor.controller();
+ const auto& motor=session->visuals.controller();
  session->arsenal.commit();const auto* state=session->registry.state(arsenal::RevolveratorKey);
  *out={sizeof(*out),state?state->ammo:0,NativeAmmunition::capacity,motor.angle(),motor.speed(),unsigned(motor.dry_firing()),unsigned(motor.synchronized())};return 1;
 }
@@ -613,7 +614,7 @@ extern "C" OPENRAC_MOD_EXPORT int openrac_mod_load(const openrac_api* api,openra
   enemy<0>("rac1.moby.birdbot.update");enemy<1>("rac1.moby.sand_shark.update");enemy<2>("rac1.moby.wb_moby.update");
   enemy<3>("rac1.moby.scoutbot.update");enemy<4>("rac1.moby.spiderbot.update");enemy<5>("rac1.moby.blarg_trooper.update");
   enemy<6>("rac1.moby.moby294.update");enemy<7>("rac1.moby.moby573.update");enemy<8>("rac1.moby.moby1382.update");
-  enemy<9>("rac1.moby.peckbot.update");enemy<10>("rac1.moby.extermibot.update");enemy<11>("rac1.moby.moby1048.update");
+  enemy<9>("rac1.moby.peckbot.update");enemy<10>("rac1.moby.extermibot.update");enemy<11>("rac1.moby.blarg_commander.update");
   enemy<12>("rac1.moby.sharkigator_35.update");enemy<13>("rac1.moby.sharkigator_1059.update");
   session->xp.frame();
   if(!session->xp.compatible())throw std::runtime_error("Revolverator 0.3.0 requires Weapon XP API v4 when Weapon XP is enabled; update both mod packages");

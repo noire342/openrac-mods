@@ -41,10 +41,15 @@ public:
  // Call after native Hero_UpdateMotionInput and Hero_SetPlanarVelocity. Only
  // Ratchet's horizontal motion is clamped; gravity, world and camera keep ticking.
  void enforce_release_recoil();
+ // A carried enemy limits horizontal locomotion to half its native speed.
+ // The native ground-speed request remains untouched; repeated motion hooks
+ // enforce the same ceiling rather than multiplying velocity every time.
+ static constexpr float carry_speed_multiplier=.5f;
+ void enforce_carry_speed();
  std::uint64_t golden_explosions()const{return golden_explosions_;}
  std::uint64_t golden_hits()const{return golden_hits_;}
  bool frozen(std::uint32_t moby)const;
- bool blocks_native_hit(std::uint32_t hit)const;
+ bool blocks_native_hit(Target victim,std::uint32_t hit)const;
  bool lease_valid()const;
  bool flying(Target target)const;
  std::size_t flight_count()const;

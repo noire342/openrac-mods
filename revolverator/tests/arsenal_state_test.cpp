@@ -71,7 +71,9 @@ int main(){
      absent.seal();auto d=revolverator();d.key+=1;d.stable_id="other";
      require(!absent.register_weapon(d),"descriptor registry cannot mutate after the session is sealed");}
     {Registry r;auto d=revolverator();d.key=18;require(!r.register_weapon(d),"custom registration cannot steal a native item ID");
-     d=revolverator();d.carrier=9;require(!r.register_weapon(d),"unimplemented carrier adapters are rejected explicitly");
+     d=revolverator();d.carrier=0;require(!r.register_weapon(d),"zero carrier is rejected explicitly");
+     d=revolverator();d.carrier=37;require(!r.register_weapon(d),"out of range carrier cannot index native inventory");
+     d=revolverator();d.carrier=NativeWrenchKey;require(!r.register_weapon(d),"the permanent wrench is not a weapon transport");
      d=revolverator();d.capacity=65536;require(!r.register_weapon(d),"capacity must fit native metadata without truncation");
      d=revolverator();d.price=0xffffffffu;require(!r.register_weapon(d),"price cannot wrap a native signed bolt amount");
      d=revolverator();d.first_level=19;require(!r.register_weapon(d),"sale level must exist on the supported game");
@@ -79,6 +81,10 @@ int main(){
      require(r.register_weapon(revolverator()),"valid descriptor remains registerable after invalid attempts");
      d=revolverator();d.key+=2;require(!r.register_weapon(d),"duplicate stable ID is rejected even with a different logical key");
      d=revolverator();d.stable_id="other";require(!r.register_weapon(d),"duplicate logical key is rejected even with a new stable ID");}
+    {Registry r;auto d=revolverator();d.key=0x1000f;d.carrier=15;d.stable_id="noire342.bolt_blaster";d.capacity=0;
+     require(r.register_weapon(d)&&r.set_state(d.key,{true,0,13,false})&&r.equip(d.key),"foreign Blaster carrier retains its independent logical identity");
+     require(r.assign_quick(2,d.key)&&r.native_slots()[2]==15&&r.quick()[2]==d.key,"foreign logical favourites project only the native carrier");
+     require(r.snapshot().records[0].key==d.key&&r.snapshot().equipped==d.key,"snapshots retain foreign logical identity rather than replacing stock Blaster");}
     {Registry r;for(unsigned i=0;i<Registry::MaxDescriptors;++i){auto d=revolverator();d.key=0x20000+i;d.stable_id="test."+std::to_string(i);
         require(r.register_weapon(d),"bounded registry accepts every supported distinct descriptor");}
      auto d=revolverator();require(!r.register_weapon(d)&&r.definitions().size()==64,"descriptor count is capped at64 without losing earlier registrations");}

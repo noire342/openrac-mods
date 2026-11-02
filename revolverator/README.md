@@ -1,6 +1,27 @@
-# Revolverator 0.3.1 — Rotatore
+# Revolverator 0.3.2 — Rotatore
 
-La versione di sviluppo 0.3.1 usa **OpenRAC 0.10 su Windows e PAL Europe v2.00
+Carri armati, granchi tossici e la variante beige corazzata non possono essere afferrati:
+ricevono i normali colpi del Colpitore, con le regole native di danno e corazza.
+I comandanti Blarg possono invece essere afferrati. La regola vale anche per
+il Rotatore d'oro. Dettagli e prove:
+[nemici pesanti](docs/HEAVY_ENEMIES.md).
+
+La resa dell'arma nella 0.3.2 ha un gestore
+dedicato per gioco, pausa e anteprime. La testa si ingrandisce dall'innesto
+meccanico corretto. Quando viene selezionato, il corpo si compone con un
+rimbalzo e la trivella si avvita fino alla lunghezza normale in 0,60 secondi,
+con il suono meccanico nativo.
+Aprire il menu Armi conserva la stessa selezione senza ripetere il montaggio.
+Corretto anche il cambio d'arma dal menu PAL, compreso il Guanto Bomba:
+[selezione e montaggio](docs/EQUIP_MENU_FIX.md).
+Architettura e prove: [presentazione visiva](docs/VISUAL_PRESENTATION.md).
+
+La build 0.3.2 supera 33 gruppi di test e 297 controlli nativi PAL in nove
+scenari: [nemici pesanti](docs/validation/pal-032-heavy-enemies.json) e
+[menu, presentazione e combattimento](docs/validation/pal-032-regression.json).
+I vecchi receipt restano associati alle rispettive DLL precedenti.
+
+La versione 0.3.2 usa **OpenRAC 0.10 su Windows e PAL Europe v2.00
 (`SCES_509.16`) come riferimento**, mantenendo l'adattatore NTSC-U. Le prove
 specifiche della migrazione sono descritte in [PAL](docs/PAL.md). Aggiorna anche
 il caricamento degli asset al formato 4: dopo l'aggiornamento di OpenRAC usa
@@ -52,7 +73,7 @@ Non è una dichiarazione di compatibilità PAL o di campagna completa.
 Nel launcher ufficiale OpenRAC, pagina Mods, aggiungi
 [questa repository](https://github.com/noire342/openrac-mods), seleziona
 Revolverator e installalo. In alternativa importa con **File** lo ZIP
-`revolverator-0.3.1-windows-x86_64.zip`. Abilita la mod e avvia
+`revolverator-0.3.2-windows-x86_64.zip`. Abilita la mod e avvia
 la regione supportata della tua copia del gioco.
 Per provarla subito attiva **Rotatore sbloccato da subito** nelle impostazioni
 (**Revolverator sbloccato da subito** nella precedente0.2).
@@ -90,6 +111,7 @@ arbitraria da parte di altre mod.
 | Consumo | 1 carica per attivazione |
 | Pickup normale, se posseduto | 2 cariche, fino a 20 |
 | Prezzo per carica dal venditore | 25 bolt |
+| Velocità mentre tiene un nemico | Massimo 50% della velocità nativa, normale e Gold |
 
 Il toggle **Rotatore sbloccato da subito** (`start_unlocked`) è disattivato
 di default. Se attivo, assegna ed equipaggia l'arma con 20 cariche alla prima
@@ -100,6 +122,10 @@ toggle conserva arma e progressi acquisiti.
 Premi brevemente Cerchio per il colpo ravvicinato. Per la presa serve una
 pressione continua di almeno 0,18 secondi; rilascia per lanciare. I boss e i
 bersagli non ammessi alla presa conservano la risposta ravvicinata nativa.
+Mentre tiene un nemico, Ratchet si muove più lentamente: la velocità orizzontale
+è limitata al 50% di quella nativa. Il limite termina appena lascia o lancia
+il bersaglio; resta la breve pausa di 150 ms che accompagna il lancio.
+Dettagli e prove: [movimento durante la presa](docs/CARRY_SPEED.md).
 La punta gira lentamente a riposo, segue la rotazione del nemico durante la
 presa e si ferma senza cariche. Il tentativo a vuoto produce un breve scatto.
 

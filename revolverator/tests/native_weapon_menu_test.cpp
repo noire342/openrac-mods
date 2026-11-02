@@ -26,6 +26,7 @@ struct Invocation {unsigned buttons;WeaponKey projected;};
 struct Fixture:ArsenalMenuModel {
     std::vector<unsigned char> memory=std::vector<unsigned char>(0x2000000);
     openrac_api api{};GuestArena arena;Registry state;int current_level=1;
+    bool pal;
     WeaponKey view=NativeWalloperKey;
     int commits{},restores{},native_confirms{},native_slot_assigns{},ring_calls{},paging_calls{},finish_calls{},hover_sounds{};
     unsigned heap=0x1800000;bool fail_allocate=false;
@@ -50,7 +51,12 @@ struct Fixture:ArsenalMenuModel {
         const unsigned buttons=live->get<unsigned>(Pad);
         live->updates.push_back({buttons,live->view});
         if(live->get<unsigned>(Page+0x40)!=screen)return 0;
-        if(buttons&0xd00)return 1;
+        if((buttons&0xd00)&&live->get<int>(System+0x124)==0)return 1;
+        if(buttons&0x10){
+            if(const auto back=live->get<unsigned>(Page+0x38)){
+                live->put(System+8,back);if(live->pal)return 0;
+            }else if(live->get<int>(System+0x124)==0)return -1;
+        }
         int selected=live->get<int>(screen+0x3c),rows=live->get<int>(screen+0x40),cols=live->get<int>(screen+0x44);
         int row=selected/cols,column=selected%cols;
         if(buttons&0x1000){
@@ -69,11 +75,13 @@ struct Fixture:ArsenalMenuModel {
         if(buttons&0x8000)selected=column?selected-1:selected+cols-1;
         if(buttons&0x2000)selected=column+1<cols?selected+1:selected-cols+1;
         live->put(screen+0x3c,selected);
-        if(buttons&0x40){
+        if((buttons&0x40)&&!(live->get<unsigned>(screen+0x30)&1u)){
+            if(live->pal&&live->get<int>(System+0x148)!=0)return 0;
             const auto cell=live->get<WeaponMenuCell>(live->get<unsigned>(screen+0x48)+unsigned(selected)*10);
             require(cell.id>=0&&cell.id<=36,"a native confirm never receives a logical key");
             if(cell.id&&live->get<std::uint8_t>(NativeOwned+unsigned(cell.id))){
                 live->put(System+0x30,int(cell.id));++live->native_confirms;
+                if(live->pal)live->put(System+0x148,10);
             }
         }
         return 0;
@@ -115,21 +123,35 @@ struct Fixture:ArsenalMenuModel {
     static float sine(float x){return std::sin(x);}
     static float normalize(float x){constexpr float pi=3.1415927f;while(x>pi)x-=pi*2;while(x<-pi)x+=pi*2;return x;}
     static int sound(int,int,unsigned){++live->hover_sounds;return 0;}
-    Fixture(){
-        live=this;api.memory=memory.data();api.game="rac1";api.version="ntsc";
+    explicit Fixture(bool pal_version=false):pal(pal_version){
+        live=this;api.memory=memory.data();api.game="rac1";api.version=pal?"pal":"ntsc";
         api.loaded_level=+[]{return live->current_level;};api.relocate_data=+[](unsigned at){return at;};api.relocate_level_data=+[](int,unsigned at){return at;};
+        if(pal)api.relocate_data=+[](unsigned at){
+            // PAL names and addresses are resolved into the same fixture
+            // layout; its menu fields retain their real PAL offsets.
+            switch(at){
+            case 0x13ca40:return 0x13c940u;case 0x13d490:return 0x13d388u;
+            case 0x13d5c8:return 0x13d4c0u;case 0x141fa0:return 0x141ea0u;
+            case 0x160390:return 0x160290u;case 0x160394:return 0x160294u;
+            case 0x1cf4a0:return Cells;case 0x1d5f70:return System;
+            default:return at;
+            }
+        };
         api.function=+[](const char* name)->void*{
-            if(!std::strcmp(name,"FUN_001ffc30"))return reinterpret_cast<void*>(&sprite);
-            if(!std::strcmp(name,"FUN_001ff960"))return reinterpret_cast<void*>(&find);
-            if(!std::strcmp(name,"FUN_001f4280"))return reinterpret_cast<void*>(&paging);
-            if(!std::strcmp(name,"FUN_001f4398"))return reinterpret_cast<void*>(&finish);
-            if(!std::strcmp(name,"FUN_001f9dc8"))return reinterpret_cast<void*>(&cosine);
-            if(!std::strcmp(name,"FUN_001f9de0"))return reinterpret_cast<void*>(&sine);
-            if(!std::strcmp(name,"FUN_001fa610"))return reinterpret_cast<void*>(&normalize);
-            if(!std::strcmp(name,"FUN_0022da68"))return reinterpret_cast<void*>(&sound);
-            if(!std::strcmp(name,"FUN_001ff288"))return reinterpret_cast<void*>(&allocate);
-            if(!std::strcmp(name,"FUN_0021b858"))return reinterpret_cast<void*>(&update);
-            if(!std::strcmp(name,"FUN_0021d948"))return reinterpret_cast<void*>(&draw);
+            const auto matches=[=](const char* canonical){
+                return !std::strcmp(name,(live->pal?RegionBindings::pal():RegionBindings::ntsc()).function(canonical));
+            };
+            if(matches("FUN_001ffc30"))return reinterpret_cast<void*>(&sprite);
+            if(matches("FUN_001ff960"))return reinterpret_cast<void*>(&find);
+            if(matches("FUN_001f4280"))return reinterpret_cast<void*>(&paging);
+            if(matches("FUN_001f4398"))return reinterpret_cast<void*>(&finish);
+            if(matches("FUN_001f9dc8"))return reinterpret_cast<void*>(&cosine);
+            if(matches("FUN_001f9de0"))return reinterpret_cast<void*>(&sine);
+            if(matches("FUN_001fa610"))return reinterpret_cast<void*>(&normalize);
+            if(matches("FUN_0022da68"))return reinterpret_cast<void*>(&sound);
+            if(matches("FUN_001ff288"))return reinterpret_cast<void*>(&allocate);
+            if(matches("FUN_0021b858"))return reinterpret_cast<void*>(&update);
+            if(matches("FUN_0021d948"))return reinterpret_cast<void*>(&draw);
             return nullptr;
         };
         api.function_at=+[](unsigned at)->void*{return at==UpdateCode?reinterpret_cast<void*>(&update):at==DrawCode?reinterpret_cast<void*>(&draw):nullptr;};
@@ -211,6 +233,50 @@ int main(){
         f.state.set_state(RevolveratorKey,{false,0,0});f.put(Pad,0x40u);f.state.equip(NativeWalloperKey);
         menu.grid_update(Weapon,Fixture::update);
         require(f.state.equipped()==NativeWalloperKey&&f.native_confirms==1,"confirm cannot equip an unowned drill through owned Walloper");
+    }
+    {
+        // PAL update_menu_system clears next after activating current. This
+        // is the real steady state of pause -> Armi, rather than next=current.
+        for(const int id:{10,15,18}){
+            Fixture f(true);NativeWeaponMenu menu(&f.api,f.arena,f);menu.frame();
+            require(menu.ready(),"PAL grids resolve using their regional symbols and cell anchor");
+            f.state.equip(RevolveratorKey);f.restore_gameplay();f.put(System+0x30,18);
+            const auto found=std::find(NativeIds.begin(),NativeIds.end(),id);
+            f.put(Weapon+0x3c,int(found-NativeIds.begin()));f.put(Pad,0x40u);
+            require(f.get<unsigned>(System+4)==Page&&f.get<unsigned>(System+8)==0,
+                    "stable PAL page has a current pointer and no pending page");
+            require(menu.grid_update(Weapon,Fixture::update)==0&&f.native_confirms==1,
+                    "a stable PAL page forwards exactly one accepted native confirmation");
+            require(f.state.equipped()==WeaponKey(id)&&f.get<int>(System+0x30)==id&&f.view==WeaponKey(id),
+                    "PAL can leave the drill for Bomb Glove, Blaster and original Walloper");
+            require(f.get<int>(System+0x148)==10,"the original PAL callback retains its selection cooldown");
+            require(f.state.custom_state(RevolveratorKey)->ammo==10,
+                    "switching to native equipment preserves custom ammunition");
+            f.put(System+0x148,0);f.put(Weapon+0x3c,15);menu.grid_update(Weapon,Fixture::update);
+            require(f.state.equipped()==RevolveratorKey&&f.get<int>(System+0x30)==18&&f.native_confirms==2,
+                    "returning to the drill keeps its logical identity separate from Walloper18");
+        }
+    }
+    {
+        Fixture f(true);NativeWeaponMenu menu(&f.api,f.arena,f);menu.frame();
+        f.state.equip(RevolveratorKey);f.restore_gameplay();f.put(System+0x30,18);
+        f.put(Weapon+0x3c,0);f.put(Pad,0x40u);f.put(System+0x148,1);
+        menu.grid_update(Weapon,Fixture::update);
+        require(f.native_confirms==0&&f.state.equipped()==RevolveratorKey&&f.get<int>(System+0x30)==18,
+                "PAL cooldown rejects both native and logical selection changes");
+        f.put(System+0x148,0);f.put(Page+0x38,Page+0x100);f.put(Pad,0x50u);f.updates.clear();
+        menu.grid_update(Weapon,Fixture::update);
+        require(f.get<unsigned>(System+8)==Page+0x100&&f.native_confirms==0&&
+                f.state.equipped()==RevolveratorKey&&f.updates.size()==1,
+                "PAL Back plus Cross requests the back page without equipping the hovered weapon");
+        f.put(System+8,0u);f.put(Page+0x38,0u);f.put(Pad,0x40u);f.put(Weapon+0x30,0x21u);
+        menu.grid_update(Weapon,Fixture::update);
+        require(f.native_confirms==0&&f.state.equipped()==RevolveratorKey,
+                "a PAL read-only grid cannot equip its highlighted item");
+        f.put(Weapon+0x30,0x20u);f.put<std::uint8_t>(NativeOwned+10,0);
+        menu.grid_update(Weapon,Fixture::update);
+        require(f.native_confirms==0&&f.state.equipped()==RevolveratorKey&&f.get<int>(System+0x30)==18,
+                "an unowned PAL Bomb Glove cannot replace the equipped drill");
     }
     {
         Fixture f;NativeWeaponMenu menu(&f.api,f.arena,f);menu.frame();

@@ -44,7 +44,8 @@ const State* Registry::custom_state(WeaponKey key)const {
 }
 bool Registry::register_weapon(const Descriptor& definition){
     if(sealed_||descriptors_.size()>=MaxDescriptors||definition.key<FirstCustomKey||
-       !stable_id_valid(definition.stable_id)||definition.carrier!=NativeWalloperKey||
+       !stable_id_valid(definition.stable_id)||definition.carrier==0||definition.carrier>MaximumNativeKey||
+       definition.carrier==NativeWrenchKey||
        definition.icon_bank==0||definition.icon_bank>65535||definition.capacity>MaximumCapacity||
        definition.price>INT_MAX||definition.first_level>18||descriptor(definition.key))return false;
     for(const auto& d:descriptors_)if(d.stable_id==definition.stable_id)return false;

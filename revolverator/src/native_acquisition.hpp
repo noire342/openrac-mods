@@ -14,13 +14,16 @@ public:
         void (*project)(void*){};
         void (*restore)(void*){};
         void (*pose_item)(void*,unsigned){};
+        // Called only after the scene completed normally and gameplay is restored.
+        // level0 is an acquisition; levels2..10 retain each queued XP event.
+        void (*complete)(void*,unsigned){};
     };
     static constexpr unsigned maximum_pending=64;
     NativeAcquisition(const openrac_api*,openrac_mod*,GuestArena&,Context);
     ~NativeAcquisition();
     NativeAcquisition(const NativeAcquisition&)=delete;
     NativeAcquisition& operator=(const NativeAcquisition&)=delete;
-    bool request()noexcept;
+    bool request(unsigned level=0)noexcept;
     // safe: gameplay is ready and no capture/throw owns Ratchet. external_active:
     // an XP/native presentation already owns the scene. Pending requests wait.
     void frame(bool safe,bool external_active);
@@ -43,6 +46,8 @@ private:
     int level_=-1;
     unsigned buffer_{},hero_{},vendor_{},scene_{},mode_{};
     unsigned requests_{},quiet_{},settled_{};
+    std::array<unsigned,maximum_pending> request_levels_{};
+    unsigned request_head_{};
     float cooldown_seconds_{};
     bool preparing_=false,presenting_=false,projected_=false,hidden_=false,reported_=false;
     Identity body_{};

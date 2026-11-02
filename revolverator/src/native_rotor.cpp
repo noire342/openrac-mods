@@ -7,9 +7,11 @@
 namespace revolverator {
 namespace {
 constexpr std::array<float,4> identity{0,0,0,1};
-// Original Hoven class164: rigid corkscrew component (source joint35). These
-// values are recorded by tools/build_model_pack.py in rotor.json as well.
-constexpr Vec3 source_pivot{.16387811303138733f,0,2.4493489265441895f};
+// Original Hoven class164: the full rigid corkscrew socket (source joint35),
+// also recorded by tools/build_model_pack.py in rotor.json. Any point on this
+// -Y shaft works for rotation, but axial growth must use the actual socket Y:
+// scaling about Y=0 pulled the head away from the stationary motor housing.
+constexpr Vec3 source_pivot{.16387811303138733f,-4.713099479675293f,2.4493489265441895f};
 constexpr float source_scale=.08294187486171722f;
 Vec3 turn_minus_y(Vec3 p,float angle){
     const float c=std::cos(angle),s=std::sin(angle);
@@ -70,6 +72,13 @@ void NativeRotor::update(unsigned weapon,int ammunition,Phase phase,float charge
     controller_.update({ammunition,phase,charge,enemy_angle,seconds,playing,paused});
     apply();
 }
+void NativeRotor::set_assembly_pose(const EquipAssemblyPose& pose){
+    if(!std::isfinite(pose.housing_scale)||!std::isfinite(pose.head_axial_scale)||!std::isfinite(pose.head_turn)||
+       pose.housing_scale<=0||pose.housing_scale>1.25f||pose.head_axial_scale<=0||pose.head_axial_scale>1.f){
+        assembly_={};return;
+    }
+    assembly_=pose;
+}
 void NativeRotor::apply(){
     if(!attached())return;
     // Modes1 replace the native Walloper jab's five local records. Body geometry
@@ -78,8 +87,14 @@ void NativeRotor::apply(){
         const auto node=arena_+joint*64;
         write(node+0x10,identity);write(node+0x20,Vec3{1,1,1});write(node+0x30,Vec3{});
     }
-    const float angle=controller_.angle();
-    const float radial=controller_.radial_scale(),axial=controller_.axial_scale();
+    // Root scale is inherited by the entire native joint chain. Pop the motor
+    // and drill together, then extend/turn only the head from its real socket.
+    // The inactive envelope may retain a constant shaft phase after a stopped
+    // or interrupted intro; no rotor angle is reset or accumulated here.
+    const float housing=assembly_.housing_scale;
+    write(arena_+0x20,Vec3{housing,housing,housing});
+    const float angle=std::remainder(controller_.angle()+assembly_.head_turn,6.2831853071795864769f);
+    const float radial=controller_.radial_scale(),axial=controller_.axial_scale()*assembly_.head_axial_scale;
     const auto head=arena_+4*64;
     // Native joint quaternions use conjugated axis images. Positive native Y
     // therefore rotates the head about its outward -Y shaft, matching +Z enemy
@@ -104,6 +119,7 @@ void NativeRotor::unlink(unsigned node){
 void NativeRotor::reset(bool discard){
     if(attached())for(unsigned joint=0;joint<5;++joint)unlink(arena_+joint*64);
     owner_=klass_=stamp_=vars_=0;level_=-1;controller_.reset();
+    assembly_={};
     pending_dry_=false;
     pivot_=inverse_bind_offset_={};
     if(discard){arena_=0;arena_level_=-1;}

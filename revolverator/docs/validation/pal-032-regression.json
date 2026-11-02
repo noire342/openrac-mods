@@ -1,0 +1,1159 @@
+{
+  "format": 1,
+  "kind": "rotatore-0.3.2-native-pal-regression",
+  "version": "0.3.2",
+  "scope": "Official OpenRAC 0.10 PAL Europe v2.00; isolated Novalis fixtures",
+  "revolverator_sha256": "9d9ba8704588b5838589d6d0042e7a8cc8ee972b4e0fee24cf3c26672fce7a52",
+  "operating_system_ui_automation_used": false,
+  "user_saves_copied": false,
+  "enemy_health_rewards_or_xp_written": false,
+  "audible_review_performed": false,
+  "scenarios": [
+    {
+      "name": "pal032-reg-menu-02",
+      "kind": "menu",
+      "native_result": {
+        "event": "result",
+        "pass": true,
+        "checks": 56,
+        "failures": 0,
+        "cycles": 9,
+        "frame": 3641
+      },
+      "native_checks": 56,
+      "failed_checks": [],
+      "exit_code": 0,
+      "original_inputs_checked": 107,
+      "original_inputs_changed": 0,
+      "original_manifest_sha256": "7b05726b43b6899cebfcab1a0bff7e97cc0bd5ea8b92f3469c4cd9fb4d91f06d",
+      "fixture_sha256": "391205a9c84ec1c516b2969ee0f48044061e7589848a0e1342488ff28e7f2f76",
+      "log_sha256": "0ae41c594f64af0983e830f2de952203f5719ed556a3abf5ad2c068b5e53288c",
+      "artifacts": {
+        "revolverator/lib/windows-x86_64/arsenal_file_overlay.dll": {
+          "sha256": "abbb81a5840bf26951333deb799c4613a24033b71edcc8f7d83f3950ec743d31",
+          "matches_fixture_pin": true
+        },
+        "pal-equip-menu-qa/lib/windows-x86_64/pal_equip_menu_qa.dll": {
+          "sha256": "d1dea4cc93e90fc9cf1478f8a93ba09fe8fadca44caddf9ddf8d69dfb97b2499",
+          "matches_fixture_pin": true
+        },
+        "runtime": {
+          "sha256": "e720a59d130b4b2289a4eb15cad3e33f739a72a385992db171ef43490205fb0e",
+          "matches_fixture_pin": true
+        },
+        "revolverator/lib/windows-x86_64/revolverator.dll": {
+          "sha256": "9d9ba8704588b5838589d6d0042e7a8cc8ee972b4e0fee24cf3c26672fce7a52",
+          "matches_fixture_pin": true
+        },
+        "weapon-xp/lib/windows-x86_64/weapon_xp.dll": {
+          "sha256": "29406690a04910737cc14b02d1ef1cdea39d3c26650bf51b72ca71a1fbf758ea",
+          "matches_fixture_pin": true
+        },
+        "revolverator/lib/windows-x86_64/arsenal_compat.dll": {
+          "sha256": "9603bd048ae54b63143bc2a9e35596a581c3fc6a6415dd51e7bc81ca5afaf091",
+          "matches_fixture_pin": true
+        }
+      },
+      "plugin_order": [
+        "weapon-xp",
+        "revolverator",
+        "pal-equip-menu-qa"
+      ],
+      "passed": true,
+      "analyzer_accepts": true
+    },
+    {
+      "name": "pal032-reg-pause-base-02",
+      "kind": "pause",
+      "native_result": {
+        "event": "result",
+        "pass": true,
+        "gold": false,
+        "walloper": false,
+        "checks": 57,
+        "failures": 0,
+        "pause_samples": 267,
+        "pause_bad_class": 0,
+        "pause_bad_parts": 0,
+        "pause_bad_phase": 0,
+        "pause_bad_angle": 0,
+        "resume_samples": 477,
+        "resume_bad_class": 0,
+        "enlarged_samples": 120,
+        "peak_radial": 2.0,
+        "peak_frame": 706,
+        "max_anchor_error_native": 0.000822,
+        "max_socket_gap_source": 0.0023018,
+        "hold_samples": 57,
+        "hold_bad_scale": 0,
+        "walloper_samples": 0,
+        "walloper_bad_parts": 0
+      },
+      "native_checks": 57,
+      "failed_checks": [],
+      "exit_code": 0,
+      "original_inputs_checked": 107,
+      "original_inputs_changed": 0,
+      "original_manifest_sha256": "7b05726b43b6899cebfcab1a0bff7e97cc0bd5ea8b92f3469c4cd9fb4d91f06d",
+      "fixture_sha256": "6b15f0d025d3a4c23159975e2a27556ab5ed7e3f5796585dd88d1aaeafea4736",
+      "log_sha256": "e80a3099a7b85b83f6e19b6bf9d9c2db34e54eafdb6c0a69f5e00e0637960faf",
+      "artifacts": {
+        "pal-pause-drill-qa/lib/windows-x86_64/pal_pause_drill_qa.dll": {
+          "sha256": "f3bf521154a62b5f00acb4f21386102cc7a8dba12a92dc9b6c71856861bfcaf9",
+          "matches_fixture_pin": true
+        },
+        "revolverator/lib/windows-x86_64/revolverator.dll": {
+          "sha256": "9d9ba8704588b5838589d6d0042e7a8cc8ee972b4e0fee24cf3c26672fce7a52",
+          "matches_fixture_pin": true
+        },
+        "runtime": {
+          "sha256": "e720a59d130b4b2289a4eb15cad3e33f739a72a385992db171ef43490205fb0e",
+          "matches_fixture_pin": true
+        },
+        "revolverator/lib/windows-x86_64/arsenal_file_overlay.dll": {
+          "sha256": "abbb81a5840bf26951333deb799c4613a24033b71edcc8f7d83f3950ec743d31",
+          "matches_fixture_pin": true
+        },
+        "weapon-xp/lib/windows-x86_64/weapon_xp.dll": {
+          "sha256": "29406690a04910737cc14b02d1ef1cdea39d3c26650bf51b72ca71a1fbf758ea",
+          "matches_fixture_pin": true
+        },
+        "revolverator/lib/windows-x86_64/arsenal_compat.dll": {
+          "sha256": "9603bd048ae54b63143bc2a9e35596a581c3fc6a6415dd51e7bc81ca5afaf091",
+          "matches_fixture_pin": true
+        }
+      },
+      "plugin_order": [
+        "weapon-xp",
+        "revolverator",
+        "pal-pause-drill-qa"
+      ],
+      "passed": true,
+      "equip_sound_proof": true,
+      "analyzer_accepts": true
+    },
+    {
+      "name": "pal032-reg-pause-gold-02",
+      "kind": "pause",
+      "native_result": {
+        "event": "result",
+        "pass": true,
+        "gold": true,
+        "walloper": false,
+        "checks": 69,
+        "failures": 0,
+        "pause_samples": 267,
+        "pause_bad_class": 0,
+        "pause_bad_parts": 0,
+        "pause_bad_phase": 0,
+        "pause_bad_angle": 0,
+        "resume_samples": 477,
+        "resume_bad_class": 0,
+        "enlarged_samples": 120,
+        "peak_radial": 2.0,
+        "peak_frame": 1062,
+        "max_anchor_error_native": 0.0008188,
+        "max_socket_gap_source": 0.0023018,
+        "hold_samples": 57,
+        "hold_bad_scale": 0,
+        "walloper_samples": 0,
+        "walloper_bad_parts": 0
+      },
+      "native_checks": 69,
+      "failed_checks": [],
+      "exit_code": 0,
+      "original_inputs_checked": 107,
+      "original_inputs_changed": 0,
+      "original_manifest_sha256": "7b05726b43b6899cebfcab1a0bff7e97cc0bd5ea8b92f3469c4cd9fb4d91f06d",
+      "fixture_sha256": "7fbe23199dc31ecda7b2929631736735f704f4474816911e034f008be664ee1f",
+      "log_sha256": "be1a04cf5dfc926ff529ed3509d219bb2b88f9db448a80a425078e4481760ae7",
+      "artifacts": {
+        "pal-pause-drill-qa/lib/windows-x86_64/pal_pause_drill_qa.dll": {
+          "sha256": "f3bf521154a62b5f00acb4f21386102cc7a8dba12a92dc9b6c71856861bfcaf9",
+          "matches_fixture_pin": true
+        },
+        "revolverator/lib/windows-x86_64/revolverator.dll": {
+          "sha256": "9d9ba8704588b5838589d6d0042e7a8cc8ee972b4e0fee24cf3c26672fce7a52",
+          "matches_fixture_pin": true
+        },
+        "runtime": {
+          "sha256": "e720a59d130b4b2289a4eb15cad3e33f739a72a385992db171ef43490205fb0e",
+          "matches_fixture_pin": true
+        },
+        "revolverator/lib/windows-x86_64/arsenal_file_overlay.dll": {
+          "sha256": "abbb81a5840bf26951333deb799c4613a24033b71edcc8f7d83f3950ec743d31",
+          "matches_fixture_pin": true
+        },
+        "weapon-xp/lib/windows-x86_64/weapon_xp.dll": {
+          "sha256": "29406690a04910737cc14b02d1ef1cdea39d3c26650bf51b72ca71a1fbf758ea",
+          "matches_fixture_pin": true
+        },
+        "revolverator/lib/windows-x86_64/arsenal_compat.dll": {
+          "sha256": "9603bd048ae54b63143bc2a9e35596a581c3fc6a6415dd51e7bc81ca5afaf091",
+          "matches_fixture_pin": true
+        }
+      },
+      "plugin_order": [
+        "weapon-xp",
+        "revolverator",
+        "pal-pause-drill-qa"
+      ],
+      "passed": true,
+      "equip_sound_proof": true,
+      "analyzer_accepts": true
+    },
+    {
+      "name": "pal032-reg-walloper-02",
+      "kind": "pause",
+      "native_result": {
+        "event": "result",
+        "pass": true,
+        "gold": false,
+        "walloper": true,
+        "checks": 20,
+        "failures": 0,
+        "pause_samples": 123,
+        "pause_bad_class": 0,
+        "pause_bad_parts": 0,
+        "pause_bad_phase": 0,
+        "pause_bad_angle": 0,
+        "resume_samples": 136,
+        "resume_bad_class": 0,
+        "enlarged_samples": 0,
+        "peak_radial": 1.0,
+        "peak_frame": 0,
+        "max_anchor_error_native": 0.0,
+        "max_socket_gap_source": 0.0,
+        "hold_samples": 0,
+        "hold_bad_scale": 0,
+        "walloper_samples": 266,
+        "walloper_bad_parts": 0
+      },
+      "native_checks": 20,
+      "failed_checks": [],
+      "exit_code": 0,
+      "original_inputs_checked": 107,
+      "original_inputs_changed": 0,
+      "original_manifest_sha256": "7b05726b43b6899cebfcab1a0bff7e97cc0bd5ea8b92f3469c4cd9fb4d91f06d",
+      "fixture_sha256": "cda85f317099041adb4f10616d7d29151c6c713a75801e515547b20aeb875b4b",
+      "log_sha256": "97f00bf469a4054d3f6f400579732a6742724fb6d801877ed4bdccc2257c9f5f",
+      "artifacts": {
+        "pal-pause-drill-qa/lib/windows-x86_64/pal_pause_drill_qa.dll": {
+          "sha256": "f3bf521154a62b5f00acb4f21386102cc7a8dba12a92dc9b6c71856861bfcaf9",
+          "matches_fixture_pin": true
+        },
+        "revolverator/lib/windows-x86_64/revolverator.dll": {
+          "sha256": "9d9ba8704588b5838589d6d0042e7a8cc8ee972b4e0fee24cf3c26672fce7a52",
+          "matches_fixture_pin": true
+        },
+        "runtime": {
+          "sha256": "e720a59d130b4b2289a4eb15cad3e33f739a72a385992db171ef43490205fb0e",
+          "matches_fixture_pin": true
+        },
+        "revolverator/lib/windows-x86_64/arsenal_file_overlay.dll": {
+          "sha256": "abbb81a5840bf26951333deb799c4613a24033b71edcc8f7d83f3950ec743d31",
+          "matches_fixture_pin": true
+        },
+        "weapon-xp/lib/windows-x86_64/weapon_xp.dll": {
+          "sha256": "29406690a04910737cc14b02d1ef1cdea39d3c26650bf51b72ca71a1fbf758ea",
+          "matches_fixture_pin": true
+        },
+        "revolverator/lib/windows-x86_64/arsenal_compat.dll": {
+          "sha256": "9603bd048ae54b63143bc2a9e35596a581c3fc6a6415dd51e7bc81ca5afaf091",
+          "matches_fixture_pin": true
+        }
+      },
+      "plugin_order": [
+        "weapon-xp",
+        "revolverator",
+        "pal-pause-drill-qa"
+      ],
+      "passed": true,
+      "equip_sound_proof": null,
+      "analyzer_accepts": true
+    },
+    {
+      "name": "pal032-reg-carry-base-02",
+      "kind": "carry",
+      "native_result": {
+        "event": "result",
+        "pass": true,
+        "base": true,
+        "cancel": false,
+        "baseline_samples": 61,
+        "carry_samples": 71,
+        "resume_samples": 36,
+        "baseline_speed": 0.0894057,
+        "carry_speed": 0.0351085,
+        "resume_speed": 0.0721527,
+        "baseline_displacement_speed": 5.395953,
+        "carry_displacement_speed": 2.1326302,
+        "resume_displacement_speed": 4.3891806,
+        "carry_min": 0.0052083,
+        "carry_max": 0.0474999,
+        "raw_native_carry_mean": 0.0702171,
+        "ground_speed": 0.0702171,
+        "carry_limit_failures": 0,
+        "recoil_frames": 9,
+        "first_native_resume_tick": 13,
+        "resume_native_full_samples": 36,
+        "carry_min_ratio": 0.5,
+        "carry_max_ratio": 0.5,
+        "ground_delta": 0.0,
+        "target_delta": 0.0,
+        "native_gravity_delta_error": 0.0
+      },
+      "native_checks": 25,
+      "failed_checks": [],
+      "exit_code": 0,
+      "original_inputs_checked": 107,
+      "original_inputs_changed": 0,
+      "original_manifest_sha256": "7b05726b43b6899cebfcab1a0bff7e97cc0bd5ea8b92f3469c4cd9fb4d91f06d",
+      "fixture_sha256": "fc0046b760bf27018d8f4e53e1bc4419f57b775bf019b36c61e33512dce480be",
+      "log_sha256": "ca4552d309180a80124b0bb55273f72fea2d0d25bc5ea7ea6037ab664e5a33ed",
+      "artifacts": {
+        "revolverator/lib/windows-x86_64/arsenal_file_overlay.dll": {
+          "sha256": "abbb81a5840bf26951333deb799c4613a24033b71edcc8f7d83f3950ec743d31",
+          "matches_fixture_pin": true
+        },
+        "runtime": {
+          "sha256": "e720a59d130b4b2289a4eb15cad3e33f739a72a385992db171ef43490205fb0e",
+          "matches_fixture_pin": true
+        },
+        "pal-carry-speed-qa/lib/windows-x86_64/pal_carry_speed_qa.dll": {
+          "sha256": "e54f5348121acce37953735f7d81bf1b9c0c983bf3121c2e6bf036463caab584",
+          "matches_fixture_pin": true
+        },
+        "revolverator/lib/windows-x86_64/revolverator.dll": {
+          "sha256": "9d9ba8704588b5838589d6d0042e7a8cc8ee972b4e0fee24cf3c26672fce7a52",
+          "matches_fixture_pin": true
+        },
+        "weapon-xp/lib/windows-x86_64/weapon_xp.dll": {
+          "sha256": "29406690a04910737cc14b02d1ef1cdea39d3c26650bf51b72ca71a1fbf758ea",
+          "matches_fixture_pin": true
+        },
+        "revolverator/lib/windows-x86_64/arsenal_compat.dll": {
+          "sha256": "9603bd048ae54b63143bc2a9e35596a581c3fc6a6415dd51e7bc81ca5afaf091",
+          "matches_fixture_pin": true
+        }
+      },
+      "plugin_order": [
+        "pal-carry-speed-qa",
+        "weapon-xp",
+        "revolverator"
+      ],
+      "passed": true,
+      "velocity_ratio": 0.49999928792274245,
+      "actual_world_displacement_ratio": 0.5061991547168234
+    },
+    {
+      "name": "pal032-reg-carry-gold-02",
+      "kind": "carry",
+      "native_result": {
+        "event": "result",
+        "pass": true,
+        "base": false,
+        "cancel": false,
+        "baseline_samples": 61,
+        "carry_samples": 71,
+        "resume_samples": 36,
+        "baseline_speed": 0.0894057,
+        "carry_speed": 0.0351085,
+        "resume_speed": 0.0721527,
+        "baseline_displacement_speed": 5.395953,
+        "carry_displacement_speed": 2.1326302,
+        "resume_displacement_speed": 4.3891806,
+        "carry_min": 0.0052083,
+        "carry_max": 0.0474999,
+        "raw_native_carry_mean": 0.0702171,
+        "ground_speed": 0.0702171,
+        "carry_limit_failures": 0,
+        "recoil_frames": 9,
+        "first_native_resume_tick": 13,
+        "resume_native_full_samples": 36,
+        "carry_min_ratio": 0.5,
+        "carry_max_ratio": 0.5,
+        "ground_delta": 0.0,
+        "target_delta": 0.0,
+        "native_gravity_delta_error": 0.0
+      },
+      "native_checks": 37,
+      "failed_checks": [],
+      "exit_code": 0,
+      "original_inputs_checked": 107,
+      "original_inputs_changed": 0,
+      "original_manifest_sha256": "7b05726b43b6899cebfcab1a0bff7e97cc0bd5ea8b92f3469c4cd9fb4d91f06d",
+      "fixture_sha256": "e143af9b2690a45cf12a2755ada0c6ca814961171283390191889d3ae3fd9adc",
+      "log_sha256": "f3136cfa2858ff504771c764080a1ea1d2d8ddd517496a764b23b5c9706b7427",
+      "artifacts": {
+        "revolverator/lib/windows-x86_64/arsenal_file_overlay.dll": {
+          "sha256": "abbb81a5840bf26951333deb799c4613a24033b71edcc8f7d83f3950ec743d31",
+          "matches_fixture_pin": true
+        },
+        "runtime": {
+          "sha256": "e720a59d130b4b2289a4eb15cad3e33f739a72a385992db171ef43490205fb0e",
+          "matches_fixture_pin": true
+        },
+        "pal-carry-speed-qa/lib/windows-x86_64/pal_carry_speed_qa.dll": {
+          "sha256": "e54f5348121acce37953735f7d81bf1b9c0c983bf3121c2e6bf036463caab584",
+          "matches_fixture_pin": true
+        },
+        "revolverator/lib/windows-x86_64/revolverator.dll": {
+          "sha256": "9d9ba8704588b5838589d6d0042e7a8cc8ee972b4e0fee24cf3c26672fce7a52",
+          "matches_fixture_pin": true
+        },
+        "weapon-xp/lib/windows-x86_64/weapon_xp.dll": {
+          "sha256": "29406690a04910737cc14b02d1ef1cdea39d3c26650bf51b72ca71a1fbf758ea",
+          "matches_fixture_pin": true
+        },
+        "revolverator/lib/windows-x86_64/arsenal_compat.dll": {
+          "sha256": "9603bd048ae54b63143bc2a9e35596a581c3fc6a6415dd51e7bc81ca5afaf091",
+          "matches_fixture_pin": true
+        }
+      },
+      "plugin_order": [
+        "pal-carry-speed-qa",
+        "weapon-xp",
+        "revolverator"
+      ],
+      "passed": true,
+      "velocity_ratio": 0.49999928792274245,
+      "actual_world_displacement_ratio": 0.5061991547168234
+    }
+  ],
+  "native_checks_passed": 264,
+  "accepted_scenarios": 6,
+  "actual_menu_results": [
+    {
+      "cycle": 0,
+      "target": "Bomb",
+      "native_held": 10,
+      "native_persisted": 10,
+      "visible_actor_class": 192,
+      "housing_min": null,
+      "housing_max": null,
+      "head_axial_min": null,
+      "head_axial_max": null,
+      "phases": [
+        0
+      ],
+      "bomb_ammo_before": 10,
+      "bomb_ammo_after": 9
+    },
+    {
+      "cycle": 1,
+      "target": "RotatoreAfterBomb",
+      "native_held": 18,
+      "native_persisted": 18,
+      "visible_actor_class": 2017,
+      "housing_min": 0.022,
+      "housing_max": 1.21998,
+      "head_axial_min": 0.025,
+      "head_axial_max": 1.0,
+      "phases": [
+        0
+      ],
+      "bomb_ammo_before": 9,
+      "bomb_ammo_after": 9
+    },
+    {
+      "cycle": 2,
+      "target": "Blaster",
+      "native_held": 15,
+      "native_persisted": 15,
+      "visible_actor_class": 168,
+      "housing_min": null,
+      "housing_max": null,
+      "head_axial_min": null,
+      "head_axial_max": null,
+      "phases": [
+        0
+      ],
+      "bomb_ammo_before": 9,
+      "bomb_ammo_after": 9
+    },
+    {
+      "cycle": 3,
+      "target": "RotatoreAfterBlaster",
+      "native_held": 18,
+      "native_persisted": 18,
+      "visible_actor_class": 2017,
+      "housing_min": 0.022,
+      "housing_max": 1.21998,
+      "head_axial_min": 0.025,
+      "head_axial_max": 1.0,
+      "phases": [
+        0
+      ],
+      "bomb_ammo_before": 9,
+      "bomb_ammo_after": 9
+    },
+    {
+      "cycle": 4,
+      "target": "Pyrocitor",
+      "native_held": 16,
+      "native_persisted": 16,
+      "visible_actor_class": 176,
+      "housing_min": null,
+      "housing_max": null,
+      "head_axial_min": null,
+      "head_axial_max": null,
+      "phases": [
+        0
+      ],
+      "bomb_ammo_before": 9,
+      "bomb_ammo_after": 9
+    },
+    {
+      "cycle": 5,
+      "target": "RotatoreAfterPyrocitor",
+      "native_held": 18,
+      "native_persisted": 18,
+      "visible_actor_class": 2017,
+      "housing_min": 0.022,
+      "housing_max": 1.21998,
+      "head_axial_min": 0.025,
+      "head_axial_max": 1.0,
+      "phases": [
+        0
+      ],
+      "bomb_ammo_before": 9,
+      "bomb_ammo_after": 9
+    },
+    {
+      "cycle": 6,
+      "target": "Walloper",
+      "native_held": 18,
+      "native_persisted": 18,
+      "visible_actor_class": 180,
+      "housing_min": null,
+      "housing_max": null,
+      "head_axial_min": null,
+      "head_axial_max": null,
+      "phases": [
+        0
+      ],
+      "bomb_ammo_before": 9,
+      "bomb_ammo_after": 9
+    },
+    {
+      "cycle": 7,
+      "target": "RotatoreAfterWalloper",
+      "native_held": 18,
+      "native_persisted": 18,
+      "visible_actor_class": 2017,
+      "housing_min": 0.022,
+      "housing_max": 1.21998,
+      "head_axial_min": 0.025,
+      "head_axial_max": 1.0,
+      "phases": [
+        0
+      ],
+      "bomb_ammo_before": 9,
+      "bomb_ammo_after": 9
+    },
+    {
+      "cycle": 8,
+      "target": "RotatoreUnchangedArmi",
+      "native_held": 18,
+      "native_persisted": 18,
+      "visible_actor_class": 2017,
+      "housing_min": 1.0,
+      "housing_max": 1.0,
+      "head_axial_min": 1.0,
+      "head_axial_max": 1.0,
+      "phases": [
+        0
+      ],
+      "bomb_ammo_before": 9,
+      "bomb_ammo_after": 9
+    }
+  ],
+  "true_custom_equip_sound_cues": [
+    {
+      "cycle": 1,
+      "helper_frame": 1079,
+      "bank": 3,
+      "sound": 127,
+      "accepted": true
+    },
+    {
+      "cycle": 3,
+      "helper_frame": 1807,
+      "bank": 3,
+      "sound": 127,
+      "accepted": true
+    },
+    {
+      "cycle": 5,
+      "helper_frame": 2499,
+      "bank": 3,
+      "sound": 127,
+      "accepted": true
+    },
+    {
+      "cycle": 7,
+      "helper_frame": 3226,
+      "bank": 3,
+      "sound": 127,
+      "accepted": true
+    }
+  ],
+  "unchanged_custom_selection_does_not_replay_sound": true,
+  "source_snapshot": [
+    {
+      "file": "include/arsenal_hooks_api.h",
+      "sha256": "aff96dbccb1d1703540cf583a3239716d448dd220adb1e6b20763ccfa845622e"
+    },
+    {
+      "file": "include/arsenal_inventory_api.h",
+      "sha256": "723850487ec6bd6f76c980b032cd5c339cad5ec5f18d5f87be12d0bc6edc9a1e"
+    },
+    {
+      "file": "include/file_overlay_api.h",
+      "sha256": "aa693e4b0a87c3ef910cd794ab418040364aaa466c05ee84abc78dc6ae0e5859"
+    },
+    {
+      "file": "include/revolverator_api.h",
+      "sha256": "bfc5eb762b393e05feb020e6f9dc3cd3414ea466f356c2ecdaaee315dc53813b"
+    },
+    {
+      "file": "include/weapon_xp_api.h",
+      "sha256": "682421084af676782bb76160c3f502b8ee4ec005787540d4b68d1208a87bb433"
+    },
+    {
+      "file": "src/ammunition_icon_data.hpp",
+      "sha256": "2846fc263a2b8495870c586767ddbae227346cf0e04a8fd3b0d33837e19237cf"
+    },
+    {
+      "file": "src/arm_math.cpp",
+      "sha256": "fb6698d07cccbb037186d2bf52449f759d223c45338c30ecf4d5ff705a0f4f6d"
+    },
+    {
+      "file": "src/arm_math.hpp",
+      "sha256": "41e85b458d8aa01159735cfe935d15c2a6b74979f06763b1c810275c7c208b2a"
+    },
+    {
+      "file": "src/arsenal_identity_view.hpp",
+      "sha256": "f6694ae4993e41806e28f8a4e4e20dc2c4d2a5156a1e31afc7af1c5cee2e8a5d"
+    },
+    {
+      "file": "src/arsenal_menu_model.hpp",
+      "sha256": "f1a7ae02a1d2581a8d36b83fcb0562a3538a92b181beef08a0e4871ec108192a"
+    },
+    {
+      "file": "src/arsenal_state.cpp",
+      "sha256": "d6ff4de81c9f20357483aae2d839e3a99a97588473a319dcd5e18c9547eafbb5"
+    },
+    {
+      "file": "src/arsenal_state.hpp",
+      "sha256": "8b85c5fa1a7fc353df5113f1e4184e740ec65952d5b3521c25fbb4471843e4ee"
+    },
+    {
+      "file": "src/arsenal_store.cpp",
+      "sha256": "b11d417641446462d8f0e2f5d9df47ed77410d19ef3ff1a46a5c6f2b877dabe0"
+    },
+    {
+      "file": "src/arsenal_store.hpp",
+      "sha256": "d12c6356501279b5d60e0a306f02eeaa7c3508f36f3bdcef4560919d2c5dd6a4"
+    },
+    {
+      "file": "src/attachment.cpp",
+      "sha256": "6f823494c78fa74e656bcd1781e675fcfce41e1252745473424cac7dfbab0a3d"
+    },
+    {
+      "file": "src/attachment.hpp",
+      "sha256": "750930dd9141f6ad60ea09924afa665c9e91d6ca7c4c369ad376aa2e45d067a0"
+    },
+    {
+      "file": "src/controller.cpp",
+      "sha256": "b8138cbd95132451b9b15abd33571950299642e5542c424c64db8a59f1089d86"
+    },
+    {
+      "file": "src/controller.hpp",
+      "sha256": "d7ccd69cf3b26916133a63d1e62cd96dc321d6e3d7cdb70ad3dbe1ba5e383b4f"
+    },
+    {
+      "file": "src/damage_targets.hpp",
+      "sha256": "a38aa9a1a922fe8cf935850e55c49275cdc99d5c228f8f1f476eea460f27f690"
+    },
+    {
+      "file": "src/equip_assembly.cpp",
+      "sha256": "134192564781effc875449fb9f47201e492a519f8c2ef87aea1f8b1f030d1c8d"
+    },
+    {
+      "file": "src/equip_assembly.hpp",
+      "sha256": "7ccce173a33192eabd16b22271dc9c18e1240ecfc4c8b7ad09c33a9127178400"
+    },
+    {
+      "file": "src/gold_shop_layout.hpp",
+      "sha256": "bd7a8fa7cb403c5f40239908d0e69366fb11d35ce5da8942c64c2106d375130f"
+    },
+    {
+      "file": "src/golden_impact.cpp",
+      "sha256": "28c7f7a254cfecfef96fd18a3323d6bd4060993d2562ab10835b0a0f57e71793"
+    },
+    {
+      "file": "src/golden_impact.hpp",
+      "sha256": "d4a18b1f1022dc407cfcf221fb17e4b708a6f2912e26dfbfdb67aa051d1d8510"
+    },
+    {
+      "file": "src/hd_icon.cpp",
+      "sha256": "c7624825a082227013199b2f1c4e208658656bac75491edb07ee635e399d5dd1"
+    },
+    {
+      "file": "src/hd_icon.hpp",
+      "sha256": "19f41a974b2e38826265f21cf0e6f29b1bacf171e222453cd07f7d79bb9a055b"
+    },
+    {
+      "file": "src/hud_table_scope.hpp",
+      "sha256": "eb717ab9299ded6ce612c86acbc0e48f185c957f1c296c5a9bd7e2e023e9ffe2"
+    },
+    {
+      "file": "src/inventory_extension.cpp",
+      "sha256": "d42cc51e371bb89a767953419c590aca110046d8d4a27c25f42a2de23fe31217"
+    },
+    {
+      "file": "src/inventory_extension.hpp",
+      "sha256": "cc189bd32ced3ec2dc393a36e7094e80cdb8cc58a7fbbbe137314d7d2ae84a3d"
+    },
+    {
+      "file": "src/localization.hpp",
+      "sha256": "0bed89b80f993251f9809d0ae5f1388069da7fa77ce885643706593236e9a051"
+    },
+    {
+      "file": "src/memory.hpp",
+      "sha256": "a2e6cb979638fa7bebf7ca36adc8e5788b28c3153547930c830deaae14aa60e7"
+    },
+    {
+      "file": "src/mod.cpp",
+      "sha256": "ee60aa1b4cd59ee9bdbd32603903ee171ae1981fe8ac2ed24d573aeaac1c0ea1"
+    },
+    {
+      "file": "src/native_acquisition.cpp",
+      "sha256": "54fe73335a6b49cad3a11125f4aa79fed61b5b6357346bab43ff3ae6a838dadb"
+    },
+    {
+      "file": "src/native_acquisition.hpp",
+      "sha256": "8bfe65a16cf476f854f6441cf69bb30cd9ba0e92c55d285f0fb4528b0a5b66b6"
+    },
+    {
+      "file": "src/native_ammunition.cpp",
+      "sha256": "eb74089f7edc8bfcf2e52d93108323cd27a566c061d65b7b10cdf69bf6661567"
+    },
+    {
+      "file": "src/native_ammunition.hpp",
+      "sha256": "885d093b6d7e1ffbf2341227b2fa1effe5c9cd2f229f5c09ffdbd11d3d4ef0b5"
+    },
+    {
+      "file": "src/native_arena.hpp",
+      "sha256": "53992bc14e1e76a530aad3773fe2d6626211b65002fd3b20bf9fc5f24d79d50c"
+    },
+    {
+      "file": "src/native_arm.cpp",
+      "sha256": "d93ac24730914d0fe2fea24a99ac197698a6c3db421cbb941d3ab709fe2d7c59"
+    },
+    {
+      "file": "src/native_arm.hpp",
+      "sha256": "eaab888554b517cf92cc1abfa11b2e53312faefa588d2d78598d6018022c59a7"
+    },
+    {
+      "file": "src/native_arsenal.cpp",
+      "sha256": "c29cb967316ef4f5eabc93827c955364f86d74427655fb712cf1f312b037083c"
+    },
+    {
+      "file": "src/native_arsenal.hpp",
+      "sha256": "c73acf5dc94d462b7d20038ed721ff320326d754ec19e0f7750ed780e475abc5"
+    },
+    {
+      "file": "src/native_arsenal_save.cpp",
+      "sha256": "d44339334cb9b7ba9bb65dd050035c13414dc62e8f9439cf160bb57ff4513f2a"
+    },
+    {
+      "file": "src/native_arsenal_save.hpp",
+      "sha256": "1a999e210db266f5896763478be68f4ea012b734da72c5358641acd79d77bdf4"
+    },
+    {
+      "file": "src/native_arsenal_xp.cpp",
+      "sha256": "4aba652982145a94af498a1fc3167fc879fe8b4aef2c89282e2f7c5222a517c4"
+    },
+    {
+      "file": "src/native_arsenal_xp.hpp",
+      "sha256": "e0d5219ed226e8836110650aed60827d8c06d8d0349b2b5312c3f65f831a47d0"
+    },
+    {
+      "file": "src/native_asset_bundle.cpp",
+      "sha256": "e830c60c334fa6f0238816cbc94ea516340ffc3d949bc920092d934ac17f6270"
+    },
+    {
+      "file": "src/native_asset_bundle.hpp",
+      "sha256": "1a40ef632b16d84c9ddb940a76318dbdbecf5a9554abb3026efde56a98394981"
+    },
+    {
+      "file": "src/native_class_alias.cpp",
+      "sha256": "4eadff23e0b165215a7a4f62a1b247357815f3915110505a4df6ec2adc82f3a8"
+    },
+    {
+      "file": "src/native_class_alias.hpp",
+      "sha256": "0dab37ffaf1688b7496372f780da36cd8f518adc24cce23ce9fd07e3adffebed"
+    },
+    {
+      "file": "src/native_compatibility_modules.cpp",
+      "sha256": "5b924f5b081f3e7b14bba9a8cc8bdcb8c679b5733962da39f14d4a5a187d89ff"
+    },
+    {
+      "file": "src/native_compatibility_modules.hpp",
+      "sha256": "ad1fe04e21a5673e8d4dd872182377effd164b42918c6e0a8cdd65685d972fc5"
+    },
+    {
+      "file": "src/native_equip_audio.cpp",
+      "sha256": "407bd06ac5124a6c85cec7e272ea0cdde31e334a3f6860b4142aea02023cf8f0"
+    },
+    {
+      "file": "src/native_equip_audio.hpp",
+      "sha256": "439546aa17ec8a46568b3689a4069eb56de16bdb726dec7823fbbaa47aee1ea3"
+    },
+    {
+      "file": "src/native_gold_vendor.cpp",
+      "sha256": "cf87a1e16caf0d2d942ea8468d79c3dbc4ffaec64ade1f5a9d37cc1db91f16e0"
+    },
+    {
+      "file": "src/native_gold_vendor.hpp",
+      "sha256": "e01b6fd5825a3890b90a5544718dbdcb86069b947fa6e6f1a32f20445b082a5e"
+    },
+    {
+      "file": "src/native_icon_variants.cpp",
+      "sha256": "9b67c1f969670ce22e15d6b899772c48e98608fd5074276ffadf6d047de796d5"
+    },
+    {
+      "file": "src/native_icon_variants.hpp",
+      "sha256": "dbc9194981ae06e8379b5a92a6320f5da0c8c4dfbee8ec78173addc8bba4addf"
+    },
+    {
+      "file": "src/native_rotor.cpp",
+      "sha256": "805a33636117ac65249e266225073d315af490860719c215a48971094c2974e8"
+    },
+    {
+      "file": "src/native_rotor.hpp",
+      "sha256": "67eff8808b1acd4eb8a0925216cd831171116aeb40993dde9e72851d35ae0eab"
+    },
+    {
+      "file": "src/native_runtime_hooks.cpp",
+      "sha256": "c4c1090817e03a506501be475b33f632f6c973f75b398afc70ba44286eb97635"
+    },
+    {
+      "file": "src/native_runtime_hooks.hpp",
+      "sha256": "f1fe6affe1fb462474641d045b1d41e7285806512e28c8b79ef96da6b2b3eb01"
+    },
+    {
+      "file": "src/native_vendor.cpp",
+      "sha256": "eaa1627f52a91e964b3c3845b601ea783b5a0ad10efbed24feba97d0330af5fa"
+    },
+    {
+      "file": "src/native_vendor.hpp",
+      "sha256": "a807324b465a9063341a1d0a2b8e2943b47d826a3974d5c3bfe8bb0ea7aec04e"
+    },
+    {
+      "file": "src/native_vendor_icons.cpp",
+      "sha256": "b0a84eb61ac096b35cd58d4c1cf0da46216d261f091e2afc476c3a37b6f2f8ef"
+    },
+    {
+      "file": "src/native_vendor_icons.hpp",
+      "sha256": "9ebc046ae73f89b30492727403ff8459115bd4461ecf93b8ae0e362b44630abe"
+    },
+    {
+      "file": "src/native_weapon_alias.cpp",
+      "sha256": "f5a9aca88f81fb0f5d2c03d2b1b5cc5a0a7ef043ae599e3cb51fb400b3409d80"
+    },
+    {
+      "file": "src/native_weapon_alias.hpp",
+      "sha256": "0ba34bde1a06415a0bcf9bf47800506412abe9139476c4ddd77d9b067ca1837b"
+    },
+    {
+      "file": "src/native_weapon_menu.cpp",
+      "sha256": "197834762e6a73336c5a72581e7991d9218186d1c30f30d2bd6f1a7ad2e06dd1"
+    },
+    {
+      "file": "src/native_weapon_menu.hpp",
+      "sha256": "b5da101a7f8b574a898acd5bce2404be4e1ca307e8658b3658cb1ffa5adaeae6"
+    },
+    {
+      "file": "src/native_weapon_visual.cpp",
+      "sha256": "c0ce1f7a0c4624eda26bd8224b7c5086278c8e6042e5e33fccb533cb357b615a"
+    },
+    {
+      "file": "src/native_weapon_visual.hpp",
+      "sha256": "f131fe6e342d44b254eb02fdc46d4ad56a4f39bd1a3556f2a9ce7bcbcb544249"
+    },
+    {
+      "file": "src/native_world.cpp",
+      "sha256": "3be7b02f4bdbe61086b8b729fe20b78f077191470b7839ec169350fb89afc4b4"
+    },
+    {
+      "file": "src/native_world.hpp",
+      "sha256": "d2a3b882d0c1259f292cbbbaf899c256d00ff3f014e90e5eb7395421e75b54d6"
+    },
+    {
+      "file": "src/presentation.cpp",
+      "sha256": "d87310454664571daadf7bb37696b1bb66846fced93b3d1199b77b520e9d0c5b"
+    },
+    {
+      "file": "src/presentation.hpp",
+      "sha256": "7af0d978d58e85a5ec1dd306860950cf3eba01432e73c3c4220f6780252fd64c"
+    },
+    {
+      "file": "src/region_bindings.cpp",
+      "sha256": "ac51f065953c8e2ad84702455c1173c5f5c0c82e7d4e7d0c5fcb29c9fe2e73b8"
+    },
+    {
+      "file": "src/region_bindings.hpp",
+      "sha256": "792fa12fdb7cd5938d258c47655c6da72cb410fb346e8ef4ff18a217408ffa66"
+    },
+    {
+      "file": "src/release_recoil.cpp",
+      "sha256": "424f6048d68de2373fb8aa201eb08b9c3c32cb1da6295d08149f9aa8b1440eaf"
+    },
+    {
+      "file": "src/release_recoil.hpp",
+      "sha256": "1344d4a63e6d183d3d35241bf2c305649a3e9fa2baf29cc7ccad1b212c231461"
+    },
+    {
+      "file": "src/rotor_controller.cpp",
+      "sha256": "9bfee3a4fd0bb39dd7ed6a45340e281d437208be61eb417bf1ad00c692cbacbe"
+    },
+    {
+      "file": "src/rotor_controller.hpp",
+      "sha256": "20ef4162ec8e554bc0270378d686921cf937112e74ebe1b26f57f632847da96d"
+    },
+    {
+      "file": "tests/arsenal_state_test.cpp",
+      "sha256": "eda552982376c97b0643133aaeb6e64699ebc543a11f4e8d26227c6a4a0a8ce7"
+    },
+    {
+      "file": "tests/arsenal_store_test.cpp",
+      "sha256": "73dbee70b8d2cba2dc8e5a8d22729a1c22b22b74e2c39cda6ffd5069619704d5"
+    },
+    {
+      "file": "tests/controller_test.cpp",
+      "sha256": "05785b79b925fd00d0b9615e25fd53a7cf1b154d7d929f39582a96be32625666"
+    },
+    {
+      "file": "tests/equip_assembly_test.cpp",
+      "sha256": "a22359d8b8d4afa57c8504e7e0f365081ec469981e4edb28b6e8abcc44ce06ed"
+    },
+    {
+      "file": "tests/golden_impact_test.cpp",
+      "sha256": "dce33903b090dbb0f597dc45c5d7aa305eb4a43c9a75eafb9a4a22c456c640fb"
+    },
+    {
+      "file": "tests/golden_upgrade_test.cpp",
+      "sha256": "d08d50641977d4c2b7de46711355af2ea4e3044b3dd7bebf84ffa67f74dd575a"
+    },
+    {
+      "file": "tests/hd_icon_test.cpp",
+      "sha256": "5ab148391dbf72d24dce14dde2772800518411289168ccb63e38f6549c0904e0"
+    },
+    {
+      "file": "tests/inventory_extension_test.cpp",
+      "sha256": "80fa59ffea1de65c3a98c5fefbb231fa474997ee434c77d6aff65b7a6bb738e1"
+    },
+    {
+      "file": "tests/loading_guard_test.cpp",
+      "sha256": "0df3e95d615c7127df1e43ca24e0d4d61ca1d9bba5dbac134b8ce3a714a5556d"
+    },
+    {
+      "file": "tests/localization_test.cpp",
+      "sha256": "ea19336f7d887e8ce40ccfd4e4c7d93064a9c3581fbcf20c5d536a8b51151f3b"
+    },
+    {
+      "file": "tests/native_acquisition_test.cpp",
+      "sha256": "997526fcb21025d6939da855515c3243ffed053719d62d79b23ab248aac8c6d3"
+    },
+    {
+      "file": "tests/native_ammunition_test.cpp",
+      "sha256": "f008130116947fd3a3b176c81ed67446ec136653bf6f4259671bdb66939c4e00"
+    },
+    {
+      "file": "tests/native_arena_test.cpp",
+      "sha256": "d15358871a018507176e3b83948a9f0d6c87561ad6262f549e4c95245b5f54a8"
+    },
+    {
+      "file": "tests/native_arsenal_save_test.cpp",
+      "sha256": "dbd98d437d1b83e248248c531b5cbbaae62462d4be12408c6e460983c45c491b"
+    },
+    {
+      "file": "tests/native_arsenal_test.cpp",
+      "sha256": "5f623bba54be5f5c0b7ecba02e5ce375772fc17482ffea983a39cce8147f8d1b"
+    },
+    {
+      "file": "tests/native_arsenal_xp_test.cpp",
+      "sha256": "9680c820df05651948aa85b57d8b0864d8aa93686edbad00c6a506c530e202de"
+    },
+    {
+      "file": "tests/native_asset_bundle_test.cpp",
+      "sha256": "bccc036b327f2b5fef69cd8463f9f81a332ccf5bbe4f9a881c9f3ff4eccfa50b"
+    },
+    {
+      "file": "tests/native_class_alias_test.cpp",
+      "sha256": "ff4bc1018a3fa24bad1d7e7e801172039877f6faf21ac49dfac49b57ef4f5179"
+    },
+    {
+      "file": "tests/native_equip_audio_test.cpp",
+      "sha256": "21c8a598123a058dea900506212170889df31dc94d83da730157e05caf5a0de7"
+    },
+    {
+      "file": "tests/native_gold_vendor_test.cpp",
+      "sha256": "e5fa01591409e0c50927bf9d314706614b58de182b51299458d8023a312fa67d"
+    },
+    {
+      "file": "tests/native_icon_variants_test.cpp",
+      "sha256": "6cb85c5497a9a0e47902791acb83bfd2432edcb4c5d57a0befc12bddb65dff30"
+    },
+    {
+      "file": "tests/native_qa/golden/probe.cpp",
+      "sha256": "ac95ca1308a663fbac679ce0a37375351dbaf97c32ec12c75043dfadb33fe976"
+    },
+    {
+      "file": "tests/native_rotor_test.cpp",
+      "sha256": "31fc762df0e4bca990f711f3f6a6b06dc506879c384bac21b9beecc2aecbbf0a"
+    },
+    {
+      "file": "tests/native_runtime_hooks_test.cpp",
+      "sha256": "1bf9fd1dfcad96840b5a59e1b5d575a1325ed72c3a5efc38895d03808eeca9e7"
+    },
+    {
+      "file": "tests/native_vendor_icons_test.cpp",
+      "sha256": "6afb111f836f1a616a2694122eb7b89e68e44191b62ce7bdfbc869dd99bdb062"
+    },
+    {
+      "file": "tests/native_vendor_test.cpp",
+      "sha256": "1a125bd25b860939518e422438c85bd54a183e8d2427eb38a4e4bbc3ebdeb090"
+    },
+    {
+      "file": "tests/native_weapon_alias_test.cpp",
+      "sha256": "4b01d85ef867df5b4399b86d2db87f8682d5cae2785fc5ad9fbe52c256b280f0"
+    },
+    {
+      "file": "tests/native_weapon_menu_test.cpp",
+      "sha256": "b626407541a18ba7aad2a15dee974528f412517a452bf34cb397fdf1920ef997"
+    },
+    {
+      "file": "tests/native_weapon_visual_test.cpp",
+      "sha256": "171caafb1819eb967bb4c4dfd7a23f2fb194767e96b482a1578ca3d97f571fe3"
+    },
+    {
+      "file": "tests/native_world_test.cpp",
+      "sha256": "02ef24f33f67d090d9020342430938a371ecb627acd0ed61615ab34080d0b9fb"
+    },
+    {
+      "file": "tests/pose_test.cpp",
+      "sha256": "cbcc4a39a4cde889e9a7e72c68bd1521db71a1b717c15b310263c995eefbd075"
+    },
+    {
+      "file": "tests/presentation_test.cpp",
+      "sha256": "77055439b515a0213f484a68806c7d0af740e8c6055d2b0357d6f867387a5c07"
+    },
+    {
+      "file": "tests/region_bindings_test.cpp",
+      "sha256": "b8ea641d9dad6ce4d14edaa7eb452a0155314fbe55a89fa44a4b421a17467023"
+    },
+    {
+      "file": "tests/release_recoil_test.cpp",
+      "sha256": "a8fced24b65d82da618f23a547d5cabc6af314c79733c9830de70eef881cf72a"
+    },
+    {
+      "file": "tests/rotor_controller_test.cpp",
+      "sha256": "8106cba07e889448c7bbc403284d3d2ecd787941d31828a9b6283073711ff42f"
+    },
+    {
+      "file": "third_party/openrac/common/json.cpp",
+      "sha256": "ced15acca8643494448e4ab2c2a75cede3736d22089dc93043ca7ea29c4b6371"
+    },
+    {
+      "file": "third_party/openrac/common/json.h",
+      "sha256": "717e27a1b58d47029dd2295f908be6f90dd30889c721ac25090d52d7f8a328fe"
+    }
+  ],
+  "helper_sources": [
+    {
+      "file": "equip-menu-probe/probe.cpp",
+      "sha256": "f699f613e85d5b1359f4e4cb30c0d58b9ed62c3b780711e7238f1e3080f4c443"
+    },
+    {
+      "file": "equip-menu-probe/analyze.py",
+      "sha256": "95bf4e1fc68c6816129e6be304441511ec409e29c5018252816fb06e5b2b9ce4"
+    },
+    {
+      "file": "pause-drill-probe/visual_fixture.inc",
+      "sha256": "39d9a826aa74914f527e095cab657dc7a97786b644e94cb5d22bece772e53433"
+    },
+    {
+      "file": "pause-drill-probe/analyze.py",
+      "sha256": "408edf4d3c1e83c1ca7958f16de0ddca3f5d329512368278560cd5c79f684910"
+    },
+    {
+      "file": "carry-speed-probe/probe.cpp",
+      "sha256": "a9e46fa07e0ddee0e1442ffb1a20907c906677b6ba12180d62537c0c5950a809"
+    },
+    {
+      "file": "release032-regression/prepare.ps1",
+      "sha256": "7fdaf8647650475d7c2bdde0abd14e6da97ddc81881876ec670a0fb866b9f518"
+    },
+    {
+      "file": "release032-regression/aggregate.py",
+      "sha256": "8300f602ddd52a91557d1871cfb42023e712e6d5484a5071730f9bf8b96dd1e5"
+    }
+  ],
+  "screenshots_note": "Native PNG snapshot indices differ from helper VSync counts; correlate retained PNG-write logs. RAM and screenshots are separately reviewed.",
+  "reviewed_native_screenshots": [
+    {
+      "path": "runs/pal032-reg-menu-02/shots/frame1794.png",
+      "sha256": "d9331c8efb82ecdc997a0e93bbd45ca62bfd63a74ef3594ac3bf33678b480613",
+      "description": "Rotatore equip: initially compact geometry",
+      "visually_reviewed": true,
+      "generated_or_retouched": false
+    },
+    {
+      "path": "runs/pal032-reg-menu-02/shots/frame1803.png",
+      "sha256": "d91b9d67bd1f2b9a431b4d1de5cc8718589f2930c3f84a15cc92180d70221fdc",
+      "description": "Rotatore equip: housing formed, drill initially nested at socket",
+      "visually_reviewed": true,
+      "generated_or_retouched": false
+    },
+    {
+      "path": "runs/pal032-reg-menu-02/shots/frame1818.png",
+      "sha256": "a856c9ffc6386b0268709086ae9b21fecee0bb9637418e16b830ac22a8364a74",
+      "description": "Rotatore equip: spiral extended and still connected",
+      "visually_reviewed": true,
+      "generated_or_retouched": false
+    },
+    {
+      "path": "runs/pal032-reg-pause-base-02/shots/frame630.png",
+      "sha256": "792c24605eaae97a27d790b19dccde1b7e4a247852b469f0103b4252cf7dcf86",
+      "description": "Base pause-entry frozen background retains custom model",
+      "visually_reviewed": true,
+      "generated_or_retouched": false
+    },
+    {
+      "path": "runs/pal032-reg-pause-gold-02/shots/frame960.png",
+      "sha256": "20cddc34e8bf3f92ca24f1600eb2abfe5823b24856f5fe02476c50e994d1803c",
+      "description": "Actual Gold purchase retains golden held geometry",
+      "visually_reviewed": true,
+      "generated_or_retouched": false
+    },
+    {
+      "path": "runs/pal032-reg-walloper-02/shots/frame690.png",
+      "sha256": "bb90ae956697578fbaf69245f3f45bd23ab04a7f0aa3e5eaeb2574090bc452be",
+      "description": "Original native Walloper remains separate",
+      "visually_reviewed": true,
+      "generated_or_retouched": false
+    }
+  ],
+  "limitations": [
+    "Targeted PAL native scenarios, not whole-campaign or every-platform certification.",
+    "Accepted native sound commands in muted fixtures are not a subjective audible review.",
+    "Heavy-enemy capture and native damage comparison are recorded in a separate receipt."
+  ],
+  "one_sound_per_real_custom_equip": true,
+  "pass": true
+}

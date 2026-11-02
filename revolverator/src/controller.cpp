@@ -10,9 +10,11 @@ Vec3 operator*(Vec3 a,float b){return {a.x*b,a.y*b,a.z*b};}
 float length_squared(Vec3 a){return a.x*a.x+a.y*a.y+a.z*a.z;}
 bool finite(Vec3 a){return std::isfinite(a.x)&&std::isfinite(a.y)&&std::isfinite(a.z);}
 bool capturable_class(int klass){
+ // ToxicCrab1202, AlienSnapper1048 and tanks253/625/1454 stay on the native
+ // Walloper hit path. BlargCommander1371 is a separate capturable enemy.
  switch(klass){
  case 35:case 1059:case 123:case 252:case 294:case 427:case 459:case 563:
- case 573:case 1382:case 577:case 580:case 623:case 1048:return true;
+ case 573:case 1382:case 577:case 580:case 623:case 1371:return true;
  default:return false; // Never catch NPCs, scenery, turrets, vehicles or bosses.
  }
 }

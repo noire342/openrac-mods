@@ -82,6 +82,7 @@ void run(const char* version){
  require(memory.level_transitioning(),"canonical regional mode6 invalidates level ownership even with same loaded_level");
  auto before=f.ram;
  p.set_golden(true);p.names();p.frame(true);p.select_identity(false);
+ require(!p.notify_acquisition(2)&&f.notifications==0,"native XP subtitle caller cannot write old strings during load");
  require(f.ram==before,"mode6 preserves existing arena, name bindings and gold icon references byte-exactly");
  const auto live_arena=before;
  // The native loader reuses that exact old arena as incoming compressed WAD
@@ -92,6 +93,7 @@ void run(const char* version){
  f.put(f.g(0x15f6a0),TextBank+0x200u); // changed bank must not trigger reset
  before=f.ram;
  p.frame(false);p.names();p.select_identity(true);p.set_golden(false);
+ require(!p.notify_acquisition(3),"acquisition request refuses an overlapping incoming WAD");
  require(f.ram==before,"no byte of overlapping WAD or foreign/new text bank is changed in loading mode");
  // Restore the live native tables as a same-level resume control. Real native
  // travel rebuilds them through the gameplay load hook; no mode0 action is

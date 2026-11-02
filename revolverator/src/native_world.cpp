@@ -363,6 +363,25 @@ void NativeWorld::enforce_release_recoil(){
  // vertical integration, platform carry, position, camera input and all AI.
  for(unsigned offset:{0x190u,0x194u,0x160u,0xe0u,0xe4u,0x1d20u,0x1d24u})write<float>(hero()+offset,0);
 }
+void NativeWorld::enforce_carry_speed(){
+ // Only the current capture owns this cost. Launched enemies have separate
+ // leases and must not keep Ratchet slowed while their flights finish.
+ if(!active_||!lease_valid()||!Memory::valid(hero(),0x22ac)||read<int>(mode())!=0||
+    read<int>(hero()+0x22a8)<=0||read<int>(hero()+0x10b8)!=18||
+    read<int>(hero()+0x10b4)!=2||read<unsigned char>(hero()+0x20a4)!=0)return;
+ const auto player=token(body());
+ const int state=read<int>(hero()+0x2084);
+ if(!identity_valid(player)||player.klass!=0||state==0x3d||state==0x82||state==0x77)return;
+ const float ground_speed=read<float>(hero()+0x194);
+ const auto velocity=read<Vec3>(hero()+0xe0);
+ if(!std::isfinite(ground_speed)||ground_speed<0||!finite(velocity))return;
+ const float speed=std::hypot(velocity.x,velocity.y);
+ const float limit=ground_speed*carry_speed_multiplier;
+ if(!std::isfinite(speed)||speed<=limit||speed==0)return;
+ const float scale=limit/speed;
+ write<float>(hero()+0xe0,velocity.x*scale);
+ write<float>(hero()+0xe4,velocity.y*scale);
+}
 void NativeWorld::attack_cancelled(){recoil_.cancel();recoil_body_={};arm_.reset();}
 void NativeWorld::cancelled(){
  ++cancellation_generation_;
@@ -371,10 +390,13 @@ void NativeWorld::cancelled(){
  deferred_={};deferred_head_=deferred_size_=frame_hits_=0;attack_cancelled();
 }
 void NativeWorld::set_damage_multiplier(float value){damage_multiplier_=std::isfinite(value)?std::clamp(value,1.f,16.f):1.f;}
-bool NativeWorld::blocks_native_hit(unsigned hit)const{
+bool NativeWorld::blocks_native_hit(Target victim,unsigned hit)const{
  // Built-in Walloper swing remains the attack animation; its legacy impact must
- // not kill the enemy before capture. Our posted impacts name the weapon moby.
- return Memory::valid(hit,0x40)&&read<unsigned>(hit+0x20)==body()
+ // not kill a capturable enemy before capture. Heavy enemies, tanks and bosses
+ // keep the original native hit, including armor and damage rules. Keep this
+ // decision with capture eligibility so callers cannot suppress their damage.
+ // Our posted impacts name the weapon moby.
+ return valid(victim)&&Memory::valid(hit,0x40)&&read<unsigned>(hit+0x20)==body()
   &&read<unsigned short>(hit+0x2a)!=2017
   &&(read<unsigned>(hit+0x24)&0x30000)!=0&&read<int>(hero()+0x10b8)==18;
 }

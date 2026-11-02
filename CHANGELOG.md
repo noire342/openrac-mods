@@ -1,5 +1,18 @@
 # Changelog
 
+## Rotatore / Revolverator 0.3.2 — 2026-11-02
+
+- Exclude armored Alien Snappers from capture. Keep tanks and Toxic Crabs
+  uncapturable while forwarding their original Walloper hits unchanged.
+- Distinguish the Blarg Commander and use its official update hook while a
+  capture lease owns it; preserve its existing native damage behavior.
+- Build the held weapon over 0.6 seconds when selected: housing first, then
+  screw deployment from the drill socket. Keep the existing attack pulse.
+- Correct native PAL Armi confirmation for Bomb Glove and the other weapons.
+  Reopening the same selection does not replay construction or its sound.
+- Preserve separate Walloper ownership, 20-round ammunition, save data,
+  optional weapon XP and the unchanged private compatibility utilities.
+
 ## Recupero componenti — development source, 2026-11-02
 
 - Add the PAL robot-fragment catalog, independent world/inventory core and copied C API v1.

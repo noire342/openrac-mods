@@ -48,7 +48,7 @@ the game's memory cards. Load it after other level-loading hooks, including XP,
 if managing `plugins.json` by hand. Full details and validation limits are in the
 module READMEs and [validation notes](docs/VALIDATION.md).
 
-## Install Rotatore / Revolverator 0.3.1
+## Install Rotatore / Revolverator 0.3.2
 
 1. Set up [official OpenRAC 0.10.0](https://github.com/OpenRAC/OpenRAC/releases/tag/launcher-v0.10.0)
    with your own **PAL Europe v2.00 / SCES_509.16** data, the reference region.
@@ -66,8 +66,14 @@ path or replacement client. The Gold upgrade adds a Novalis Gold-shop case:
 independent XP and quick-select identity. Gold-thrown enemies create a
 charge-scaled impact explosion.
 
-For local import, choose `revolverator-0.3.1-windows-x86_64.zip` with **Mods → File**.
-The [0.3.1 release](https://github.com/noire342/openrac-mods/releases/tag/revolverator-v0.3.1)
+Rotatore 0.3.2 keeps tanks, Toxic Crabs and armored Alien Snappers outside the
+capture system while preserving their native Walloper damage. Blarg Commanders
+remain capturable with their own native update hook. The weapon builds itself
+when equipped; its attack enlargement stays unchanged. PAL weapon-menu
+confirmation also correctly switches back to native weapons.
+
+For local import, choose `revolverator-0.3.2-windows-x86_64.zip` with **Mods → File**.
+The [0.3.2 release](https://github.com/noire342/openrac-mods/releases/tag/revolverator-v0.3.2)
 is available through ordinary repository discovery. It carries all four native
 packages: Weapon Experience, Revolverator, Skill Points and Cinematic Journeys.
 Skill Points retains its declared NTSC-U scope; its presence in the catalog does
@@ -75,7 +81,7 @@ not make it PAL-compatible.
 
 | Component | Current source | Role |
 |---|---|---|
-| [Revolverator](revolverator/README.md) |0.3.1 PAL reference | Additional weapon, Gold upgrade, native inventory/API v3 and automatic asset staging |
+| [Revolverator](revolverator/README.md) |0.3.2 PAL reference | Additional weapon, Gold upgrade, native inventory/API v3 and automatic asset staging |
 | [Weapon Experience](weapon-xp/README.md) |0.6.4 | Optional API v4 progression companion with PAL HUD/camera corrections |
 | [Skill Points: RetroAchievements](skill-points-ra/README.md) |0.1.3 | Native menu, offline rules and read-only/event C API v1 |
 | [Cinematic Journeys](cinematic-journeys/README.md) |0.1.1 | Cutscene protection and configurable original flight animation |

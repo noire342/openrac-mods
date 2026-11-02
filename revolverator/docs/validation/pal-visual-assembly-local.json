@@ -1,0 +1,1234 @@
+{
+  "format": 1,
+  "kind": "native-pal-independent-weapon-visual-and-equip-validation",
+  "region": "pal",
+  "scene": "Novalis",
+  "reference_runtime_sha256": "e720a59d130b4b2289a4eb15cad3e33f739a72a385992db171ef43490205fb0e",
+  "fixed_revolverator_sha256": "4ffe8a5407ad4338b51d6d0a2ef2319e3e7cc435f21ebf69972171ef8398f8c3",
+  "operating_system_ui_automation_used": false,
+  "user_saves_copied": false,
+  "enemy_health_rewards_or_xp_written": false,
+  "fixture_seeds": [
+    "base ownership via public API",
+    "native equipment for comparison",
+    "60000 ordinary bolts",
+    "NG+ shop gate",
+    "hero/Birdbot positions"
+  ],
+  "native_checks_passed": 146,
+  "native_sound_cue": {
+    "driver_command": "0x11",
+    "bank": 3,
+    "sound": 127,
+    "source": "native class180 sequence0 sound definition2",
+    "one_accepted_command_per_equip": true,
+    "no_replay_on_pause_or_Armi_return": true,
+    "audible_review_performed": false,
+    "fixtures_muted": true
+  },
+  "scenarios": [
+    {
+      "name": "pal-pause-drill-final-base-04",
+      "expected_native_result": true,
+      "result": {
+        "event": "result",
+        "pass": true,
+        "gold": false,
+        "walloper": false,
+        "checks": 57,
+        "failures": 0,
+        "pause_samples": 267,
+        "pause_bad_class": 0,
+        "pause_bad_parts": 0,
+        "pause_bad_phase": 0,
+        "pause_bad_angle": 0,
+        "resume_samples": 462,
+        "resume_bad_class": 0,
+        "enlarged_samples": 120,
+        "peak_radial": 2.0,
+        "peak_frame": 706,
+        "max_anchor_error_native": 0.000822,
+        "max_socket_gap_source": 0.0023018,
+        "hold_samples": 57,
+        "hold_bad_scale": 0,
+        "walloper_samples": 0,
+        "walloper_bad_parts": 0
+      },
+      "matches_expected_result": true,
+      "process_exit": {
+        "exit_code": 0,
+        "observed_utc": "2026-11-02T01:33:42.6606760Z",
+        "pid": 35344
+      },
+      "original_inputs": 107,
+      "original_inputs_modified": [],
+      "checks": 57,
+      "failed_checks": [],
+      "artifacts": {
+        "pal-pause-drill-qa\\lib\\windows-x86_64\\pal_pause_drill_qa.dll": "F039772362733952118A6C30130609FABBC7C056811FBD861519804F2815D7E4",
+        "revolverator\\lib\\windows-x86_64\\arsenal_compat.dll": "9603BD048AE54B63143BC2A9E35596A581C3FC6A6415DD51E7BC81CA5AFAF091",
+        "runtime": "E720A59D130B4B2289A4EB15CAD3E33F739A72A385992DB171EF43490205FB0E",
+        "revolverator\\lib\\windows-x86_64\\revolverator.dll": "4FFE8A5407AD4338B51D6D0A2EF2319E3E7CC435F21EBF69972171EF8398F8C3",
+        "revolverator\\lib\\windows-x86_64\\arsenal_file_overlay.dll": "ABBB81A5840BF26951333DEB799C4613A24033B71EDCC8F7D83F3950EC743D31",
+        "weapon-xp\\lib\\windows-x86_64\\weapon_xp.dll": "29406690A04910737CC14B02D1EF1CDEA39D3C26650BF51B72CA71A1FBF758EA"
+      },
+      "log_sha256": "54f5e21f5bc29be676ba89198ecfabe1ad0f2a5fc705e3b9500a729f0906a14e",
+      "stages": [
+        {
+          "event": "stage",
+          "stage": 0,
+          "frame": 593,
+          "mode": 0,
+          "phase": 0,
+          "class": 2017
+        },
+        {
+          "event": "stage",
+          "stage": 1,
+          "frame": 628,
+          "mode": 0,
+          "phase": 0,
+          "class": 2017
+        },
+        {
+          "event": "stage",
+          "stage": 2,
+          "frame": 678,
+          "mode": 3,
+          "phase": 0,
+          "class": 2017
+        },
+        {
+          "event": "stage",
+          "stage": 3,
+          "frame": 703,
+          "mode": 0,
+          "phase": 0,
+          "class": 2017
+        },
+        {
+          "event": "stage",
+          "stage": 4,
+          "frame": 713,
+          "mode": 0,
+          "phase": 1,
+          "class": 2017
+        },
+        {
+          "event": "stage",
+          "stage": 5,
+          "frame": 763,
+          "mode": 3,
+          "phase": 1,
+          "class": 2017
+        },
+        {
+          "event": "stage",
+          "stage": 6,
+          "frame": 818,
+          "mode": 0,
+          "phase": 0,
+          "class": 2017
+        },
+        {
+          "event": "stage",
+          "stage": 7,
+          "frame": 848,
+          "mode": 0,
+          "phase": 0,
+          "class": 2017
+        },
+        {
+          "event": "stage",
+          "stage": 8,
+          "frame": 860,
+          "mode": 0,
+          "phase": 2,
+          "class": 2017
+        },
+        {
+          "event": "stage",
+          "stage": 9,
+          "frame": 875,
+          "mode": 0,
+          "phase": 2,
+          "class": 2017
+        },
+        {
+          "event": "stage",
+          "stage": 10,
+          "frame": 925,
+          "mode": 3,
+          "phase": 2,
+          "class": 2017
+        },
+        {
+          "event": "stage",
+          "stage": 11,
+          "frame": 960,
+          "mode": 0,
+          "phase": 1,
+          "class": 2017
+        },
+        {
+          "event": "stage",
+          "stage": 12,
+          "frame": 1080,
+          "mode": 0,
+          "phase": 0,
+          "class": 2017
+        },
+        {
+          "event": "stage",
+          "stage": 13,
+          "frame": 1130,
+          "mode": 3,
+          "phase": 0,
+          "class": 2017
+        },
+        {
+          "event": "stage",
+          "stage": 14,
+          "frame": 1160,
+          "mode": 0,
+          "phase": 0,
+          "class": 2017
+        },
+        {
+          "event": "stage",
+          "stage": 15,
+          "frame": 1220,
+          "mode": 0,
+          "phase": 0,
+          "class": 71
+        },
+        {
+          "event": "stage",
+          "stage": 16,
+          "frame": 1226,
+          "mode": 0,
+          "phase": 0,
+          "class": 2017
+        },
+        {
+          "event": "stage",
+          "stage": 17,
+          "frame": 1276,
+          "mode": 3,
+          "phase": 0,
+          "class": 2017
+        },
+        {
+          "event": "stage",
+          "stage": 18,
+          "frame": 1306,
+          "mode": 0,
+          "phase": 0,
+          "class": 2017
+        },
+        {
+          "event": "stage",
+          "stage": 19,
+          "frame": 1341,
+          "mode": 0,
+          "phase": 0,
+          "class": 180
+        },
+        {
+          "event": "stage",
+          "stage": 22,
+          "frame": 1376,
+          "mode": 0,
+          "phase": 0,
+          "class": 2017
+        },
+        {
+          "event": "stage",
+          "stage": 23,
+          "frame": 1426,
+          "mode": 3,
+          "phase": 0,
+          "class": 2017
+        },
+        {
+          "event": "stage",
+          "stage": 24,
+          "frame": 1456,
+          "mode": 0,
+          "phase": 0,
+          "class": 2017
+        },
+        {
+          "event": "stage",
+          "stage": 25,
+          "frame": 1486,
+          "mode": 3,
+          "phase": 0,
+          "class": 2017
+        },
+        {
+          "event": "stage",
+          "stage": 26,
+          "frame": 1551,
+          "mode": 3,
+          "phase": 0,
+          "class": 0
+        },
+        {
+          "event": "stage",
+          "stage": 27,
+          "frame": 1581,
+          "mode": 3,
+          "phase": 0,
+          "class": 0
+        }
+      ],
+      "equip_requests": [
+        {
+          "event": "equip_requested",
+          "pass": 1,
+          "frame": 1220,
+          "previous_actor": 32346688,
+          "previous_stamp": 0,
+          "previous_class": 71,
+          "previous_sequence": 0
+        },
+        {
+          "event": "equip_requested",
+          "pass": 2,
+          "frame": 1341,
+          "previous_actor": 32346688,
+          "previous_stamp": 0,
+          "previous_class": 180,
+          "previous_sequence": 0
+        }
+      ],
+      "equip_results": [
+        {
+          "event": "equip_result",
+          "pass": 1,
+          "frame": 1306,
+          "actor": 32346688,
+          "stamp": 0,
+          "previous_actor": 32346688,
+          "previous_stamp": 0,
+          "samples": 82,
+          "minimum_housing": 0.8280794,
+          "maximum_housing": 1.0798436,
+          "minimum_head": 0.1525583,
+          "maximum_head": 1.0,
+          "shaft_travel": 12.9952058
+        },
+        {
+          "event": "equip_result",
+          "pass": 2,
+          "frame": 1456,
+          "actor": 32346688,
+          "stamp": 0,
+          "previous_actor": 32346688,
+          "previous_stamp": 0,
+          "samples": 115,
+          "minimum_housing": 0.8280794,
+          "maximum_housing": 1.0798436,
+          "minimum_head": 0.1525583,
+          "maximum_head": 1.0,
+          "shaft_travel": 13.5451965
+        }
+      ],
+      "native_sound127_commands": [
+        {
+          "bank": 3,
+          "sound": 127,
+          "volume": 614,
+          "pan": 3,
+          "voice": 15,
+          "equip_window": null,
+          "after_second_equip": false,
+          "accepted": true
+        },
+        {
+          "bank": 3,
+          "sound": 127,
+          "volume": 614,
+          "pan": 3,
+          "voice": 51,
+          "equip_window": 1,
+          "after_second_equip": false,
+          "accepted": true
+        },
+        {
+          "bank": 3,
+          "sound": 127,
+          "volume": 614,
+          "pan": 3,
+          "voice": 53,
+          "equip_window": 2,
+          "after_second_equip": false,
+          "accepted": true
+        }
+      ],
+      "equip_sound_windows": {
+        "1": [
+          {
+            "bank": 3,
+            "sound": 127,
+            "volume": 614,
+            "pan": 3,
+            "voice": 51,
+            "equip_window": 1,
+            "after_second_equip": false,
+            "accepted": true
+          }
+        ],
+        "2": [
+          {
+            "bank": 3,
+            "sound": 127,
+            "volume": 614,
+            "pan": 3,
+            "voice": 53,
+            "equip_window": 2,
+            "after_second_equip": false,
+            "accepted": true
+          }
+        ]
+      },
+      "equip_sound_proof": true,
+      "audible_review_performed": false,
+      "screenshots": [
+        {
+          "role": "attack_pulse",
+          "path": "work/revolverator-pal-migration/runs/pal-pause-drill-final-base-04/shots/frame705.png",
+          "sha256": "ae7ae70cc56834afa3d34e5dee0c42c9630a17215a733f1fa746910c30512a55",
+          "visually_reviewed": true
+        },
+        {
+          "role": "equip_initial_pause",
+          "path": "work/revolverator-pal-migration/runs/pal-pause-drill-final-base-04/shots/frame1215.png",
+          "sha256": "c3a8e760821c958572f5090777bc1abd7b7e0dc91fd14b6d7f0cfb78065514a0",
+          "visually_reviewed": true
+        },
+        {
+          "role": "equip_early",
+          "path": "work/revolverator-pal-migration/runs/pal-pause-drill-final-base-04/shots/frame1330.png",
+          "sha256": "eb3231d4afaa55dfe4108385c661c05e8cf2335c34738ab55196531feff2f22d",
+          "visually_reviewed": true
+        },
+        {
+          "role": "equip_mid",
+          "path": "work/revolverator-pal-migration/runs/pal-pause-drill-final-base-04/shots/frame1335.png",
+          "sha256": "bb341bd445f4a18d11b154771017c948c81493d05a13b28049f41d494e5a07fb",
+          "visually_reviewed": true
+        },
+        {
+          "role": "equip_complete",
+          "path": "work/revolverator-pal-migration/runs/pal-pause-drill-final-base-04/shots/frame1345.png",
+          "sha256": "12b4d3fd46daf6ab9f3b484465fe0fab40fa71b2600cb6370b42d3f500f69478",
+          "visually_reviewed": true
+        },
+        {
+          "role": "native_preview",
+          "path": "work/revolverator-pal-migration/runs/pal-pause-drill-final-base-04/shots/frame1500.png",
+          "sha256": "05e74361b2678500fbd3297a67510ce6944d05cc5e5820393399bdf5767ced2e",
+          "visually_reviewed": true
+        }
+      ],
+      "equip_pause_freeze": [
+        {
+          "pass": 1,
+          "samples": 49,
+          "ranges": {
+            "housing": 0.0,
+            "head_axial": 0.0,
+            "shaft_angle": 0.0
+          },
+          "verified": true
+        },
+        {
+          "pass": 2,
+          "samples": 49,
+          "ranges": {
+            "housing": 0.0,
+            "head_axial": 0.0,
+            "shaft_angle": 0.0
+          },
+          "verified": true
+        }
+      ],
+      "native_validation_pass": true
+    },
+    {
+      "name": "pal-pause-drill-final-gold-04",
+      "expected_native_result": true,
+      "result": {
+        "event": "result",
+        "pass": true,
+        "gold": true,
+        "walloper": false,
+        "checks": 69,
+        "failures": 0,
+        "pause_samples": 267,
+        "pause_bad_class": 0,
+        "pause_bad_parts": 0,
+        "pause_bad_phase": 0,
+        "pause_bad_angle": 0,
+        "resume_samples": 462,
+        "resume_bad_class": 0,
+        "enlarged_samples": 120,
+        "peak_radial": 2.0,
+        "peak_frame": 1062,
+        "max_anchor_error_native": 0.0008188,
+        "max_socket_gap_source": 0.0023018,
+        "hold_samples": 57,
+        "hold_bad_scale": 0,
+        "walloper_samples": 0,
+        "walloper_bad_parts": 0
+      },
+      "matches_expected_result": true,
+      "process_exit": {
+        "observed_utc": "2026-11-02T01:33:46.9748950Z",
+        "exit_code": 0,
+        "pid": 31736
+      },
+      "original_inputs": 107,
+      "original_inputs_modified": [],
+      "checks": 69,
+      "failed_checks": [],
+      "artifacts": {
+        "pal-pause-drill-qa\\lib\\windows-x86_64\\pal_pause_drill_qa.dll": "F039772362733952118A6C30130609FABBC7C056811FBD861519804F2815D7E4",
+        "revolverator\\lib\\windows-x86_64\\arsenal_compat.dll": "9603BD048AE54B63143BC2A9E35596A581C3FC6A6415DD51E7BC81CA5AFAF091",
+        "runtime": "E720A59D130B4B2289A4EB15CAD3E33F739A72A385992DB171EF43490205FB0E",
+        "revolverator\\lib\\windows-x86_64\\revolverator.dll": "4FFE8A5407AD4338B51D6D0A2EF2319E3E7CC435F21EBF69972171EF8398F8C3",
+        "revolverator\\lib\\windows-x86_64\\arsenal_file_overlay.dll": "ABBB81A5840BF26951333DEB799C4613A24033B71EDCC8F7D83F3950EC743D31",
+        "weapon-xp\\lib\\windows-x86_64\\weapon_xp.dll": "29406690A04910737CC14B02D1EF1CDEA39D3C26650BF51B72CA71A1FBF758EA"
+      },
+      "log_sha256": "614ce595fb89d6617b6660d436aa499f6835dcd37429aa55076d6ac22cae2272",
+      "stages": [
+        {
+          "event": "stage",
+          "stage": 0,
+          "frame": 949,
+          "mode": 0,
+          "phase": 0,
+          "class": 2018
+        },
+        {
+          "event": "stage",
+          "stage": 1,
+          "frame": 984,
+          "mode": 0,
+          "phase": 0,
+          "class": 2018
+        },
+        {
+          "event": "stage",
+          "stage": 2,
+          "frame": 1034,
+          "mode": 3,
+          "phase": 0,
+          "class": 2018
+        },
+        {
+          "event": "stage",
+          "stage": 3,
+          "frame": 1059,
+          "mode": 0,
+          "phase": 0,
+          "class": 2018
+        },
+        {
+          "event": "stage",
+          "stage": 4,
+          "frame": 1069,
+          "mode": 0,
+          "phase": 1,
+          "class": 2018
+        },
+        {
+          "event": "stage",
+          "stage": 5,
+          "frame": 1119,
+          "mode": 3,
+          "phase": 1,
+          "class": 2018
+        },
+        {
+          "event": "stage",
+          "stage": 6,
+          "frame": 1174,
+          "mode": 0,
+          "phase": 0,
+          "class": 2018
+        },
+        {
+          "event": "stage",
+          "stage": 7,
+          "frame": 1204,
+          "mode": 0,
+          "phase": 0,
+          "class": 2018
+        },
+        {
+          "event": "stage",
+          "stage": 8,
+          "frame": 1216,
+          "mode": 0,
+          "phase": 2,
+          "class": 2018
+        },
+        {
+          "event": "stage",
+          "stage": 9,
+          "frame": 1231,
+          "mode": 0,
+          "phase": 2,
+          "class": 2018
+        },
+        {
+          "event": "stage",
+          "stage": 10,
+          "frame": 1281,
+          "mode": 3,
+          "phase": 2,
+          "class": 2018
+        },
+        {
+          "event": "stage",
+          "stage": 11,
+          "frame": 1316,
+          "mode": 0,
+          "phase": 1,
+          "class": 2018
+        },
+        {
+          "event": "stage",
+          "stage": 12,
+          "frame": 1436,
+          "mode": 0,
+          "phase": 0,
+          "class": 2018
+        },
+        {
+          "event": "stage",
+          "stage": 13,
+          "frame": 1486,
+          "mode": 3,
+          "phase": 0,
+          "class": 2018
+        },
+        {
+          "event": "stage",
+          "stage": 14,
+          "frame": 1516,
+          "mode": 0,
+          "phase": 0,
+          "class": 2018
+        },
+        {
+          "event": "stage",
+          "stage": 15,
+          "frame": 1576,
+          "mode": 0,
+          "phase": 0,
+          "class": 71
+        },
+        {
+          "event": "stage",
+          "stage": 16,
+          "frame": 1582,
+          "mode": 0,
+          "phase": 0,
+          "class": 2018
+        },
+        {
+          "event": "stage",
+          "stage": 17,
+          "frame": 1632,
+          "mode": 3,
+          "phase": 0,
+          "class": 2018
+        },
+        {
+          "event": "stage",
+          "stage": 18,
+          "frame": 1662,
+          "mode": 0,
+          "phase": 0,
+          "class": 2018
+        },
+        {
+          "event": "stage",
+          "stage": 19,
+          "frame": 1697,
+          "mode": 0,
+          "phase": 0,
+          "class": 180
+        },
+        {
+          "event": "stage",
+          "stage": 22,
+          "frame": 1732,
+          "mode": 0,
+          "phase": 0,
+          "class": 2018
+        },
+        {
+          "event": "stage",
+          "stage": 23,
+          "frame": 1782,
+          "mode": 3,
+          "phase": 0,
+          "class": 2018
+        },
+        {
+          "event": "stage",
+          "stage": 24,
+          "frame": 1812,
+          "mode": 0,
+          "phase": 0,
+          "class": 2018
+        },
+        {
+          "event": "stage",
+          "stage": 25,
+          "frame": 1842,
+          "mode": 3,
+          "phase": 0,
+          "class": 2018
+        },
+        {
+          "event": "stage",
+          "stage": 26,
+          "frame": 1907,
+          "mode": 3,
+          "phase": 0,
+          "class": 0
+        },
+        {
+          "event": "stage",
+          "stage": 27,
+          "frame": 1937,
+          "mode": 3,
+          "phase": 0,
+          "class": 0
+        }
+      ],
+      "equip_requests": [
+        {
+          "event": "equip_requested",
+          "pass": 1,
+          "frame": 1576,
+          "previous_actor": 32346432,
+          "previous_stamp": 0,
+          "previous_class": 71,
+          "previous_sequence": 0
+        },
+        {
+          "event": "equip_requested",
+          "pass": 2,
+          "frame": 1697,
+          "previous_actor": 32346432,
+          "previous_stamp": 0,
+          "previous_class": 180,
+          "previous_sequence": 0
+        }
+      ],
+      "equip_results": [
+        {
+          "event": "equip_result",
+          "pass": 1,
+          "frame": 1662,
+          "actor": 32346432,
+          "stamp": 0,
+          "previous_actor": 32346432,
+          "previous_stamp": 0,
+          "samples": 82,
+          "minimum_housing": 0.8280794,
+          "maximum_housing": 1.0798436,
+          "minimum_head": 0.1525583,
+          "maximum_head": 1.0,
+          "shaft_travel": 12.9952058
+        },
+        {
+          "event": "equip_result",
+          "pass": 2,
+          "frame": 1812,
+          "actor": 32346432,
+          "stamp": 0,
+          "previous_actor": 32346432,
+          "previous_stamp": 0,
+          "samples": 115,
+          "minimum_housing": 0.8280794,
+          "maximum_housing": 1.0798436,
+          "minimum_head": 0.1525583,
+          "maximum_head": 1.0,
+          "shaft_travel": 13.5451965
+        }
+      ],
+      "native_sound127_commands": [
+        {
+          "bank": 3,
+          "sound": 127,
+          "volume": 614,
+          "pan": 3,
+          "voice": 15,
+          "equip_window": null,
+          "after_second_equip": false,
+          "accepted": true
+        },
+        {
+          "bank": 3,
+          "sound": 127,
+          "volume": 614,
+          "pan": 3,
+          "voice": 21,
+          "equip_window": null,
+          "after_second_equip": false,
+          "accepted": true
+        },
+        {
+          "bank": 3,
+          "sound": 127,
+          "volume": 614,
+          "pan": 3,
+          "voice": 45,
+          "equip_window": 1,
+          "after_second_equip": false,
+          "accepted": true
+        },
+        {
+          "bank": 3,
+          "sound": 127,
+          "volume": 614,
+          "pan": 3,
+          "voice": 47,
+          "equip_window": 2,
+          "after_second_equip": false,
+          "accepted": true
+        }
+      ],
+      "equip_sound_windows": {
+        "1": [
+          {
+            "bank": 3,
+            "sound": 127,
+            "volume": 614,
+            "pan": 3,
+            "voice": 45,
+            "equip_window": 1,
+            "after_second_equip": false,
+            "accepted": true
+          }
+        ],
+        "2": [
+          {
+            "bank": 3,
+            "sound": 127,
+            "volume": 614,
+            "pan": 3,
+            "voice": 47,
+            "equip_window": 2,
+            "after_second_equip": false,
+            "accepted": true
+          }
+        ]
+      },
+      "equip_sound_proof": true,
+      "audible_review_performed": false,
+      "screenshots": [
+        {
+          "role": "pause_entry",
+          "path": "work/revolverator-pal-migration/runs/pal-pause-drill-final-gold-04/shots/frame1065.png",
+          "sha256": "2cc56a567996f95cbcdde2203ebe8fb710e0fd7023703c99d986a5afc28641c0",
+          "visually_reviewed": true
+        }
+      ],
+      "equip_pause_freeze": [
+        {
+          "pass": 1,
+          "samples": 49,
+          "ranges": {
+            "housing": 0.0,
+            "head_axial": 0.0,
+            "shaft_angle": 0.0
+          },
+          "verified": true
+        },
+        {
+          "pass": 2,
+          "samples": 49,
+          "ranges": {
+            "housing": 0.0,
+            "head_axial": 0.0,
+            "shaft_angle": 0.0
+          },
+          "verified": true
+        }
+      ],
+      "native_validation_pass": true
+    },
+    {
+      "name": "pal-pause-drill-final-walloper-04",
+      "expected_native_result": true,
+      "result": {
+        "event": "result",
+        "pass": true,
+        "gold": false,
+        "walloper": true,
+        "checks": 20,
+        "failures": 0,
+        "pause_samples": 123,
+        "pause_bad_class": 0,
+        "pause_bad_parts": 0,
+        "pause_bad_phase": 0,
+        "pause_bad_angle": 0,
+        "resume_samples": 136,
+        "resume_bad_class": 0,
+        "enlarged_samples": 0,
+        "peak_radial": 1.0,
+        "peak_frame": 0,
+        "max_anchor_error_native": 0.0,
+        "max_socket_gap_source": 0.0,
+        "hold_samples": 0,
+        "hold_bad_scale": 0,
+        "walloper_samples": 266,
+        "walloper_bad_parts": 0
+      },
+      "matches_expected_result": true,
+      "process_exit": {
+        "exit_code": 0,
+        "observed_utc": "2026-11-02T01:33:28.7428838Z",
+        "pid": 11584
+      },
+      "original_inputs": 107,
+      "original_inputs_modified": [],
+      "checks": 20,
+      "failed_checks": [],
+      "artifacts": {
+        "pal-pause-drill-qa\\lib\\windows-x86_64\\pal_pause_drill_qa.dll": "F039772362733952118A6C30130609FABBC7C056811FBD861519804F2815D7E4",
+        "revolverator\\lib\\windows-x86_64\\arsenal_compat.dll": "9603BD048AE54B63143BC2A9E35596A581C3FC6A6415DD51E7BC81CA5AFAF091",
+        "runtime": "E720A59D130B4B2289A4EB15CAD3E33F739A72A385992DB171EF43490205FB0E",
+        "revolverator\\lib\\windows-x86_64\\revolverator.dll": "4FFE8A5407AD4338B51D6D0A2EF2319E3E7CC435F21EBF69972171EF8398F8C3",
+        "revolverator\\lib\\windows-x86_64\\arsenal_file_overlay.dll": "ABBB81A5840BF26951333DEB799C4613A24033B71EDCC8F7D83F3950EC743D31",
+        "weapon-xp\\lib\\windows-x86_64\\weapon_xp.dll": "29406690A04910737CC14B02D1EF1CDEA39D3C26650BF51B72CA71A1FBF758EA"
+      },
+      "log_sha256": "977df1aaa10da7996575bd65ff712589fd62f4d88024a73736f6e42d7f3a3ac9",
+      "stages": [
+        {
+          "event": "stage",
+          "stage": 0,
+          "frame": 493,
+          "mode": 0,
+          "phase": 0,
+          "class": 71
+        },
+        {
+          "event": "stage",
+          "stage": 1,
+          "frame": 528,
+          "mode": 0,
+          "phase": 0,
+          "class": 180
+        },
+        {
+          "event": "stage",
+          "stage": 2,
+          "frame": 578,
+          "mode": 3,
+          "phase": 0,
+          "class": 180
+        },
+        {
+          "event": "stage",
+          "stage": 3,
+          "frame": 603,
+          "mode": 0,
+          "phase": 0,
+          "class": 180
+        },
+        {
+          "event": "stage",
+          "stage": 4,
+          "frame": 613,
+          "mode": 0,
+          "phase": 0,
+          "class": 180
+        },
+        {
+          "event": "stage",
+          "stage": 5,
+          "frame": 663,
+          "mode": 3,
+          "phase": 0,
+          "class": 180
+        },
+        {
+          "event": "stage",
+          "stage": 12,
+          "frame": 718,
+          "mode": 0,
+          "phase": 0,
+          "class": 180
+        },
+        {
+          "event": "stage",
+          "stage": 13,
+          "frame": 768,
+          "mode": 3,
+          "phase": 0,
+          "class": 180
+        }
+      ],
+      "equip_requests": [],
+      "equip_results": [],
+      "native_sound127_commands": [],
+      "equip_sound_windows": {
+        "1": [],
+        "2": []
+      },
+      "equip_sound_proof": null,
+      "audible_review_performed": false,
+      "screenshots": [
+        {
+          "role": "original_walloper_pause",
+          "path": "work/revolverator-pal-migration/runs/pal-pause-drill-final-walloper-04/shots/frame645.png",
+          "sha256": "fb925fef4ece1289f88b57f8afd1a5dab2d3e1a6646e3c58ce879cd4519c4e7e",
+          "visually_reviewed": true
+        }
+      ],
+      "equip_pause_freeze": [],
+      "native_validation_pass": true
+    }
+  ],
+  "before": {
+    "name": "pal-pause-drill-before-base-03",
+    "expected_native_result": false,
+    "result": {
+      "event": "result",
+      "pass": false,
+      "gold": false,
+      "walloper": false,
+      "checks": 33,
+      "failures": 3,
+      "pause_samples": 164,
+      "pause_bad_class": 164,
+      "pause_bad_parts": 0,
+      "pause_bad_phase": 0,
+      "pause_bad_angle": 0,
+      "resume_samples": 347,
+      "resume_bad_class": 0,
+      "enlarged_samples": 120,
+      "peak_radial": 2.0,
+      "peak_frame": 706,
+      "max_anchor_error_native": 548.9760131,
+      "max_socket_gap_source": 0.9449216,
+      "hold_samples": 57,
+      "hold_bad_scale": 0,
+      "walloper_samples": 0,
+      "walloper_bad_parts": 0
+    },
+    "matches_expected_result": true,
+    "process_exit": {
+      "exit_code": 0,
+      "observed_utc": "2026-11-01T23:04:40.0586319Z",
+      "pid": 4552
+    },
+    "original_inputs": 107,
+    "original_inputs_modified": [],
+    "checks": 33,
+    "failed_checks": [
+      "paused_held_actor_keeps_its_own_render_identity",
+      "mechanical_shaft_anchor_remains_fixed_during_scaled_rotation",
+      "actual_head_base_vertex_remains_connected_to_housing_socket"
+    ],
+    "artifacts": {
+      "pal-pause-drill-qa\\lib\\windows-x86_64\\pal_pause_drill_qa.dll": "9BA0D4A567D5D3C106019DF947CDCF616E225F302C0E118A61C9724A896D778F",
+      "runtime": "E720A59D130B4B2289A4EB15CAD3E33F739A72A385992DB171EF43490205FB0E",
+      "revolverator\\lib\\windows-x86_64\\arsenal_file_overlay.dll": "ABBB81A5840BF26951333DEB799C4613A24033B71EDCC8F7D83F3950EC743D31",
+      "revolverator\\lib\\windows-x86_64\\revolverator.dll": "6364D5D1E604664EEA5A4E6C03CA4BB26258ECC626E2B0C6EC5B87F7883B86FC",
+      "revolverator\\lib\\windows-x86_64\\arsenal_compat.dll": "9603BD048AE54B63143BC2A9E35596A581C3FC6A6415DD51E7BC81CA5AFAF091",
+      "weapon-xp\\lib\\windows-x86_64\\weapon_xp.dll": "29406690A04910737CC14B02D1EF1CDEA39D3C26650BF51B72CA71A1FBF758EA"
+    },
+    "log_sha256": "e161eba91be30f34ae1abb2e4ccb10b4abcb6d8233b7fe83ba243461183a0202",
+    "stages": [
+      {
+        "event": "stage",
+        "stage": 0,
+        "frame": 593,
+        "mode": 0,
+        "phase": 0,
+        "class": 180
+      },
+      {
+        "event": "stage",
+        "stage": 1,
+        "frame": 628,
+        "mode": 0,
+        "phase": 0,
+        "class": 180
+      },
+      {
+        "event": "stage",
+        "stage": 2,
+        "frame": 678,
+        "mode": 3,
+        "phase": 0,
+        "class": 180
+      },
+      {
+        "event": "stage",
+        "stage": 3,
+        "frame": 703,
+        "mode": 0,
+        "phase": 0,
+        "class": 180
+      },
+      {
+        "event": "stage",
+        "stage": 4,
+        "frame": 713,
+        "mode": 0,
+        "phase": 1,
+        "class": 180
+      },
+      {
+        "event": "stage",
+        "stage": 5,
+        "frame": 763,
+        "mode": 3,
+        "phase": 1,
+        "class": 180
+      },
+      {
+        "event": "stage",
+        "stage": 6,
+        "frame": 818,
+        "mode": 0,
+        "phase": 0,
+        "class": 180
+      },
+      {
+        "event": "stage",
+        "stage": 7,
+        "frame": 848,
+        "mode": 0,
+        "phase": 0,
+        "class": 180
+      },
+      {
+        "event": "stage",
+        "stage": 8,
+        "frame": 860,
+        "mode": 0,
+        "phase": 2,
+        "class": 180
+      },
+      {
+        "event": "stage",
+        "stage": 9,
+        "frame": 875,
+        "mode": 0,
+        "phase": 2,
+        "class": 180
+      },
+      {
+        "event": "stage",
+        "stage": 10,
+        "frame": 925,
+        "mode": 3,
+        "phase": 2,
+        "class": 180
+      },
+      {
+        "event": "stage",
+        "stage": 11,
+        "frame": 960,
+        "mode": 0,
+        "phase": 1,
+        "class": 180
+      },
+      {
+        "event": "stage",
+        "stage": 12,
+        "frame": 1080,
+        "mode": 0,
+        "phase": 0,
+        "class": 180
+      },
+      {
+        "event": "stage",
+        "stage": 13,
+        "frame": 1130,
+        "mode": 3,
+        "phase": 0,
+        "class": 180
+      }
+    ],
+    "screenshots": [
+      {
+        "stage": 1,
+        "path": "shots\\frame660.png",
+        "sha256": "8ce5728fe4c0ad97c4937af0957ddc0b1d86aa9f98e44fd55f33e469e630fa7f",
+        "visually_reviewed": false
+      },
+      {
+        "stage": 4,
+        "path": "shots\\frame735.png",
+        "sha256": "1b37c8e45483ac956640bb04e6ca949766f2d5f0bb65bb33f780d8c8d673ca44",
+        "visually_reviewed": false
+      },
+      {
+        "stage": 9,
+        "path": "shots\\frame900.png",
+        "sha256": "a6d63dcf24c7b1a748dd7cb9600b6778d1827fcf5ce31e8cab0ca5107556ec20",
+        "visually_reviewed": false
+      },
+      {
+        "stage": 10,
+        "path": "shots\\frame945.png",
+        "sha256": "fd2a8ede88ee1b75d0a32d9495e924859a7eda2ea3cb6aa05c38531499ca85ec",
+        "visually_reviewed": false
+      },
+      {
+        "stage": 12,
+        "path": "shots\\frame1110.png",
+        "sha256": "4b158333ca48050bf867d24498734df5fda08428b5fbe5d10251750b5ea59a61",
+        "visually_reviewed": false
+      }
+    ]
+  },
+  "excluded_intermediates": [
+    {
+      "run": "pal-pause-drill-fixed-gold-01",
+      "dll": "de3b7f12b7ba98a10609e5edc8e1c80684bb888a4efc38aa7fdf9fef2eb7dad6",
+      "reason": "field-only pass did not cover frozen world snapshot; actual pause-entry image retained distorted cone"
+    },
+    {
+      "run": "pal-pause-drill-final-base-01",
+      "dll": "9da97ebed7051a258f519915984b29dc4271c7a38feec0f73044a1246d916d94",
+      "reason": "sticky alias bootstrap lost all rotor nodes; actual growth/assembly assertions failed"
+    },
+    {
+      "run": "pal-pause-drill-final-base-02",
+      "dll": "b312df5aa3faa7a772b8f6b560754c4b7b69513f88d9ff685879a8f3c04df547",
+      "reason": "visual checks passed but native driver replayed equip cue on Armi return"
+    },
+    {
+      "run": "pal-pause-drill-final-base-03",
+      "dll": "cef442fba45975ab4cce58ba7fc1c5af897817823b2b7c3044a2e9d380362e7f",
+      "reason": "semantic lifecycle fixed; native automatic appearance cue still replayed on Armi return"
+    }
+  ],
+  "helper_files": {
+    "analyze.py": "408edf4d3c1e83c1ca7958f16de0ddca3f5d329512368278560cd5c79f684910",
+    "CMakeLists.txt": "4e03f335dbc4083825f916754a2f13b1553ff610ae04fe4b4aebf79103971339",
+    "openrac-mod.json": "8bdce59aad955dfd41862211156bd28758bbe65c380dc62acc82549b417dc532",
+    "probe.cpp": "fa3ccb3cb76cef11ef28f8731a795422a57f07039587a62b548375eb2e4de89f",
+    "probe_bindings.hpp": "c5b3e4d4c08c7dec5af202ed865983815bc347853056e442ef5e5da794e80487",
+    "run.ps1": "aefbeebc4e39f133b9aca62ee2210b60e3c9162f52232598a373bb73cbdb8400",
+    "visual_fixture.inc": "ba6c7af369ce6dbb1b110c0c746a7e5c184f0bafc06bb07ea9803635b78b5e39"
+  },
+  "full_campaign_verified": false,
+  "native_ntsc_gameplay_verified": false,
+  "pass": true
+}

@@ -16,6 +16,7 @@ constexpr unsigned Body=0x400000,Actor=0x410000,ActorKeys=0x530000,CameraKeys=0x
 unsigned char* ram{};int checks{},loaded=1,presentations{},placements{},projects{},restores{},posed_items{};
 bool present_available=true,place_available=true,use_real_body=false,golden=false;
 std::string scene_name;std::vector<std::string> calls;
+std::vector<unsigned> completed_levels;
 void require(bool ok,const char* why){++checks;if(!ok){std::fprintf(stderr,"acquisition: %s\n",why);std::exit(1);}}
 template<class T>void put(unsigned at,const T& value){std::memcpy(ram+at,&value,sizeof value);}
 template<class T>T get(unsigned at){T value{};std::memcpy(&value,ram+at,sizeof value);return value;}
@@ -24,6 +25,11 @@ unsigned relocate(unsigned at){return at;}
 unsigned relocate_level(int,unsigned at){return at;}
 void project(void*){++projects;calls.push_back("project");scene_name=golden?"Rotatore d'oro v3":"Rotatore v3";}
 void restore(void*){++restores;calls.push_back("restore");}
+void complete(void*,unsigned level){
+    require(get<int>(Mode)==0&&placements>0,"title is emitted only after native gameplay placement");
+    require(calls.back()=="restore","logical projection restores before the completed title callback");
+    completed_levels.push_back(level);
+}
 void pose_item(void*,unsigned actor){require(actor==Actor+256,"only the native scene weapon is projected, never Ratchet or a world actor");++posed_items;}
 void present(unsigned trigger,int item){
     require(item==18,"native scene uses safe Walloper item18 for base and Golden");
@@ -59,9 +65,9 @@ struct Fixture {
     const std::array<float,4> position{{10,20,30,1}},rotation{{0,0,.5f,0}},velocity{{0,0,.125f,0}};
     const std::array<int,7> equipment{{15,1,2,3,4,5,6}},pending{{0,9,8,7,6,5,4}};
     std::array<unsigned char,0x220> vendor{};
-    explicit Fixture(bool pose=false):acquisition(&api,nullptr,arena,{nullptr,project,restore,pose?pose_item:nullptr}){
+    explicit Fixture(bool pose=false,bool completion=false):acquisition(&api,nullptr,arena,{nullptr,project,restore,pose?pose_item:nullptr,completion?complete:nullptr}){
         ram=memory.data();loaded=1;presentations=placements=projects=restores=posed_items=0;
-        present_available=place_available=true;use_real_body=golden=false;scene_name.clear();calls.clear();
+        present_available=place_available=true;use_real_body=golden=false;scene_name.clear();calls.clear();completed_levels.clear();
         api.memory=ram;api.game="rac1";api.version="ntsc";api.loaded_level=loaded_level;
         put(0x15ed7c,1.f/60.f);
         api.relocate_data=relocate;api.relocate_level_data=relocate_level;api.function=function;
@@ -77,7 +83,7 @@ struct Fixture {
         std::memset(ram+0x13e520,0x63,40);put(0x15ed98,76543);
     }
     void begin(){require(acquisition.request(),"request accepted");for(unsigned i=0;i<3;++i)acquisition.frame(true,false);require(acquisition.presenting()&&presentations==1,"starts after two quiet gameplay samples");}
-    void end(){put(Mode,0);acquisition.frame(true,false);require(acquisition.active()&&placements==0,"first gameplay transition frame remains locked");acquisition.frame(true,false);}
+    void end(){const auto before=placements;put(Mode,0);acquisition.frame(true,false);require(acquisition.active()&&placements==before,"first gameplay transition frame remains locked");acquisition.frame(true,false);}
     std::array<unsigned char,225> inventory()const{
         std::array<unsigned char,225> result{};std::memcpy(result.data(),ram+0x13d428,148);
         std::memcpy(result.data()+148,ram+0x13d4c0,37);std::memcpy(result.data()+185,ram+0x13e520,40);return result;
@@ -85,6 +91,18 @@ struct Fixture {
 };
 }
 int main(){
+    {Fixture f(false,true);
+     require(!f.acquisition.request(1)&&!f.acquisition.request(11),"invalid level captions are refused before enqueue");
+     require(f.acquisition.request(2)&&f.acquisition.request(3),"distinct level events are retained by the bounded queue");
+     for(unsigned i=0;i<3;++i)f.acquisition.frame(true,false);
+     require(completed_levels.empty(),"no success title appears while the acquisition animation owns gameplay");
+     f.end();require(completed_levels==std::vector<unsigned>{2},"first completion emits its exact v2 once");
+     for(unsigned i=0;i<33;++i)f.acquisition.frame(true,false);f.end();
+     require(completed_levels==std::vector<unsigned>({2,3}),"queued events do not all collapse into the newest weapon level");
+     f.acquisition.frame(true,false);require(completed_levels.size()==2,"settled gameplay never repeats a completed notification");}
+    {Fixture f(false,true);f.begin();f.acquisition.reset();require(completed_levels.empty(),"cancelled/interrupted native scenes cannot emit a success title");}
+    {Fixture f(false,true);f.begin();loaded=2;f.acquisition.frame(true,false);require(completed_levels.empty(),"travel cannot emit a title through the old overlay");}
+    {Fixture f(false,true);f.begin();f.end();require(completed_levels==std::vector<unsigned>{0},"ordinary/Golden acquisition retains the current-level title request");}
     {Fixture f(true);f.begin();require(posed_items==1,"scene model is projected as soon as native actors become available");
      f.acquisition.frame(true,false);require(posed_items==2,"scene model projection is refreshed after native animation updates");f.end();}
     {Fixture f;const auto inventory=f.inventory();f.begin();

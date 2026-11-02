@@ -5,9 +5,22 @@
 #include "arsenal_menu_model.hpp"
 #include "arsenal_identity_view.hpp"
 #include "memory.hpp"
+#include "arsenal_inventory_api.h"
 #include <vector>
 
 namespace revolverator {
+
+// Foreign carriers own their own bounded metadata projection. The Walloper
+// adapter never reads or writes their inventory or commits it as item18.
+class ForeignArsenalView {
+public:
+    virtual ~ForeignArsenalView()=default;
+    virtual bool contains(arsenal::WeaponKey)const noexcept=0;
+    virtual bool project(arsenal::WeaponKey,bool active)noexcept=0;
+    virtual bool commit(arsenal::WeaponKey)noexcept=0;
+    virtual void selection_changed(arsenal::WeaponKey)noexcept=0;
+    virtual bool native_inventory(arsenal::WeaponKey,arsenal_inventory_state_v1&)const noexcept=0;
+};
 
 // Projects one logical weapon into the game's existing Walloper transport.
 // Every native index remains 18. Logical ownership, ammunition and favourites
@@ -30,6 +43,13 @@ public:
     void mark_snapshot_restored();
     void project_quick_slots(bool native_save=false);
     void observe_equipped();
+    void set_foreign_view(ForeignArsenalView*);
+    // Host teardown fallback only: never retain a destroyed C++ viewport.
+    // A failed producer withdrawal remains module-pinned by its owner.
+    void detach_foreign_view(ForeignArsenalView*)noexcept;
+    bool request_equipped();
+    bool native_owned(arsenal::WeaponKey,bool&)const override;
+    bool native_inventory(arsenal::WeaponKey,arsenal_inventory_state_v1&)const;
     arsenal::WalloperNativeState native_walloper()const;
 private:
     struct Table {
@@ -41,6 +61,7 @@ private:
     std::vector<Table> tables_;
     arsenal::WeaponKey projected_=arsenal::NativeWalloperKey;
     bool ready_=false,initialized_=false;
+    ForeignArsenalView* foreign_{};
     arsenal::WeaponKey restored_selection_=0;
     int level_=-1;
     void capture_table(unsigned address,unsigned size);

@@ -16,6 +16,8 @@ public:
  void names();
  void select_identity(bool revolverator)override;
  void set_experience(bool enabled,unsigned level,float progress,bool versioned_names);
+ // Uses the game's existing acquisition subtitle; level0 selects current XP.
+ bool notify_acquisition(unsigned level=0);
  void set_golden(bool golden){golden_identity_=golden;if(level_transitioning())return;hd_.set_golden(golden);apply_identity();}
  static constexpr unsigned custom_icon_bank=60037;
  void frame(bool equipped);

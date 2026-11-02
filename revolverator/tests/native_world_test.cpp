@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <functional>
+#include <limits>
 #include <set>
 #include <vector>
 
@@ -228,11 +229,82 @@ int main(){
   require(!f.world.release_recoil_active(),"live hook equip switch cannot revive recoil before next frame");
   f.put<unsigned short>(body+0xa6,149);f.launch(projectile);require(!f.world.release_recoil_active(),"recoil never immobilizes a non-Ratchet hero avatar");
  }
+ for(bool golden:{false,true}){
+  Fixture f;f.world.set_golden(golden);
+  const auto victim=f.enemy(0,459,{1,0,.6f});
+  auto motion=[&]{f.put(hero+0x194,10.f);f.put(hero+0xe0,Vec3{6,8,3.25f});};
+  motion();auto expected=f.ram;f.world.enforce_carry_speed();
+  require(f.ram==expected,"empty attack never slows base or Gold movement");
+  require(f.world.find_target({0,0,0},0,2.8f)&&f.world.capture(victim),"carry-speed fixture owns a real native capture lease");
+  f.put(hero+0xf0,Vec3{1,2,3});f.put(0x13c940+0x110,7.f);f.put(hero+0x160,12.f);
+  motion();expected=f.ram;
+  const float x=3,y=4;
+  std::memcpy(expected.data()+hero+0xe0,&x,4);std::memcpy(expected.data()+hero+0xe4,&y,4);
+  f.world.enforce_carry_speed();
+  require(f.ram==expected,"carrying changes only the two horizontal velocity components at half native speed");
+  require(f.get<float>(hero+0xe8)==3.25f&&f.get<float>(hero+0x194)==10.f&&f.get<float>(hero+0x160)==12.f&&
+          f.get<Vec3>(hero+0xf0).x==1&&f.get<float>(0x13c940+0x110)==7,"carry preserves gravity, native speed requests, platform carry and camera input");
+  for(unsigned i=0;i<120;++i)f.world.enforce_carry_speed();
+  require(f.ram==expected,"multiple native motion hooks cannot compound the slowdown toward zero");
+  f.put(hero+0xe0,Vec3{1,2,3.25f});expected=f.ram;f.world.enforce_carry_speed();
+  require(f.ram==expected,"native acceleration below the carry ceiling is preserved");
+  for(unsigned reason=0;reason<7;++reason){
+   motion();
+   switch(reason){
+   case 0:f.put(0x15f5c4,3);break;
+   case 1:f.put(0x15f5c4,5);break;
+   case 2:f.put(hero+0x22a8,0);break;
+   case 3:f.put(hero+0x10b8,15);break;
+   case 4:f.world.set_active(false);break;
+   case 5:f.put<unsigned short>(body+0xa6,149);break;
+   case 6:f.put(hero+0x2084,0x3d);break;
+   }
+   expected=f.ram;f.world.enforce_carry_speed();
+   require(f.ram==expected,"carry limit does not leak into pause, scenes, death, switched equipment or other avatars");
+   f.put(0x15f5c4,0);f.put(hero+0x22a8,4);f.put(hero+0x10b8,18);f.world.set_active(true);
+   f.put<unsigned short>(body+0xa6,0);f.put(hero+0x2084,0);
+  }
+  motion();f.put(hero+0x194,std::numeric_limits<float>::quiet_NaN());expected=f.ram;f.world.enforce_carry_speed();
+  require(f.ram==expected,"malformed native speed cannot contaminate velocity");
+  motion();f.launch(victim,golden);motion();expected=f.ram;f.world.enforce_carry_speed();
+  require(f.world.flying(victim)&&!f.world.lease_valid()&&f.ram==expected,"launch immediately removes the carry cost while the enemy keeps flying");
+ }
  {
-  Fixture f;const unsigned record=0x1d00000;
+  Fixture f;const auto victim=f.enemy(0,459,{1,0,.6f});
+  require(f.world.find_target({0,0,0},0,2.8f)&&f.world.capture(victim),"cancelled carry fixture");
+  f.world.cancelled();f.put(hero+0x194,10.f);f.put(hero+0xe0,Vec3{6,8,2});
+  const auto expected=f.ram;f.world.enforce_carry_speed();
+  require(f.ram==expected,"cancelled capture restores unrestricted movement without saved tuning to undo");
+ }
+ {
+  Fixture f;const auto victim=f.enemy(0,459,{1,0,.6f});const unsigned record=0x1d00000;
   f.put(record+0x20,body);f.put(record+0x24,0x30000u);f.put<unsigned short>(record+0x2a,0);
-  require(f.world.blocks_native_hit(record),"ordinary carrier swing suppressed before capture");
-  f.put<unsigned short>(record+0x2a,2017);require(!f.world.blocks_native_hit(record),"body fallback with explicit custom origin is never suppressed as Walloper");
+  require(f.world.blocks_native_hit(victim,record),"ordinary carrier swing suppressed before capture");
+  f.put<unsigned short>(record+0x2a,2017);require(!f.world.blocks_native_hit(victim,record),"body fallback with explicit custom origin is never suppressed as Walloper");
+  f.put<unsigned short>(record+0x2a,0);f.put(victim.address+0x38,victim.stamp+1);
+  require(!f.world.blocks_native_hit(victim,record),"stale target generations never suppress native damage");
+ }
+ for(bool golden:{false,true})for(unsigned klass:{253u,625u,1048u,1202u,1454u}){
+  Fixture f;f.world.set_golden(golden);const auto heavy=f.enemy(0,klass,{1,0,.6f});
+  const unsigned record=0x1d00000;f.put(record+0x20,body);f.put(record+0x24,0x30000u);
+  const auto before=f.ram;
+  require(!f.world.valid(heavy)&&!f.world.find_target({0,0,0},0,2.8f),"heavy actors are excluded from capture targeting even at point blank range");
+  require(!f.world.capture(heavy)&&!f.world.frozen(heavy.address)&&!f.world.lease_valid(),"base and Gold never acquire, freeze or move a heavy actor");
+  require(!f.world.blocks_native_hit(heavy,record),"heavy actors retain the original Walloper damage packet");
+  require(f.ram==before,"rejected heavy capture and hit filtering preserve all native actor state");
+  require(golden_damage_class(klass),"capture immunity does not grant immunity to Golden impact damage");
+  const auto light=f.enemy(1,459,{2,0,.6f});
+  require(f.world.find_target({0,0,0},0,2.8f)==light&&f.world.capture(light),"a closer heavy actor does not hide an eligible light enemy");
+ }
+ for(bool golden:{false,true}){
+  Fixture f;f.world.set_golden(golden);const auto commander=f.enemy(0,1371,{1,0,.6f});
+  const unsigned record=0x1d00000;f.put(record+0x20,body);f.put(record+0x24,0x30000u);
+  require(f.world.valid(commander)&&f.world.blocks_native_hit(commander,record),"Blarg commanders remain capturable and protected from the carrier's pre-capture hit");
+  require(f.world.find_target({0,0,0},0,2.8f)==commander&&f.world.capture(commander),"base and Gold can select and capture a Blarg commander");
+  require(f.world.frozen(commander.address)&&f.world.lease_valid(),"a captured commander receives the ordinary owned carry lease");
+  f.world.release(commander,true);
+  require(!f.world.frozen(commander.address)&&!f.world.lease_valid()&&f.get<unsigned>(commander.address+0x94)==7&&f.get<unsigned>(commander.address+0x98)==0,
+          "releasing a commander restores its native collision and AI flags");
  }
  {
   Fixture f;const auto a=f.enemy(0,459,{0,0,0}),b=f.enemy(1,573,{30,0,0}),c=f.enemy(2,459,{60,0,0});

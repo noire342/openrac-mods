@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #include "presentation.hpp"
+#include "localization.hpp"
 #include "ammunition_icon_data.hpp"
 #include <algorithm>
 #include <array>
@@ -8,6 +9,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <string>
 #include <vector>
 
 using namespace revolverator;
@@ -30,6 +32,7 @@ struct Fixture {
  int level=1,native_calls=0,previous_xp_calls=0,quick_calls=0,rectangles=0,quads=0,heap_calls=0;
  bool steal_cached_image=false,change_current_bank=false,cache_available=true;
  std::vector<Sprite> sprites;
+ std::string notified_text;int notifications=0,notified_duration=0;
  template<class T>T get(unsigned at)const{T value{};std::memcpy(&value,ram.data()+at,sizeof value);return value;}
  template<class T>void put(unsigned at,const T& value){std::memcpy(ram.data()+at,&value,sizeof value);}
  template<std::size_t N>std::array<unsigned char,N> bytes(unsigned at)const{
@@ -94,6 +97,11 @@ struct Fixture {
    return nullptr;
   };
   api.function=+[](const char* name)->void*{
+   if(!std::strcmp(name,"FUN_L00_00263d40"))return reinterpret_cast<void*>(+[](int id,int duration){
+    require(id==20037,"native notification selects the localized weapon-name ID");
+    live->notified_text=reinterpret_cast<const char*>(live->ram.data()+live->get<unsigned>(TextBank));
+    live->notified_duration=duration;++live->notifications;
+   });
    if(!std::strcmp(name,"FUN_L00_0023a7a8"))return reinterpret_cast<void*>(native_hud);
    if(!std::strcmp(name,"FUN_L00_002a5dd8"))return reinterpret_cast<void*>(relay);
    if(!std::strcmp(name,"FUN_001ffc30"))return reinterpret_cast<void*>(sprite);
@@ -151,6 +159,27 @@ struct IdleWorld final:World {
 }
 
 int main(){
+ {
+  Fixture f;Presentation presentation(&f.api,nullptr,&f.arena);
+  f.put<int>(localization::native_language_address,5);
+  presentation.set_experience(true,10,1,true);presentation.select_identity(false);
+  const auto stock_entry=f.get<unsigned>(TextBank);
+  for(unsigned level=2;level<=10;++level){
+   require(presentation.notify_acquisition(level),"every supported XP level uses the native completion subtitle");
+   require(f.notified_text=="Rotatore v"+std::to_string(level)&&f.notified_duration==180,"Italian completed titles show the exact queued vN through the native subtitle channel");
+   require(f.get<unsigned>(TextBank)==stock_entry,"native Walloper identity restores immediately after copying the custom subtitle");
+  }
+  presentation.select_identity(true);presentation.names();
+  const auto projected=f.get<unsigned>(TextBank);
+  presentation.set_golden(true);require(presentation.notify_acquisition(2)&&f.notified_text=="Rotatore d'oro v2","Golden level completion has its localized Golden title");
+  require(f.get<unsigned>(TextBank)==projected&&std::strcmp(reinterpret_cast<const char*>(f.ram.data()+projected),"Rotatore d'oro v10")==0,"temporary v2 notification never downgrades the current v10 inventory name");
+  require(presentation.notify_acquisition()&&f.notified_text=="Rotatore d'oro v10","Gold purchase uses the current level when no XP event version is supplied");
+  presentation.set_experience(true,4,.5f,false);
+  require(presentation.notify_acquisition(4)&&f.notified_text=="Rotatore d'oro","disabling versioned names preserves the user's native name preference");
+  const int before=f.notifications;
+  require(!presentation.notify_acquisition(1)&&!presentation.notify_acquisition(11)&&f.notifications==before,"invalid caption versions never reach the native subtitle call");
+  f.level=2;require(!presentation.notify_acquisition(2)&&f.notifications==before,"stale text banks cannot notify after overlay travel");
+ }
  {
   Fixture f;const auto original_name=f.bytes<128>(Name),original_description=f.bytes<128>(Description);
   const auto definition=f.bytes<76>(Definition);

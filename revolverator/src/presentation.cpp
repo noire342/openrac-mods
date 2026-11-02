@@ -52,6 +52,36 @@ void Presentation::set_experience(bool enabled,unsigned level,float progress,boo
  experience_progress_=std::isfinite(progress)?std::clamp(progress,0.f,1.f):0;
  versioned_names_=versioned_names;
 }
+bool Presentation::notify_acquisition(unsigned level){
+ if(level_transitioning())return false;
+ if(level==1||level>10)return false;
+ const auto notify=reinterpret_cast<void(*)(int,int)>(find_function("FUN_L00_00263d40"));
+ if(!notify)return false;
+ names();
+ if(!arena_||api_->loaded_level()!=level_)return false;
+ const int id=read<int>(global(0x1863d0)+18*76);
+ const auto binding=std::find_if(bindings_.begin(),bindings_.end(),[&](const Binding& b){return read<int>(b.entry+4)==id;});
+ if(id<=0||binding==bindings_.end())return false;
+ const auto entry=binding->entry,replacement=binding->replacement,previous=read<unsigned>(entry);
+ std::array<unsigned char,256> previous_name{};
+ std::memcpy(previous_name.data(),api_->memory+replacement,previous_name.size());
+ const auto version=level?level:experience_level_;
+ const auto localized=localization::weapon_name_for_language(read<int>(global(localization::native_language_address)),golden_identity_);
+ char name[256];
+ if(versioned_names_&&version>1)std::snprintf(name,sizeof name,"%s v%u",localized,version);
+ else std::snprintf(name,sizeof name,"%s",localized);
+ std::memcpy(api_->memory+replacement,name,std::strlen(name)+1);
+ write(entry,replacement);
+ // This native call copies the string into the stock subtitle buffer, so the
+ // logical Walloper/name projection can be restored immediately afterward.
+ try{notify(id,180);}catch(...){
+  if(read<unsigned>(entry)==replacement)write(entry,previous);
+  std::memcpy(api_->memory+replacement,previous_name.data(),previous_name.size());throw;
+ }
+ if(read<unsigned>(entry)==replacement)write(entry,previous);
+ std::memcpy(api_->memory+replacement,previous_name.data(),previous_name.size());
+ return true;
+}
 void Presentation::apply_identity(){
  if(level_transitioning())return;
  if(arena_){
