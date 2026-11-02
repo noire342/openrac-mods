@@ -9,6 +9,15 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def unique_json_keys(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"Duplicate JSON field: {key}")
+        result[key] = value
+    return result
+
+
 def sources():
     files = {}
     for name in ("CMakeLists.txt", "LICENSE", "NOTICE.md", "README.md", "openrac-mod.json",
@@ -34,7 +43,14 @@ def sources():
         native = ROOT.parent / "revolverator/third_party/openrac"
     for name in ("common/json.h", "common/json.cpp", "NOTICE.md"):
         files[f"third_party/openrac/{name}"] = native / name
-    return {name: path.read_bytes() for name, path in sorted(files.items())}
+    data = {name: path.read_bytes() for name, path in sorted(files.items())}
+    for name, blob in data.items():
+        if name.endswith(".json"):
+            try:
+                json.loads(blob, object_pairs_hook=unique_json_keys)
+            except ValueError as error:
+                raise ValueError(f"{name}: {error}") from error
+    return data
 
 
 if __name__ == "__main__":

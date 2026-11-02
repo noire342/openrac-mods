@@ -50,6 +50,5 @@
       "step": 1.0,
       "description": "0 usa esattamente il consumo nativo di Ratchet. Per un tempo personalizzato scegli da 1 a 120 secondi. In pausa il consumo si ferma."
     }
-  ],
-  "homepage": "https://github.com/noire342/openrac-mods/tree/main/clank-unleashed"
+  ]
 }
