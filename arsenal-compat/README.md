@@ -3,7 +3,8 @@
 Compatibility provider for the additive Revolverator on the **unchanged stock
 OpenRAC Windows x64 client**, R&C1 PAL or NTSC-U. The executable on disk is neither
 replaced nor edited. The provider installs its owned in-memory detours only
-after a consumer has prepared all 30 typed bindings and explicitly committed.
+after an ABI v1 consumer has prepared all30 typed bindings, or an ABI v2
+consumer has prepared its own typed subset, and explicitly committed.
 It does not supply weapons, visuals, game data or save policy.
 
 Recognized official executable SHA256 values:
@@ -63,8 +64,8 @@ the complete required prefix plus that optional binding. Diagnostics retain
 
 All API calls run on the game/load thread. Foreign threads and reentrant
 transactions are refused. Unknown IDs return `ARSENAL_HOOKS_UNKNOWN` without
-mutating the transaction or diagnostic state. Binding is single-consumer;
-it is not a general multi-mod chaining service.
+mutating the transaction or diagnostic state. The ABI v1 facade remains single-consumer. The shared ABI v2 described below
+adds independent consumer tokens and typed chaining without changing that facade.
 
 Rollback disables/removes only targets created by this provider. It never calls
 `MH_ALL_HOOKS` or `MH_Uninitialize`. Each detour retains the consumer module until
@@ -114,3 +115,44 @@ archive URL/hash and selected files. MinHook and its bundled HDE code retain
 their original BSD two-clause notices in
 [third_party/minhook/LICENSE.txt](third_party/minhook/LICENSE.txt), also copied
 into the binary package. No game assets or client executable are included.
+
+## Shared consumers (ABI v2)
+
+The current source extends the bundled utility with `arsenal_hooks_api_v2.h`.
+`openrac_arsenal_hooks_query(2)` returns the v2 table (cast the returned service
+pointer after checking its size/version). The DLL metadata remains0.1.0 so
+existing Revolverator private loaders keep their ABI/version contract. Query1
+retains its original table layout, exclusive legacy claim and30-hook commit.
+
+V2 consumers acquire a generation-checked token and bind/commit only their own
+subset. A native target gets one signature-specialized broker detour; callbacks
+run last-committed first. Their stable original continuations follow the next
+currently active consumer, so removing a middle consumer never leaves another
+mod with its freed function pointer. Releasing one token leaves other owners
+active. No arbitrary ABI argument packing or generic `void*` dispatcher is used.
+
+Calls and dispatch run on the game/load thread. Binding, activation and release
+are refused during callbacks, preventing teardown of code still on the stack.
+Each replacement module is retained until its token is released. V2 pins the
+broker DLL itself, and a private loader's unload is deferred while any legacy or
+v2 token remains; unloading one mod cannot dismantle another mod's hooks.
+
+Both packages must include this shared-capable utility; an older v1-only DLL
+cannot serve a v2 consumer. Consumers check the v2 service before making any
+native changes and fail with a compatible-build message if it is unavailable.
+The legacy SDK hooks, source notices and pinned MinHook bytes are unchanged.
+
+`arsenal_compat_shared_test` verifies both legacy/shared load orders, native
+return values, stable head/middle/tail removal, subset activation failure,
+reentrant and foreign-thread mutation refusal, token generations and teardown
+retry. These portable checks supplement the original18,459 provider checks;
+they do not replace exact-binary native gameplay/save validation.
+
+The common fragment factory is an optional additional v2 target:
+`rac1.moby.spawn_break_fragment`, signature
+`u32(u32,i32,u32,u32,i32,i32,u32,u32,f32,u32)`. On the exact official PAL0.10
+E720 executable its compiled function body establishes that the float is
+argument9, despite conflicting decompiled call-site declarations placing it at
+argument7. The typed dispatcher and its PAL/NTSC forwarding tests preserve
+argument9. The exact-binary audit and host-only verification scope are recorded
+in [docs/SHARED_V2_HOST_VALIDATION.json](docs/SHARED_V2_HOST_VALIDATION.json).

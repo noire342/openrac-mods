@@ -101,6 +101,7 @@ struct Session {
   restore_context();
  }
  void frame(){
+  if(world.level_transitioning())return;
   const int current=api->loaded_level();
   if(current!=level){before_load();level=current;++epoch;primary=false;}
   if(current<0||current>18)return;

@@ -1,0 +1,36 @@
+{
+  "format": 1,
+  "kind": "arsenal-shared-hooks-v2-host-validation",
+  "legacy_abi_version": 1,
+  "shared_abi_version": 2,
+  "dll_metadata_version": "0.1.0",
+  "dll_sha256": "022805b5cc41c1e13e4755bd45c067376f63cf1a192ab2c2684a221b86fb1d2f",
+  "windows_ctest": {"passed": 2, "failed": 0},
+  "linux_ctest": {"passed": 2, "failed": 0},
+  "legacy_provider_assertions": 18459,
+  "shared_provider_assertions": 447,
+  "native_gameplay_verified": false,
+  "coverage": [
+    "ABI v1 exclusive claim and required30 prefix remain available",
+    "ABI v2 subset commits and independent token release",
+    "legacy-first and shared-first load ordering",
+    "cached original continuations after removing head, middle or tail owner",
+    "native signed return and exact argument forwarding",
+    "PAL and NTSC factory bridge passes float argument9 and integer guest arguments",
+    "subset activation failure preserves existing consumer",
+    "mutation is refused during dispatch and from foreign threads",
+    "disable/remove failure retains owner lifetime for retry",
+    "generation checked consumer tokens and capacity exhaustion"
+  ],
+  "factory_native_abi": {
+    "runtime_sha256": "e720a59d130b4b2289a4eb15cad3e33f739a72a385992db171ef43490205fb0e",
+    "pal_symbol": "func_L00_00265050",
+    "signature": "u32(u32,i32,u32,u32,i32,i32,u32,u32,f32,u32)",
+    "float_argument": 9,
+    "preferred_function_va": "0x14074bd10",
+    "function_byte_count": 1421,
+    "function_sha256": "5b7923c037e570f72e0d99f46b30e54a1c14c747e42ca3fd45c80343c1aa6910",
+    "audit_archive": "work/salvage-native-audit/factory-extraction.json",
+    "limits": "Exact compiled ABI audit supplied by parent; this is not a native gameplay/save integration test."
+  }
+}

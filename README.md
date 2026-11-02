@@ -9,6 +9,20 @@ Skill Points: RetroAchievements brings the achievement set into the native
 Skill Points menu. Cinematic Journeys prevents accidental cutscene skipping. Clank Unleashed adds
 optional independent Clank control and an electrical distance reserve on PAL.
 
+## Recupero componenti / Robot Salvage (development source)
+
+[Recupero componenti](robot-salvage/README.md) retains real robot fragments as
+physical, collectable parts, with a native **Componenti** pause inventory,
+PAL save sidecars and a versioned C API for future custom levels. Suck Cannon
+integration reuses the original component model as its projectile.
+
+This is **development source**, not an installable or final release. Windows
+x64 / official OpenRAC 0.10.0 / PAL Europe v2.00 is the current target. See
+[build instructions](robot-salvage/README.md#build) and the
+[verified scope and remaining work](robot-salvage/docs/VALIDATION.md), including
+the known variable-size fragment limitation. Existing release downloads remain
+available; their binaries do not contain this development utility update.
+
 ## Install Clank Unleashed / Clank libero (PAL preview)
 
 Use **official OpenRAC 0.10.0**, Windows x64, and your own **PAL Europe v2.00 / SCES_509.16** disc and extracted data. Add this repository in the launcher's Mods page, select **Clank libero**, install it and enable it. If an older NTSC preview is installed, update it first.
@@ -66,6 +80,7 @@ not make it PAL-compatible.
 | [Skill Points: RetroAchievements](skill-points-ra/README.md) |0.1.3 | Native menu, offline rules and read-only/event C API v1 |
 | [Cinematic Journeys](cinematic-journeys/README.md) |0.1.1 | Cutscene protection and configurable original flight animation |
 | [Clank Unleashed](clank-unleashed/README.md) |0.1.0-preview.5 PAL | Independent native Clank control, Gadgebot wheel and optional electrical reserve |
+| [Recupero componenti](robot-salvage/README.md) |0.1.0 development source | Physical robot fragments, native collection inventory and C API v1; release validation in progress |
 | [Arsenal compatibility](arsenal-compat/README.md) |0.1.0 | Private bundled native-hook utility |
 | [File overlay](arsenal-file-overlay/README.md) |0.1.0 | Private bundled read-only manifest alias utility |
 

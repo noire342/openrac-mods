@@ -29,6 +29,6 @@ public:
     void pin_remaining() noexcept;
 private:
     struct Owned { void* target{}; void* replacement{}; void* module{}; };
-    std::array<Owned, HookCatalogSize> owned_{};
+    std::array<Owned, 64> owned_{};
 };
 } // namespace arsenal_compat

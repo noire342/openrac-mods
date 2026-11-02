@@ -83,8 +83,9 @@ consumer prepares all 30 typed bindings before activation. Other hook IDs remain
 with the original SDK `api->hook`; the SDK table is never replaced.
 
 `NativeRuntimeHooks` owns the Revo claim and rolls it back before unload or on
-initialization failure. The compatibility mod requires the exact stock Windows
-client hash; it is not a general multi-mod hook-chain service. The complete
+initialization failure. The compatibility utility requires the exact stock Windows
+client hash. ABI v1 keeps its exclusive consumer contract; the current
+development source adds a separate typed multiconsumer ABI v2 (see below). The complete
 [provider contract](../arsenal-compat/README.md) documents state, errors, teardown
 and whole-stock-save-wrapper semantics.
 
@@ -108,3 +109,20 @@ Declare dependencies/load order in each consumer manifest. Restore a native
 override only while it is still owned by that adapter. A passing host test
 checks the adapter contract; native gameplay and other-mod combinations need
 their own evidence.
+
+## Recupero componenti API v1 (development)
+
+The MIT [robot_salvage_api.h](../robot-salvage/include/robot_salvage_api.h)
+provides copied catalog, inventory and world records; transactional inventory
+changes; custom-level spawns; and cursor-based events. Resolve
+`openrac_robot_salvage_query(1)` only from the loaded producer, validate sizes
+and statuses, and call on the game thread. No game-memory pointers are exposed.
+See the [full API contract](../robot-salvage/docs/API.md).
+
+The bundled hook utility now also exposes
+[shared consumer ABI v2](../arsenal-compat/include/arsenal_hooks_api_v2.h) while
+preserving the original v1 prefix/claim contract. The
+[pause-page registry](../arsenal-compat/include/arsenal_pause_api.h) copies page
+metadata and gives one generation-checked presenter ownership of navigation.
+These are development source interfaces; older release DLLs do not gain them
+when the repository source changes. See the [provider contract](../arsenal-compat/README.md#shared-consumers-abi-v2).

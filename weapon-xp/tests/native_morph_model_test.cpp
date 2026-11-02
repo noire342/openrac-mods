@@ -26,6 +26,7 @@ int main() {
     openrac_api api{};
     api.memory = memory.data();
     api.relocate_data = relocate;
+    api.relocate_level_data=+[](int,unsigned address){return address+0x6000;};
     api.loaded_level = loaded;
     for (const auto& disc : kDiscs) {
         std::fill(memory.begin(), memory.end(), 0);
@@ -52,6 +53,17 @@ int main() {
         pose.prepare(moby, true);
         pose.reset();
         CHECK(memory == snapshot);
+        pose.prepare(moby,true);
+        put<int>(memory,disc.mode+0x6000,6);
+        const auto incoming_loading=memory;
+        pose.reset();
+        CHECK(memory==incoming_loading);
+        put<int>(memory,disc.mode+0x6000,0);
+        pose.reset(); // Forgetting prevents a later restore into a reused actor.
+        float after_loading_basis;
+        std::memcpy(&after_loading_basis,memory.data()+moby+0xC0,4);
+        CHECK(after_loading_basis==-1);
+        std::memcpy(memory.data()+moby+0xC0,identity.data(),sizeof(identity));
         pose.prepare(moby, true);
         put<float>(memory, moby + 0xC0, 7);
         pose.reset();

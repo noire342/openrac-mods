@@ -120,6 +120,34 @@ int main() {
             put<float>(0x166D00 + 0x140, 10.0f);
         }
         Progression state;
+        {
+            // A kill/API award may queue a new name immediately before the
+            // loader takes ownership. safe=false must not leave names writable.
+            Progression pending;
+            NativeUpgrades transition(&api, d);
+            transition.tick(pending, false);
+            pending.award(10, kThresholds[1]);
+            transition.enqueue(10, 1, 2);
+            put<int>(d.mode, 6);
+            std::memset(memory.data() + 0x600000, 0xAD, 1792);
+            const std::vector<unsigned char> incoming(memory.data(), memory.data() + 0x2000000);
+            transition.tick(pending, false);
+            CHECK(std::memcmp(memory.data(), incoming.data(), incoming.size()) == 0);
+            CHECK(transition.pending() && !transition.active() && scenes.empty());
+            CHECK(pending.weapon_level(10) == 2);
+            put<int>(d.mode, 0);
+            transition.tick(pending, false);
+            CHECK(std::strcmp(reinterpret_cast<char*>(memory.data() + get<unsigned>(0x500000)),
+                              "Guanto Bomba v2") == 0);
+            CHECK(transition.pending());
+            put<int>(d.mode, 6);
+            const std::vector<unsigned char> before_reset(memory.data(), memory.data() + 0x2000000);
+            transition.reset();
+            CHECK(std::memcmp(memory.data(), before_reset.data(), before_reset.size()) == 0);
+            CHECK(transition.pending() && !transition.active());
+            put<int>(d.mode, 0);
+            put<unsigned>(0x500000,0x510000); // Native loading rebuilds its original name bank.
+        }
         state.award(10, 2480);
         state.award(16, kThresholds.back());
         {

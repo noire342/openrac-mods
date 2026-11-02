@@ -1,5 +1,14 @@
 # Changelog
 
+## Recupero componenti — development source, 2026-11-02
+
+- Add the PAL robot-fragment catalog, independent world/inventory core and copied C API v1.
+- Add physical fragments, one-per-press Triangle collection, native pause inventory and paired save sidecars.
+- Integrate original-model Suck Cannon custody without creating enemies or repeating death rewards.
+- Extend the bundled utility with typed multiconsumer hooks and a generation-checked pause-page registry while preserving ABI v1.
+- Guard reclaimed level arenas during companion loading and cover the paths with host regressions.
+- Add Windows/Linux build checks and publish explicit native evidence limits and remaining acceptance work. No installable release is published by this source addition.
+
 ## Clank Unleashed 0.1.0-preview.5 — 2026-11-02
 
 - Add standalone PAL 0.10.0 Clank control with L3+Triangle detach and Triangle rejoin.

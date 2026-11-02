@@ -24,6 +24,7 @@ Presentation::Presentation(const openrac_api* a,openrac_mod* m,GuestArena* arena
  relay_(find_function("FUN_L00_002a5dd8")),enabled_(a->setting_bool(m,"hud")!=0){hud_fallback_=hud_fallback;}
 Presentation::~Presentation(){reset();}
 void Presentation::names(){
+ if(level_transitioning())return;
  const auto bank=read<unsigned>(global(0x15f6a0));const int count=read<int>(global(0x1996fc));
  if(!Memory::valid(bank,16)||count<=0||count>20000||!Memory::valid(bank,std::size_t(count)*16))return;
  if(bank_==bank){apply_identity();return;}
@@ -52,6 +53,7 @@ void Presentation::set_experience(bool enabled,unsigned level,float progress,boo
  versioned_names_=versioned_names;
 }
 void Presentation::apply_identity(){
+ if(level_transitioning())return;
  if(arena_){
   const int language=read<int>(global(localization::native_language_address));
   const char* localized_name=localization::weapon_name_for_language(language,golden_identity_);
@@ -69,6 +71,7 @@ void Presentation::apply_identity(){
  }
 }
 void Presentation::frame(bool equipped){
+ if(level_transitioning())return;
  names();const int current=api_->loaded_level();if(current<0||current>=19)return;
  bind_icon();
  hd_.frame();

@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+cmake_minimum_required(VERSION 3.20)
+project(arsenal_pause_menu_model_tests LANGUAGES CXX)
+include(CTest)
+add_executable(arsenal_pause_menu_model_test pause_menu_model_test.cpp ../../src/pause_menu_model.cpp)
+target_include_directories(arsenal_pause_menu_model_test PRIVATE ../../src)
+target_compile_features(arsenal_pause_menu_model_test PRIVATE cxx_std_17)
+if(MSVC)
+  target_compile_options(arsenal_pause_menu_model_test PRIVATE /W4 /EHsc)
+else()
+  target_compile_options(arsenal_pause_menu_model_test PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+add_test(NAME arsenal_pause_menu_model COMMAND arsenal_pause_menu_model_test)

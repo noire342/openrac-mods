@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #include "runtime.hpp"
+#include "native_level.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -221,10 +222,12 @@ void Runtime::save() noexcept {
 // This prevents a pending hit that survives several ticks from being multiplied repeatedly.
 void Runtime::restore_hits() {
     if (m_native_damage) {
+        // This is a resident damage table, not a reclaimed level allocation.
         m_native_damage->restore();
     }
+    const bool restore_level=!native_level_loading(m_api,*m_disc);
     for (auto& edit : m_edits) {
-        if (edit.hit && edit.raw != edit.scaled
+        if (restore_level && edit.hit && edit.raw != edit.scaled
             && read<std::uint32_t>(edit.hit + 0x34) == edit.owner
             && read<float>(edit.hit + 0x2C) == edit.scaled) {
             write(edit.hit + 0x2C, edit.raw);
@@ -235,14 +238,15 @@ void Runtime::restore_hits() {
 
 void Runtime::reset_level() {
     if(++m_level_epoch==0)++m_level_epoch;
+    const bool restore_guest=!native_level_loading(m_api,*m_disc);
     if (m_morph_model) {
-        m_morph_model->reset();
+        m_morph_model->reset(restore_guest);
     }
     if (m_upgrades) {
-        m_upgrades->reset();
+        m_upgrades->reset(restore_guest);
     }
     if (m_hud_bridge) {
-        m_hud_bridge->detach();
+        m_hud_bridge->detach(restore_guest);
     }
     m_edits = {};
     m_combat.reset();
@@ -493,7 +497,7 @@ void Runtime::update_capacity() {
 
 void Runtime::restore_capacity() {
     if (!m_settings.scale_capacity || !m_table || m_api->loaded_level() != m_last_level
-        || !valid(m_table, kItems * 0x18)) {
+        || native_level_loading(m_api,*m_disc) || !valid(m_table, kItems * 0x18)) {
         return;
     }
     for (std::size_t i = 0; i < kWeapons.size(); ++i) {
@@ -514,15 +518,20 @@ void Runtime::tick() {
     try {
         ++m_tick;
         const int loaded = m_api->loaded_level();
+        // Profile persistence uses copied domain state, independently of the
+        // native level arena. Keep it alive while loading owns guest memory.
+        if (m_dirty && m_tick - m_saved_tick >= 300) {
+            save();
+        }
+        if (native_level_loading(m_api,*m_disc)) {
+            return;
+        }
         if (loaded != m_last_level) {
             save();
             reset_level();
             m_last_level = loaded;
         } else {
             restore_hits();
-        }
-        if (loaded < 0) {
-            return;
         }
         if (m_trace && m_tick % 120 == 0) {
             const auto slot = resident(m_disc->hud_bank);
@@ -545,9 +554,6 @@ void Runtime::tick() {
                       << " gauge-pending=" << read<unsigned>(gauge_slot + 0x68);
             }
             log(OPENRAC_LOG_INFO, trace.str());
-        }
-        if (m_dirty && m_tick - m_saved_tick >= 300) {
-            save();
         }
         m_upgrades->tick(m_state, playing(), m_settings.versioned_names);
         if (!playing() || m_upgrades->active()) {

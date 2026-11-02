@@ -16,7 +16,7 @@ public:
  void names();
  void select_identity(bool revolverator)override;
  void set_experience(bool enabled,unsigned level,float progress,bool versioned_names);
- void set_golden(bool golden){golden_identity_=golden;hd_.set_golden(golden);apply_identity();}
+ void set_golden(bool golden){golden_identity_=golden;if(level_transitioning())return;hd_.set_golden(golden);apply_identity();}
  static constexpr unsigned custom_icon_bank=60037;
  void frame(bool equipped);
  bool owns(unsigned element)const;

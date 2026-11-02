@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #include "native_upgrades.hpp"
+#include "native_level.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -155,9 +156,10 @@ void NativeUpgrades::names(const Progression& state, bool enabled) {
 }
 
 void NativeUpgrades::tick(const Progression& state, bool safe, bool versioned_names) {
+    if (native_level_loading(m_api, m_disc)) return;
+    const auto mode = m_api->relocate_level_data(0, m_disc.mode);
     names(state, versioned_names);
     const auto hero = m_api->relocate_data(m_disc.hero);
-    const auto mode = m_api->relocate_level_data(0, m_disc.mode);
     if (m_active) {
         if (read<int>(mode) != 0) {
             m_completed = 0;
@@ -356,15 +358,20 @@ void NativeUpgrades::align_scene(const std::array<float, 3>& camera) {
     std::memcpy(m_api->memory + vendor() + 0xC0, origin, sizeof origin);
 }
 
-void NativeUpgrades::reset() {
-    restore_player();
-    for (const auto& b : m_bindings) {
-        if (read<unsigned>(b.entry) == b.replacement) {
-            write(b.entry, b.original);
+void NativeUpgrades::reset(bool restore_guest) {
+    const bool owned = m_buffer || m_hidden_body || !m_bindings.empty();
+    restore_guest = restore_guest && owned && !native_level_loading(m_api, m_disc);
+    if (restore_guest) {
+        restore_player();
+        for (const auto& b : m_bindings) {
+            if (read<unsigned>(b.entry) == b.replacement) {
+                write(b.entry, b.original);
+            }
         }
     }
+    m_hidden_body = 0;
     m_bindings.clear();
-    if (m_buffer && !m_active) {
+    if (restore_guest && m_buffer && !m_active) {
         const auto cursor = global(0x19A4E8, 0x19A3E8) + 0x10;
         // Reclaim only if nothing else was allocated after us. Never rewind another owner's heap.
         if (read<unsigned>(cursor) == m_buffer + kBufferSize) {

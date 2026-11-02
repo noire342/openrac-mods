@@ -24,7 +24,7 @@ public:
         return !m_queue.empty() && m_queue.front().presentation_only;
     }
     void tick(const Progression& state, bool safe, bool versioned_names = true);
-    void reset();
+    void reset(bool restore_guest = true);
     void filter_report(unsigned char* report, int size) const;
 
     bool pending() const { return active() || !m_queue.empty(); }

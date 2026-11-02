@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstring>
 #include <fstream>
+#include <iterator>
 #include <map>
 #include <sstream>
 #include <string>
@@ -58,6 +59,8 @@ std::map<std::pair<std::string, std::string>, std::string> installed_contracts;
 int counter_calls = 0;
 int take_calls = 0, drone_spawns = 0;
 bool hud_enabled = true, scale_damage = false, scale_capacity = false;
+bool animations_enabled=true,capture_before_native_load=false;
+std::vector<unsigned char> before_native_load;
 std::string test_profile = "integration";
 double test_xp_rate = 1;
 std::string glyph_text;
@@ -118,7 +121,8 @@ int host_bool(openrac_mod*, const char* key) {
     if (std::strcmp(key, "scale_capacity") == 0) {
         return scale_capacity;
     }
-    if (std::strcmp(key, "level_up_animation") == 0 || std::strcmp(key, "versioned_names") == 0) {
+    if (std::strcmp(key, "level_up_animation") == 0) return animations_enabled;
+    if (std::strcmp(key, "versioned_names") == 0) {
         return true;
     }
     return hud_enabled && std::strcmp(key, "hud") == 0;
@@ -208,6 +212,10 @@ void base_ammo() {
 }
 
 std::uint32_t original_load(std::int32_t level) {
+    if(capture_before_native_load){
+        before_native_load.assign(ram.data(),ram.data()+0x2000000);
+        put<unsigned>(0x500000,0x510000); // Native loading reconstructs this fixture's text bank.
+    }
     loaded = level;
     base_ammo();
     return 0x123456;
@@ -839,6 +847,144 @@ void presentation_contract(weapon_xp_query_fn query,const openrac_api& api,openr
     std::puts("XP v4 optional presentation tail: C ABI, settings, queue, lifecycle and unchanged native progression: ok");
 }
 
+void loading_contract(const openrac_api& api,openrac_mod* handle,
+                      openrac_mod_load_fn load,void(*unload)()) {
+    const bool previous_hud=hud_enabled,previous_damage=scale_damage,previous_capacity=scale_capacity;
+    hud_enabled=scale_damage=scale_capacity=false;
+    test_profile=std::string("loading-contract-")+disc->version;
+    std::fill(ram.begin(),ram.end(),0);loaded=1;
+    CHECK(load(&api,handle)==0);
+    const bool pal=std::strcmp(disc->version,"pal")==0;
+    const auto bank=exe(pal?0x15F780:0x15F6A0);
+    put<unsigned>(bank,0x500000);put<int>(exe(pal?0x1997FC:0x1996FC),1);
+    put<int>(exe(pal?0x1864D0:0x1863D0)+10*0x4c,999);
+    put<unsigned>(0x500000,0x510000);put<int>(0x500004,999);
+    std::memcpy(ram.data()+0x510000,"Guanto Bomba",13);
+    put<int>(ov(disc->mode),0);put<int>(exe(disc->hero)+0x22a8,4);
+    frame(nullptr);
+    CHECK(service->award_xp(10,kThresholds[1])==WEAPON_XP_OK&&stats(10).level==2);
+    put<int>(ov(disc->mode),6);
+    std::memset(ram.data()+0x600000,0xAD,1792);
+    auto incoming=std::vector<unsigned char>(ram.data(),ram.data()+0x2000000);
+    const auto expect_unchanged=[&](const char* stage){
+        const bool unchanged=std::memcmp(ram.data(),incoming.data(),incoming.size())==0;
+        if(!unchanged){
+            std::fprintf(stderr,"XP loading ownership violation: %s\n",stage);
+            // Clean up the loaded mod while its fake SDK and RAM still exist;
+            // a deliberate CHECK failure must not become a DLL-exit crash.
+            unload();
+        }
+        CHECK(unchanged);
+    };
+    frame(nullptr);
+    expect_unchanged("pending V2 name in mode6");
+    CHECK(stats(10).level==2);
+    for(int n=0;n<300;++n)frame(nullptr);
+    expect_unchanged("pure profile autosave during mode6");
+    std::ifstream saved(profile_path(disc->version,test_profile),std::ios::binary);
+    const std::string packet((std::istreambuf_iterator<char>(saved)),{});
+    Progression persisted;
+    CHECK(saved.is_open()&&decode(packet,persisted)&&persisted.experience(10)==stats(10).xp);
+    saved.close(); // Do not hold a Windows read handle across the next atomic replace.
+    put<int>(ov(disc->mode),0);frame(nullptr);
+    CHECK(std::strcmp(reinterpret_cast<char*>(ram.data()+get<unsigned>(0x500000)),"Guanto Bomba v2")==0);
+    // Runtime's own level-change reset runs before NativeUpgrades::tick. A
+    // callee-only guard cannot protect these old bindings during mode6.
+    loaded=2;put<int>(ov(disc->mode),6);
+    incoming.assign(ram.data(),ram.data()+0x2000000);
+    frame(nullptr);
+    expect_unchanged("Runtime level-change reset in mode6");
+    CHECK(stats(10).level==2);
+    const auto native_load=reinterpret_cast<std::uint32_t(*)(int)>(hooks["rac1.level.load_gameplay"]);
+    capture_before_native_load=true;
+    CHECK(native_load(2)==0x123456);
+    capture_before_native_load=false;
+    const bool pre_native_unchanged=before_native_load==incoming;
+    if(!pre_native_unchanged){std::fprintf(stderr,"XP loading ownership violation: explicit pre-native load cleanup\n");unload();}
+    CHECK(pre_native_unchanged);
+    put<int>(ov(disc->mode),0);frame(nullptr);
+    CHECK(std::strcmp(reinterpret_cast<char*>(ram.data()+get<unsigned>(0x500000)),"Guanto Bomba v2")==0);
+    for(const int invalid:{-1,19}){
+        loaded=invalid;incoming.assign(ram.data(),ram.data()+0x2000000);frame(nullptr);
+        expect_unchanged("invalid loaded-level ownership");
+    }
+    loaded=2;put<int>(ov(disc->mode),6);
+    CHECK(service->award_xp(10,1)==WEAPON_XP_OK);
+    const auto closing_xp=stats(10).xp;frame(nullptr);
+    unload();
+    CHECK(load(&api,handle)==0&&stats(10).xp==closing_xp&&stats(10).level==2);
+    put<int>(ov(disc->mode),0);unload();loaded=0;
+    hud_enabled=previous_hud;scale_damage=previous_damage;scale_capacity=previous_capacity;
+    std::puts("XP PAL/NTSC loading: pending V2, buffer, bindings and level-reset ownership: ok");
+}
+
+void unload_loading_contract(const openrac_api& api,openrac_mod* handle,
+                             openrac_mod_load_fn load,void(*unload)()){
+    const bool previous_hud=hud_enabled,previous_damage=scale_damage,previous_capacity=scale_capacity,previous_animations=animations_enabled;
+    hud_enabled=scale_damage=scale_capacity=true;animations_enabled=false;
+    test_profile=std::string("unload-loading-")+disc->version;
+    std::fill(ram.begin(),ram.end(),0);loaded=1;
+    CHECK(load(&api,handle)==0);base_ammo();
+    const auto slot=exe(disc->hud_bank);
+    const auto code=(std::strcmp(disc->version,"pal")==0?kHudPal:kHudNtsc)[loaded];
+    put<int>(exe(disc->item_in_hand),10);put<int>(ov(disc->mode),0);
+    put<int>(slot+0x20,60010);put<unsigned>(slot+0x18,code.weapon);
+    frame(nullptr);CHECK(service->award_xp(10,kThresholds[1])==0);frame(nullptr);
+    CHECK(get<unsigned>(slot+0x18)==code.relay);
+    CHECK(get<std::uint16_t>(ov(disc->item_table)+10*24+14)==45);
+    const unsigned source=0x400000,owner=0x401000,vars=0x402000,target=0x310000;
+    put<short>(source+0xa6,121);put<unsigned>(source+0x78,vars);
+    put<unsigned>(vars+0x50,owner);put<short>(owner+0xa6,192);
+    put<short>(target+0xa6,133);put<unsigned char>(target+0xb1,0xff);
+    hit_address=ov(disc->hit_ring);put<unsigned>(hit_address+0x20,source);
+    put<unsigned>(hit_address+0x34,target);put<float>(hit_address+0x2c,4);
+    const auto hit=reinterpret_cast<std::uint32_t(*)(unsigned,int,int)>(hooks["rac1.combat.get_hit"]);
+    CHECK(hit(target,0x10000,0)==hit_address&&get<float>(hit_address+0x2c)>4);
+    const auto saved_xp=stats(10).xp;
+    put<int>(ov(disc->mode),6);
+    const std::vector<unsigned char> incoming(ram.data(),ram.data()+0x2000000);
+    unload();
+    CHECK(std::memcmp(ram.data(),incoming.data(),incoming.size())==0);
+    CHECK(load(&api,handle)==0&&stats(10).xp==saved_xp);
+    put<int>(ov(disc->mode),0);unload();loaded=0;
+    hud_enabled=previous_hud;scale_damage=previous_damage;scale_capacity=previous_capacity;animations_enabled=previous_animations;
+    std::puts("XP PAL/NTSC mode6 unload: owned HUD, scaled hit and ammo-table handles forgotten; XP saved: ok");
+}
+
+void resident_cleanup_contract(const openrac_api& api,openrac_mod* handle,
+                               openrac_mod_load_fn load,void(*unload)()){
+    const bool previous_hud=hud_enabled,previous_damage=scale_damage,previous_capacity=scale_capacity,previous_animations=animations_enabled;
+    scale_damage=true;hud_enabled=scale_capacity=animations_enabled=false;
+    test_profile=std::string("resident-cleanup-")+disc->version;
+    std::fill(ram.begin(),ram.end(),0);loaded=1;
+    CHECK(load(&api,handle)==0);put<int>(ov(disc->mode),0);
+    put<int>(exe(disc->item_in_hand),15);
+    const auto damage=exe(std::strcmp(disc->version,"pal")==0?0x1600C8:0x15FFC8);
+    const std::array<float,2> original{{.667f,.25f}};
+    std::memcpy(ram.data()+damage,original.data(),sizeof original);
+    CHECK(service->award_xp(15,kThresholds[1])==0);frame(nullptr);
+    const unsigned source=0x400000,owner=0x401000,vars=0x402000,target=0x310000;
+    put<short>(source+0xa6,305);put<unsigned>(source+0x78,vars);
+    put<unsigned>(vars+0x20,owner);put<short>(owner+0xa6,0);
+    put<unsigned>(exe(disc->hero)+0x2080,owner);
+    put<short>(target+0xa6,133);put<unsigned char>(target+0xb1,0xff);
+    hit_address=ov(disc->hit_ring);put<unsigned>(hit_address+0x20,source);
+    put<unsigned>(hit_address+0x34,target);put<float>(hit_address+0x2c,4);
+    const auto hit=reinterpret_cast<std::uint32_t(*)(unsigned,int,int)>(hooks["rac1.combat.get_hit"]);
+    CHECK(hit(target,0x10000,0)==hit_address&&get<float>(hit_address+0x2c)>4);
+    CHECK(get<float>(damage)>original[0]&&get<float>(damage+4)>original[1]);
+    const auto saved_xp=stats(15).xp;put<int>(ov(disc->mode),6);
+    std::vector<unsigned char> expected(ram.data(),ram.data()+0x2000000);
+    // The resident table remains owned: only its scoped multiplier is undone.
+    // The recycled level hit packet, actors and HUD must stay byte-exact.
+    std::memcpy(expected.data()+damage,original.data(),sizeof original);
+    unload();CHECK(std::memcmp(ram.data(),expected.data(),expected.size())==0);
+    CHECK(load(&api,handle)==0&&stats(15).xp==saved_xp);
+    put<int>(ov(disc->mode),0);unload();loaded=0;
+    hud_enabled=previous_hud;scale_damage=previous_damage;scale_capacity=previous_capacity;animations_enabled=previous_animations;
+    std::puts("XP PAL/NTSC mode6 unload: resident damage restored, recycled level RAM unchanged, XP saved: ok");
+}
+
 int main(int argc, char** argv) {
     CHECK(argc == 2 || argc == 3);
     std::ifstream contracts(WEAPON_XP_CONTRACT_FIXTURE);
@@ -1091,6 +1237,9 @@ int main(int argc, char** argv) {
         extension_contract(query, api, handle, load, unload);
         ownership_contract(query,api,handle,load,unload);
         presentation_contract(query,api,handle,load,unload);
+        loading_contract(api,handle,load,unload);
+        unload_loading_contract(api,handle,load,unload);
+        resident_cleanup_contract(api,handle,load,unload);
     }
     CHECK(changed >= 32 && upgrades >= 4 && hits >= 30);
     CHECK(!observer_load || observed_levels >= 4);

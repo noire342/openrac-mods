@@ -50,6 +50,7 @@ int main() {
     openrac_api api{};
     api.memory = memory.data();
     api.relocate_data = identity;
+    api.relocate_level_data = +[](int,unsigned address){return address;};
     api.loaded_level = current_level;
     api.function_at = function_at;
     for (const auto& selected : kDiscs) {
@@ -72,6 +73,13 @@ int main() {
             CHECK(get(slot + 0x18) == row.relay && bridge.owns(slot));
             bridge.attach();
             CHECK(get(slot + 0x18) == row.relay);
+            put(disc->mode, 6);
+            const auto incoming_loading=memory;
+            bridge.detach();
+            CHECK(memory==incoming_loading&&!bridge.owns(slot));
+            put(disc->mode,0);
+            put(slot+0x18,row.weapon); // A fresh native level owns the callback again.
+            bridge.attach();
             bridge.detach();
             CHECK(get(slot + 0x18) == row.weapon && !bridge.owns(slot));
             bridge.attach();

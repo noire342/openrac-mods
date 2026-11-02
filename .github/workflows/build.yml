@@ -12,8 +12,16 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest, ubuntu-24.04]
-        mod: [weapon-xp, revolverator, arsenal-compat, arsenal-file-overlay, skill-points-ra, cinematic-journeys]
+        mod: [weapon-xp, revolverator, arsenal-compat, arsenal-file-overlay, skill-points-ra, cinematic-journeys, robot-salvage]
         include:
+          - mod: robot-salvage
+            skill_points: 'OFF'
+            cinematic: 'OFF'
+            xp: 'OFF'
+            revolverator: 'OFF'
+            compat: 'ON'
+            overlay: 'OFF'
+            salvage: 'ON'
           - mod: weapon-xp
             skill_points: 'OFF'
             cinematic: 'OFF'
@@ -65,7 +73,7 @@ jobs:
       - name: Fetch pinned SDK
         run: python tools/fetch_sdk.py
       - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_WEAPON_XP=${{ matrix.xp }} -DBUILD_REVOLVERATOR=${{ matrix.revolverator }} -DBUILD_ARSENAL_COMPAT=${{ matrix.compat }} -DBUILD_ARSENAL_FILE_OVERLAY=${{ matrix.overlay }} -DBUILD_SKILL_POINTS_RA=${{ matrix.skill_points }} -DBUILD_CINEMATIC_JOURNEYS=${{ matrix.cinematic }} -DBUILD_TESTING=ON
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_WEAPON_XP=${{ matrix.xp }} -DBUILD_REVOLVERATOR=${{ matrix.revolverator }} -DBUILD_ARSENAL_COMPAT=${{ matrix.compat }} -DBUILD_ARSENAL_FILE_OVERLAY=${{ matrix.overlay }} -DBUILD_SKILL_POINTS_RA=${{ matrix.skill_points }} -DBUILD_CINEMATIC_JOURNEYS=${{ matrix.cinematic }} -DBUILD_TESTING=ON -DBUILD_ROBOT_SALVAGE=${{ matrix.salvage || 'OFF' }}
       - name: Build
         run: cmake --build build --config Release --parallel
       - name: Test

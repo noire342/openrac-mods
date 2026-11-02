@@ -1,0 +1,32 @@
+{
+  "format": 2,
+  "api": "1.1",
+  "id": "robot-salvage",
+  "name": "Recupero componenti",
+  "version": "0.1.0",
+  "author": "noire342",
+  "license": "GPL-3.0-or-later",
+  "description": "Persistent, physical robot components with immediate Triangle collection, a native pause inventory and independent inventory data paired with each PAL save. Development source; release validation incomplete.",
+  "games": {
+    "rac1": [
+      "pal"
+    ]
+  },
+  "plugin": {
+    "windows-x86_64": "lib/windows-x86_64/robot_salvage.dll"
+  },
+  "hooks": [
+    "rac1.level.load_gameplay"
+  ],
+  "settings": [],
+  "extensions": {
+    "noire342.salvage": {
+      "version": 1,
+      "runtimeQuery": "openrac_robot_salvage_query",
+      "bundledUtilities": [
+        "arsenal_compat.dll"
+      ],
+      "stateSuffix": ".salvage"
+    }
+  }
+}

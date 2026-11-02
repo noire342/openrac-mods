@@ -73,3 +73,13 @@ those locks; the monorepo SDK 1.3 baseline remains supported. A separate CI matr
 builds, tests and packages both standalone modules with 1.10.1 on Windows/Linux.
 Run `python tools/check_openrac_010.py --source /path/to/OpenRAC` to reproduce
 the exact release map/hook check without modifying the OpenRAC checkout.
+
+## Robot Salvage development source
+
+Enable `BUILD_ROBOT_SALVAGE=ON` together with `BUILD_ARSENAL_COMPAT=ON`.
+The [module build guide](../robot-salvage/README.md#build) builds this component
+and its tests separately. Windows builds its native plugin and bundled utility;
+Linux builds portable contracts only. GitHub CI checks both environments.
+The current [validation record](../robot-salvage/docs/VALIDATION.md) lists the
+remaining native acceptance work. This source addition does not publish a new
+binary release or change the installed-release catalog.

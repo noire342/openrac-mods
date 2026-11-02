@@ -22,7 +22,7 @@ public:
     );
     ~HudBridge();
     void attach(int item = -1);
-    void detach();
+    void detach(bool restore_guest = true);
     bool owns(std::uint32_t element) const;
     void refresh_capacity(int item, int capacity);
 

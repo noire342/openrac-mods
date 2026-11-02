@@ -16,6 +16,12 @@ public:
  template<class T>T read(std::uint32_t at)const{T v{};if(valid(at,sizeof v))std::memcpy(&v,api_->memory+at,sizeof v);return v;}
  template<class T>void write(std::uint32_t at,const T& v)const{if(valid(at,sizeof v))std::memcpy(api_->memory+at,&v,sizeof v);}
  const RegionBindings& bindings()const noexcept{return *bindings_;}
+ // Loading can reuse the old level arena for incoming compressed resources.
+ bool level_transitioning()const{
+  if(!api_||!api_->memory||!api_->loaded_level||!api_->relocate_level_data)return true;
+  const int current=api_->loaded_level();
+  return current<0||current>18||read<int>(level(0x15f5c4))==6;
+ }
  std::uint32_t global(std::uint32_t at)const{return api_->relocate_data(bindings().data(at));}
  std::uint32_t level(std::uint32_t at)const{return level(0,at);}
  std::uint32_t level(unsigned overlay,std::uint32_t at)const{return api_->relocate_level_data(int(overlay),bindings().level(overlay,at));}

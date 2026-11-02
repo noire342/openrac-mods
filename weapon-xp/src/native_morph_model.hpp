@@ -6,6 +6,7 @@
 #include <cstring>
 
 #include "discs.hpp"
+#include "native_level.hpp"
 #include "openrac/openrac_mod.h"
 
 namespace weaponxp {
@@ -18,8 +19,9 @@ public:
 
     ~NativeMorphModel() { reset(); }
 
-    void reset() noexcept {
-        if (m_moby && m_level == m_api->loaded_level() && valid(m_moby, 256)
+    void reset(bool restore_guest = true) noexcept {
+        if (m_moby && restore_guest && !native_level_loading(m_api,m_disc)
+            && m_level == m_api->loaded_level() && valid(m_moby, 256)
             && read<short>(m_moby + 0xA6) == 185
             && std::memcmp(m_api->memory + m_moby + 0xC0, m_render.data(), sizeof(m_render)) == 0) {
             std::memcpy(m_api->memory + m_moby + 0xC0, m_original.data(), sizeof(m_original));
@@ -29,7 +31,8 @@ public:
 
     void prepare(unsigned moby, bool enabled) noexcept {
         reset();
-        if (!enabled || !valid(moby, 256) || read<short>(moby + 0xA6) != 185) {
+        if (!enabled || native_level_loading(m_api,m_disc)
+            || !valid(moby, 256) || read<short>(moby + 0xA6) != 185) {
             return;
         }
         const auto hero = m_api->relocate_data(m_disc.hero);

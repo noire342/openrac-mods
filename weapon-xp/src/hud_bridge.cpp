@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #include "hud_bridge.hpp"
+#include "native_level.hpp"
 
 #include <cstring>
 
@@ -41,9 +42,10 @@ bool HudBridge::owns(std::uint32_t element) const {
            && read(element + 0x18) == m_address;
 }
 
-void HudBridge::detach() {
+void HudBridge::detach(bool restore_guest) {
     // A different mod or the game's scheduler may have replaced it since us: preserve that.
-    if (m_slot && m_api->loaded_level() == m_level && read(m_slot + 0x18) == m_address) {
+    if (m_slot && restore_guest && !native_level_loading(m_api,m_disc)
+        && m_api->loaded_level() == m_level && read(m_slot + 0x18) == m_address) {
         write(m_slot + 0x18, m_original);
     }
     m_slot = m_original = m_address = 0;
@@ -51,6 +53,10 @@ void HudBridge::detach() {
 }
 
 void HudBridge::attach(int held) {
+    if (native_level_loading(m_api, m_disc)) {
+        detach(false);
+        return;
+    }
     const int level = m_api->loaded_level();
     if (m_level != level) {
         detach();
