@@ -1,5 +1,14 @@
 # Validation
 
+## Revolverator 0.3.3
+
+Use the release's validation JSON and SHA256SUMS for the exact distributed
+weapon/adapter DLLs and native scenarios. Its current source adds contact
+sparks, local player-disc asset preparation and minimum-interface compatibility.
+The [weapon validation document](../revolverator/docs/NATIVE_VALIDATION.md)
+separates current proof from the historical receipts below. A past native
+pass does not certify a newer binary, every later client or a whole campaign.
+
 ## OpenRAC 0.10.0 standalone verification
 
 The current Skill Points 0.1.3 and Cinematic Journeys 0.1.1 receipt is

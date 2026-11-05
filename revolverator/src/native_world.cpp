@@ -20,7 +20,7 @@ struct Stack {
  }
 };
 }
-NativeWorld::NativeWorld(const openrac_api* api,openrac_mod* mod,NativeAmmunition& ammunition,NativeRotor& rotor,GuestArena& arena):Memory(api),arm_(api,arena),ammunition_(ammunition),rotor_(rotor),
+NativeWorld::NativeWorld(const openrac_api* api,openrac_mod* mod,NativeAmmunition& ammunition,NativeRotor& rotor,GuestArena& arena):Memory(api),arm_(api,arena),ammunition_(ammunition),rotor_(rotor),sparks_(api),
  allocate_(function<Allocate>("FUN_001ff288")),post_hit_(function<Hit>("FUN_L00_00259a88")),
  ray_(function<Ray>("FUN_001efa68")),basis_(function<Basis>("FUN_001fa030")),
  state_(function<State>("FUN_L00_002223f8")),animation_(function<Animation>("FUN_L00_002323b8")),
@@ -343,6 +343,7 @@ void NativeWorld::explode(Target target,const ImpactContext& result,const Golden
  if(trace_){char text[240];std::snprintf(text,sizeof text,"Golden impact: charge=%.3f radius=%.2f damage=%.2f scale=%.2f targets=%zu source=%08x",blast.charge,blast.radius,blast.damage,blast.visual_scale,plan.size(),attacker);log(text);}
 }
 void NativeWorld::observe_frame(const Frame& frame){
+ contact_tip_.reset();
  const bool same_epoch=last_frame_.epoch==frame.epoch;
  last_frame_=frame;recoil_.tick(frame);frame_hits_=0;
  if(same_epoch&&frame.playing&&!frame.paused&&frame.alive&&finite(frame.position)&&
@@ -382,7 +383,7 @@ void NativeWorld::enforce_carry_speed(){
  write<float>(hero()+0xe0,velocity.x*scale);
  write<float>(hero()+0xe4,velocity.y*scale);
 }
-void NativeWorld::attack_cancelled(){recoil_.cancel();recoil_body_={};arm_.reset();}
+void NativeWorld::attack_cancelled(){recoil_.cancel();recoil_body_={};arm_.reset();sparks_.reset();contact_tip_.reset();}
 void NativeWorld::cancelled(){
  ++cancellation_generation_;
  restore_lease(lease_,true);
@@ -425,12 +426,24 @@ void NativeWorld::animate(Motion motion){
 }
 void NativeWorld::pose(Phase,float){arm_.settle(read<float>(global(0x15ed7c)));}
 void NativeWorld::align_weapon(float angle){
- if(auto tip=arm_.align_weapon(weapon()))if(lease_valid())move(lease_.target,*tip,angle);
+ if(auto tip=arm_.align_weapon(weapon()))if(lease_valid()){move(lease_.target,*tip,angle);contact_tip_=tip;}
+}
+void NativeWorld::contact_sparks(Phase phase,float angle){
+ const bool spinning=phase==Phase::Spinning&&lease_valid()&&contact_tip_.has_value()&&!level_transitioning();
+ const auto count=sparks_.update(last_frame_,spinning?lease_.target:Target{},contact_tip_.value_or(Vec3{}),
+     read<Vec3>(weapon()+0xd0)*-1.f,angle,rotor_.controller().speed());
+ if(count&&trace_){
+  const auto point=*contact_tip_;char text[280];
+  std::snprintf(text,sizeof text,"contact sparks target=%08x class=%u point=(%.5f,%.5f,%.5f) speed=%.3f count=%u total=%llu",
+   lease_.target.address,lease_.target.klass,point.x,point.y,point.z,rotor_.controller().speed(),count,
+   static_cast<unsigned long long>(sparks_.emitted()));log(text);
+ }
 }
 std::optional<Vec3> NativeWorld::carry_anchor(float angle){
  if(lease_valid())lease_.hold_time+=std::clamp(read<float>(global(0x15ed7c)),0.f,.1f);
  (void)angle;
- return arm_.hold(body(),weapon(),read<float>(hero()+0x98),read<float>(global(0x15ed7c)));
+ contact_tip_=arm_.hold(body(),weapon(),read<float>(hero()+0x98),read<float>(global(0x15ed7c)));
+ return contact_tip_;
 }
 void NativeWorld::reset(){
  if(lease_.target)release(lease_.target,true);

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright (c) 2026 noire342
+# Copyright (c) 2026 lorenzogarrone
 """Blender background preview of the generated GLB (not a concept mockup)."""
 import math
 from pathlib import Path

@@ -1,64 +1,75 @@
-# Preview source and portable packaging
+# Release packaging and provenance
 
-Version 0.2 is an additive preview, separate from the final stable release.
-The packaging scripts prepare reviewable artifacts; public downloads are
-published separately through Releases. Native evidence and remaining limits
-are listed in [NATIVE_VALIDATION.md](NATIVE_VALIDATION.md).
+The Windows archive is revolverator-0.3.3-windows-x86_64.zip with
+openrac-mod.json at its root. The manifest names author **lorenzogarrone**,
+version 0.3.3, GPL-3.0-or-later and minimum mod interface 1.12. The release
+tag is revolverator-v0.3.3.
 
-## Public source boundary
+## Installable files
 
-The source package contains the allowlisted code, documentation, original ammo
-recipe and its SHA-256 inventory. Build the native library against a separately
-obtained OpenRAC SDK. Reconstruct the original drill and native icon locally
-from the player's own NTSC-U assets.
+Include the weapon DLL, its asset-mount adapter and license notices, original
+authored ammunition model/texture, and the runtime preparation scripts in
+[BUILD_AND_ASSETS.md](BUILD_AND_ASSETS.md). Dependency metadata must match the
+DLLs actually included. Players install one weapon card, without manual
+support-card or graphics-pack installation.
 
-Exclude the ISO, extracted game models/textures, generated copies of the Hoven
-drill, game-derived HD glyph/header, RAM captures, memory cards, sidecars,
-private fixtures and installed-data links. A local binary compiled with the
-HD glyph header embeds game-derived artwork and belongs to the private workflow.
+Exclude game files and derived copies: the Hoven drill, native textures,
+recoloured native atlases, native HUD pixels, extracted levels, game code/data,
+ISOs and private generated HD headers. Reconstruction happens locally from
+the player's own disc. Also exclude toolchains, SDK files, RAM dumps, cards,
+sidecars, profiles, credentials and local QA helpers.
 
-The cartridge model/texture were created with AI assistance; the procedural
-builder generates the project's original single-cell design from its recipe.
-The selected native HUD glyph is upscaled with
-[Real-ESRGAN ncnn Vulkan](https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan).
-Keep this provenance distinct from Insomniac Games/Sony's original game assets.
+The ammunition mesh and painted texture are original AI-assisted artwork.
+The release and official listing disclose AI assistance. Native game artwork
+is not relicensed by the mod's authored-code license.
 
-`tools/package_source.py` creates a private source snapshot with an allowlist
-and hashes; it does not publish it. Inspect that allowlist after adding 0.2 files
-so registry, store, menu, XP adapter, headers and documentation are included.
-Reject external symbolic source paths and do not include local generated data.
+## Corresponding source
 
-## Single native launcher package
+Publish the exact corresponding source for every bundled native library,
+including third-party notices and required build/asset recipes.
+tools/package_source.py creates an allowlisted source snapshot and inventory;
+it does not install or publish anything. A companion built from a different
+frozen commit must have that source and provenance identified separately.
+Never substitute newer shared-utility source for an older DLL.
 
-The current release archive is `revolverator-0.2.0-windows-x86_64.zip`, installable
-through the normal launcher's preview release URL or local native ZIP import.
-The release must include SHA256SUMS. Root discovery lists only Weapon Experience
-and Revolverator; helper utilities are bundled privately, not separate cards.
+Original copyright and attribution notices remain with third-party files.
+Stable identifiers such as noire342.revolverator are API/save compatibility
+keys and are not changed when the author's display name changes.
 
-`NativeAssetBundle` finds the original levels root at load, stages 19 read-only
-manifest copies and binds absolute paths to the packaged class assets. Utility
-DLLs load from the weapon's DLL directory. No client EXE, manual `--levels`,
-external PowerShell launcher or extra utility install is part of this flow.
+## Integrity and validation
 
-The source bundle must include the GPL OpenRAC JSON reader/NOTICE, serializers,
-asset staging code, utility sources, exact MinHook version/notices and all inputs
-needed to reproduce the distributed binary. Game-derived generated art is kept
-out of the ordinary Git source snapshot and supplied separately with the exact
-binary where required. No ISO, private save or RAM dump belongs in either archive.
+Publish SHA256SUMS, the validation receipt and source archive beside the
+installable ZIP. Check every ZIP member, manifest version, DLL hash and
+required script before upload. After publication, download the public asset
+and compare it with the exact file used for native validation.
 
-The former `package_private_bundle.py`, Avvia-Prova scripts and outer ZIP are
-historical development tools. Their old validation does not certify the current
-automatically installed single package. Use a matching native receipt for each
-new set of plugin/utility hashes.
+Use tools/package_runtime_release.py with the SDK-generated module directory,
+the exact tested adapter and their recorded hashes. The source manifest has
+no generated platform plugin map and is deliberately rejected as a package
+manifest. For example:
 
-## Linux service export
+~~~powershell
+python revolverator/tools/package_runtime_release.py `
+  --module build-revolverator/package/revolverator `
+  --overlay verified/arsenal_file_overlay.dll `
+  --dll-sha256 <tested-weapon-sha256> `
+  --overlay-sha256 <tested-adapter-sha256> `
+  --validation verified/release-validation.json `
+  --commit <full-corresponding-source-commit> `
+  --output dist-revolverator
+~~~
 
-`openrac_add_mod` normally exports the three loader entry points. The mod's
-existing ELF version map must also name `openrac_revolverator_query`; visibility
-attributes alone do not override `local: *`. The CMake target already extends
-that map and links `${CMAKE_DL_LIBS}` for optional provider discovery.
+The validation receipt must report a successful native release gate and the
+same weapon DLL hash. The tool checks the generated manifest, Windows x64 DLL
+headers, both explicit binary hashes and authored-art hashes, then creates
+the native archive, complete source archive, validation JSON and SHA256SUMS.
+It verifies every ZIP member after writing and refuses to overwrite artifacts.
+The bundled adapter source is under support/file-overlay and builds through
+the scoped revolverator_file_overlay target. Rebuilding that target does not
+silently replace the adapter chosen for a validated release.
 
-Verify `nm -D --defined-only revolverator.so` and resolve the service from an
-already loaded handle. A null query before mod load is expected; an absent
-dynamic symbol is an export failure. Export checks and host tests do not prove
-native gameplay or an approved graphical result.
+Receipts distinguish host tests, native input/renderer observations, exact
+runtime hashes and publication checks. A build, installation or impact counter
+alone is not gameplay evidence. Historical receipts retain their original
+hashes and limits. See [PUBLICATION.md](PUBLICATION.md) for submission and the
+official index's external review delay.

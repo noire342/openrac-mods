@@ -1,0 +1,201 @@
+{
+  "format": 3,
+  "scope": "Focused host checks and actual private one-frame all-consumer hook contract audit; complete weapon autoload/gameplay proven separately",
+  "modern_exact_client_required": false,
+  "required_mod_interface": "1.12 or compatible future1.x minor",
+  "official_current_runtime_sha256": "5f7f6d73744a22923695150d99966f82bc41bb99ddb830757b427b68c23c9789",
+  "actual_consumer_hook_audit": {
+    "bindings": 58,
+    "missing_points": [
+      "rac1.vendor.icon_strip.draw",
+      "rac1.menu.preview.pose"
+    ],
+    "signature_changes": {
+      "rac1.menu.item_ammo.draw": "i32(u32)",
+      "rac1.save.restore": "void(i32)"
+    },
+    "item_ammo_log_sha256": "5b9e885c6940018e56f7bca5c646d5a4b23c833980bc042d7f6f1b75dec8f17c",
+    "source_inventory_sha256": "4b98e52ca525a1b671070cd6d1512340cc07b6b3459399b87a220de641a7df5a",
+    "method": "One private native mod asks all58 contracts and returns1; loader restores every hook before gameplay. Separately isolated item-ammo probe preserves actual loader failure text.",
+    "official_accepted_original_contracts": 54,
+    "process_exit": 0,
+    "audit_log_sha256": "884627e87b7e0c12365ab310d51d504b2d65b601cc0228e29352b4d7a3791db6"
+  },
+  "typed_bridges": [
+    {
+      "signature": "void()",
+      "pal": "func_00239A00",
+      "id": "rac1.vendor.icon_strip.draw",
+      "ntsc": "FUN_002386e8"
+    },
+    {
+      "signature": "void(u32)",
+      "pal": "func_00225E00",
+      "id": "rac1.menu.preview.pose",
+      "ntsc": "FUN_00224b70"
+    }
+  ],
+  "bridge_safety": "Exact API function names, main-module executable MEM_IMAGE validation, owned MinHook commit/remove, retained consumer on cleanup failure; no unknown API hook probes and no arbitrary-address hook API",
+  "overlay_v2": "Validated public API prefix/major1/minor>=12/rac1/PAL-or-NTSC/Windows/function+hook+memory. Only typed OSCreateFileW is detoured. Legacy no-context entry preserves exact known-client hash guard.",
+  "host_groups_passed": 2,
+  "runtime_adapter_checks": 62,
+  "overlay_checks": 1912,
+  "host_log_sha256": "823c4d12d9b55f2da070671fc4cdec98491900e7ee03c676715954efdbfde420",
+  "file_overlay_dll_sha256": "8a69d4411696c76e6ea7229ad66999bbddd107bac76a7338771acd67a20b14c4",
+  "weapon_source": [
+    {
+      "file": "src/native_runtime_hooks.cpp",
+      "sha256": "56b3fc7db8317c1f233e22b50b24f0947255d1edea090c43a3f723d8c711ec10"
+    },
+    {
+      "file": "src/native_runtime_hooks.hpp",
+      "sha256": "54cad16a24ea76f45668ac1ead79b5685517df3051bc5db71649be3c71d99367"
+    },
+    {
+      "file": "src/native_compatibility_modules.cpp",
+      "sha256": "3fe0c8ea9c75f0a010855c74de55947cd89f4faef1de49232fefa560dfe061e5"
+    },
+    {
+      "file": "tests/native_runtime_hooks_test.cpp",
+      "sha256": "77b6076a41112774fc852bcd91e9df4df3ae6dcc1a2fc4dc2c8077d16877b740"
+    },
+    {
+      "file": "include/file_overlay_api.h",
+      "sha256": "07074d86dd3b6fc3ba4e18e46ebe63163a69d96997bc8381c72d0ff1dea17cc4"
+    }
+  ],
+  "overlay_source": [
+    {
+      "file": "CMakeLists.txt",
+      "sha256": "3cc102e249a5845ea4fe3532c269a5185bda275bd3a8f70fe59f312fabcfcb9c"
+    },
+    {
+      "file": "LICENSE",
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986"
+    },
+    {
+      "file": "openrac-mod.json",
+      "sha256": "e21d031cb253983edc4a3fdd8c7b7cd625bc38a101ce13d8040a5db91afe008c"
+    },
+    {
+      "file": "README.md",
+      "sha256": "6c72a5c37b895a65bd4ae75ce8547da47b6021b478b5008120316394ee1328b2"
+    },
+    {
+      "file": "docs/HOST_VALIDATION.json",
+      "sha256": "6b388c35e203144db3d1260638b5c499d194ce2bd80e7151da3d1a5bfdbe15cd"
+    },
+    {
+      "file": "docs/LICENSE-MIT.md",
+      "sha256": "00204b745c3eae7a04cd465c56859ec2ad5a267c7fe914b1ea77bf3b06f5f3bc"
+    },
+    {
+      "file": "docs/NATIVE_VALIDATION.json",
+      "sha256": "4b3f98139934771dafe7e01c5d078bcbd9b09af8a5d609a1e214d6d2f253a40c"
+    },
+    {
+      "file": "include/file_overlay_api.h",
+      "sha256": "07074d86dd3b6fc3ba4e18e46ebe63163a69d96997bc8381c72d0ff1dea17cc4"
+    },
+    {
+      "file": "src/client_profile.hpp",
+      "sha256": "e7a58a880df3be034f0a0bcd269de7750ba8e2924129505f0d85d773536007c3"
+    },
+    {
+      "file": "src/mod.cpp",
+      "sha256": "e7a0d153d4353d84ac5ad93cfe75e8c88bcfbaab6925eb49a76791acac637c24"
+    },
+    {
+      "file": "src/overlay_core.cpp",
+      "sha256": "c3beb1e160473491d4db2af5436ef6b0d8a7d11abab1735fad490a4d43eda4e1"
+    },
+    {
+      "file": "src/overlay_core.hpp",
+      "sha256": "21a9a95efd1a645c4e6f55641fba182c2482ac060e806c61fab1611022a5fdbd"
+    },
+    {
+      "file": "src/windows_overlay.cpp",
+      "sha256": "936ee916c01a9f72f5096393e96124f392ca3f63bd519b89e54934471512cbe3"
+    },
+    {
+      "file": "src/windows_overlay.hpp",
+      "sha256": "7233d8603219941e977e1498474803a00d488d75ade6cfcc9a263841d7712ca7"
+    },
+    {
+      "file": "tests/overlay_core_test.cpp",
+      "sha256": "eb67b978327e0c147a252a202d0addd575da3bbb03c23c21df3960f9bb2a8c47"
+    },
+    {
+      "file": "third_party/minhook.lock.json",
+      "sha256": "aa5f9b2909c1e0c8d00b2817d5ca024da1b0185b3e91282c0b91d35ec1311857"
+    },
+    {
+      "file": "third_party/minhook/AUTHORS.txt",
+      "sha256": "073b4e8b0a5a0cd9f4dfa838369f4fc7a4f47151d930b4e1fd891644060a897f"
+    },
+    {
+      "file": "third_party/minhook/CMakeLists.txt",
+      "sha256": "ff59c571f60eb3f8fdee11b199cbe0ffd7477386f0e145da87691b1233e3cdc6"
+    },
+    {
+      "file": "third_party/minhook/LICENSE.txt",
+      "sha256": "d5c2224982b0b95a16b098a561335fa93f3eaf4d0aa964b7843edb986df78dc8"
+    },
+    {
+      "file": "third_party/minhook/README.md",
+      "sha256": "66f55334357ca5e76ffb2fa5075ef839346981b4ed6137730bda8c65e8c38d7b"
+    },
+    {
+      "file": "third_party/minhook/include/MinHook.h",
+      "sha256": "62dff05e63155c6bf8135c36a0d79dedbdcaaede9da26fe38daf0bea34323e38"
+    },
+    {
+      "file": "third_party/minhook/src/buffer.c",
+      "sha256": "0ab484d7870c3a8e7a3a1ee61e2070072cf445ed85b619d4c4207fed34356d99"
+    },
+    {
+      "file": "third_party/minhook/src/buffer.h",
+      "sha256": "9769702bd625249e59a19ede05c84365fcc7707e1fa0e5df08df42227cee13e3"
+    },
+    {
+      "file": "third_party/minhook/src/hook.c",
+      "sha256": "edcce4c81985d7dd5b73feae96d6498c8f749b1bca4c3d2d9926ea9a17a84755"
+    },
+    {
+      "file": "third_party/minhook/src/trampoline.c",
+      "sha256": "f13a169f803ff5a8e45c58ce668b4377a9878c0fc4452369b8a1325065186b2b"
+    },
+    {
+      "file": "third_party/minhook/src/trampoline.h",
+      "sha256": "53ed9934492320617a27bfd952ffe7f5b7a4a1d09963d4512447082fe7b727b4"
+    },
+    {
+      "file": "third_party/minhook/src/hde/hde32.c",
+      "sha256": "5da4941e9044f7b325c7f952b5840089e365f374740b7fe7318805d08c0d6c32"
+    },
+    {
+      "file": "third_party/minhook/src/hde/hde32.h",
+      "sha256": "5132de5be8ac7a9d054420f5caef0fb01437faa892f03b3cdc77f795973bf15a"
+    },
+    {
+      "file": "third_party/minhook/src/hde/hde64.c",
+      "sha256": "824eafa315322e6da105a7ce4ec1fc0e0adeee0106d32152fbb0b59e709bd15c"
+    },
+    {
+      "file": "third_party/minhook/src/hde/hde64.h",
+      "sha256": "e99aa4997bda14b534c614c3d8cb78a72c4aca91a1212c8b03ec605d1d75e36e"
+    },
+    {
+      "file": "third_party/minhook/src/hde/pstdint.h",
+      "sha256": "604d1cdf45c5a95bc9cf1bbf39ca05ef83013541101d34971c5cd7577e3d5247"
+    },
+    {
+      "file": "third_party/minhook/src/hde/table32.h",
+      "sha256": "43bf687a9fff071b5f46070db4d36c846f8e069cdc57485ee897c499aacdde23"
+    },
+    {
+      "file": "third_party/minhook/src/hde/table64.h",
+      "sha256": "b774446d2f110ce954fb0a710f4693c5562ddbd8d56fe84106f2ee80db8b50a2"
+    }
+  ]
+}

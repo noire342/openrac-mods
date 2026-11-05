@@ -1,3 +1,5 @@
+> Historical asset/QA development instructions. Normal players use the launcher-installable release; see the [current README](../../README.md).
+
 # Revolverator ammunition art
 
 The pickup is an original mesh and painted texture generated from `recipe.json`.

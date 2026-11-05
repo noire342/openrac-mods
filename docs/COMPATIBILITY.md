@@ -1,16 +1,30 @@
-# Current PAL-reference package compatibility
+# Package compatibility
+
+## Revolverator 0.3.3
+
+The current weapon requires Windows x64, OpenRAC mod interface **1.12 or newer**
+and its declared compatible capabilities. PAL Europe v2.00 is the native
+reference disc; NTSC-U uses a separate profile. The modern route does not pin
+one client release or an exact executable hash. Its private asset adapter
+and player-disc preparation are included in the single mod package. Read the
+[current contract and validation boundary](../revolverator/docs/COMPATIBILITY.md).
+
+The source and receipts below retain the exact-build requirements of earlier
+Revolverator releases. They do not replace the current contract.
+
+## Other releases and historical PAL-reference packages
 
 Space Voyages 0.8.0 has a separate requirement: the source-built OpenRAC
 SDK 1.14-02 bridge plus owned-disc scene assets. It cannot run in official
 0.10.0 alone. See [its exact baseline and limits](../space-voyages/validation/RELEASE.md).
-The official-client compatibility described below applies to the other mods.
+The official-client compatibility described below retains each named version's scope.
 
 Revolverator0.3.1 / Rotatore targets the unchanged official Windows x64 OpenRAC
 0.10 client, with PAL Europe v2.00 (`SCES_509.16`) as the reference region and
 separate NTSC-U bindings. No uniform PAL offset or live-pointer conversion is
 used. Unknown keys, region mismatches and unrecognized executables fail closed.
 
-| Current input/component | Requirement |
+| Historical input/component | Requirement |
 | --- | --- |
 | PAL official0.10 EXE SHA256 | `e720a59d130b4b2289a4eb15cad3e33f739a72a385992db171ef43490205fb0e` |
 | NTSC-U official0.10 EXE SHA256 | `f70a9f2bc6de39ed42b9f9f64fc5cea98ffad8b8bd7795c7adfb965a9875c95b` |

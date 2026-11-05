@@ -1,6 +1,6 @@
 # PAL equipment selection and assembly
 
-Local development build, not a published release. Selecting Bomb Glove,
+This correction was published in version 0.3.2. Selecting Bomb Glove,
 Blaster, Pyrocitor, the original Walloper or Rotatore in **Armi** now equips
 that logical weapon. Custom ownership and ammunition remain independent.
 

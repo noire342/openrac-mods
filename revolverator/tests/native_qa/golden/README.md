@@ -1,3 +1,5 @@
+> Historical asset/QA development instructions. Normal players use the launcher-installable release; see the [current README](../../../README.md).
+
 # Isolated native Golden QA helper
 
 This test plugin is not part of the player ZIP. Build it against SDK1.3 on

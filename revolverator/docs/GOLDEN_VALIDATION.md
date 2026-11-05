@@ -1,3 +1,5 @@
+> Historical validation record. Client versions, hashes and private-provider requirements below describe the recorded build only. For the current minimum interface and later-client capability checks, see [COMPATIBILITY.md](COMPATIBILITY.md).
+
 # Golden Rotatore0.3 native validation
 
 All native scenarios use the unchanged official Windows OpenRAC0.9.0 NTSC-U

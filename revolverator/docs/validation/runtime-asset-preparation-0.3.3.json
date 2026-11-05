@@ -1,0 +1,15 @@
+{
+  "kind": "player-disc-local-asset-preparation",
+  "version": "pal",
+  "generated_files": 77,
+  "native_inputs_checked": 40,
+  "cold_seconds": 1.4677899000016623,
+  "warm_seconds": 0.035620599999674596,
+  "warm_cache_did_not_rewrite_assets": true,
+  "damaged_cache_repaired": true,
+  "original_inputs_unchanged": true,
+  "paths_with_spaces_and_non_ascii": true,
+  "script_sha256": "be04a5221ffa5b0ef09af504e983f4936c277dd1643f0d29780b026385c35488",
+  "cache_key": "48b6b2ba1f6d235b19b0d4a0",
+  "pass": true
+}

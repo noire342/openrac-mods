@@ -44,6 +44,7 @@ constexpr FunctionName functions[] = {
     {"FUN_0020c828","func_0020D678"},
     {"FUN_0020cca8","func_0020DAF8"},
     {"FUN_0021a328","func_0021B298"}, // counterpart changes between discs; preserve the typed call boundary
+    {"FUN_L00_0026c6e8","func_L00_0026D588"}, // resident native wrench-contact streak spawner, all levels
     {"FUN_0021b858","func_0021C840"}, // counterpart changes between discs; preserve the typed call boundary
     {"FUN_0021c7a0","func_0021D7A0"},
     {"FUN_0021c9c8","func_0021D9C8"},

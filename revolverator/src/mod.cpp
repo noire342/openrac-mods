@@ -128,6 +128,7 @@ struct Session {
   visuals.update_held({world.weapon(),ammunition.count(),controller.attack_phase(),controller.charge(),controller.spin_angle(),f,golden(),arsenal.equipped_revolverator()});
   if(const auto event=visuals.poll_equip())equip_audio.play(event->actor);
   else if(f.equipped)equip_audio.suppress_native_appearance(world.weapon());
+  world.contact_sparks(controller.attack_phase(),controller.spin_angle());
   world.set_drill_head_scale(visuals.controller().radial_scale(),visuals.controller().axial_scale());
   arsenal.commit();
   presentation.frame(f.equipped);
@@ -146,22 +147,23 @@ using Death=void(*)(U32,int,int);
 using Advance=void(*)();
 using BuildVendor=void(*)(int);
 using MenuCall=int(*)(unsigned);
-using SignedMenuCall=int(*)(int);
 using Give=void(*)(int,int);
 using ChooseAmmo=int(*)(unsigned,unsigned);
 using SpawnAmmo=unsigned(*)(unsigned,int,int,int);
 using PrepareSave=void(*)(int,int);
 using AutoSave=int(*)(int,int);
 using RestoreData=int(*)(unsigned,int,unsigned);
+using Restore=void(*)(int);
 Update walloper_original{},relay_original{},ammo_original{};Pad pad_original{};Load load_original{};
 Update gold_offer_original{};
 Advance motion_input_original{};void(*planar_velocity_original)(float){};
 GetHit hit_original{};Death death_original{};Advance animation_original{};
 BuildVendor vendor_original{};
 Give give_original{};Advance vendor_update_original{},vendor_selected_original{},vendor_icons_original{},save_io_original{},new_game_original{};
-ChooseAmmo choose_original{};SpawnAmmo spawn_original{};Update quick_init_original{},quick_update_original{},preview_pose_original{},serialize_original{},restore_original{};
+ChooseAmmo choose_original{};SpawnAmmo spawn_original{};Update quick_init_original{},quick_update_original{},preview_pose_original{},serialize_original{};
+Restore restore_original{};
 MenuCall quick_draw_original{};PrepareSave prepare_original{};AutoSave autosave_original{};RestoreData restore_data_original{};void(*new_game_plus_original)(int){};
-SignedMenuCall item_ammo_original{};
+MenuCall item_ammo_original{};
 MenuCall available_draw_original{},selected_draw_original{};
 template<int Index>struct EnemyHook{
  static inline Update original{};
@@ -392,7 +394,7 @@ template<MenuCall* Original>int draw_selected_preview(unsigned screen){
  }
  return (*Original)(screen);
 }
-int item_ammo(int screen){
+int item_ammo(unsigned screen){
  if(!session)return item_ammo_original(screen);
  auto& s=*session;const auto key=s.menu.selected_key();
  if(!key)return item_ammo_original(screen);
@@ -454,7 +456,7 @@ void before_restore(){
  auto& s=*session;s.controller.cancel();s.visuals.held_rotor().reset(true);s.visuals.restore_native();s.world.reset();s.primary=false;
  s.arsenal.project(arsenal::NativeWalloperKey);
 }
-void restore(unsigned source){
+void restore(int source){
  if(!session){restore_original(source);return;}
  before_restore();restore_original(source);session->restore_context();
 }
@@ -588,7 +590,7 @@ extern "C" OPENRAC_MOD_EXPORT int openrac_mod_load(const openrac_api* api,openra
   MenuHook<4,&NativeWeaponMenu::quick_load>::install("rac1.menu.quick_select.load");
   MenuHook<5,&NativeWeaponMenu::quick_store>::install("rac1.menu.quick_select.store");
   MenuHook<6,&NativeWeaponMenu::selected_call>::install("rac1.menu.item_text.draw");
-  hook("rac1.menu.item_ammo.draw","i32(i32)",reinterpret_cast<void*>(item_ammo),reinterpret_cast<void**>(&item_ammo_original));
+  hook("rac1.menu.item_ammo.draw","i32(u32)",reinterpret_cast<void*>(item_ammo),reinterpret_cast<void**>(&item_ammo_original));
   MenuHook<7,&NativeWeaponMenu::selected_call>::install("rac1.menu.preview.bind");
   MenuHook<8,&NativeWeaponMenu::selected_call>::install("rac1.menu.preview.update");
   hook("rac1.menu.preview.draw_available","i32(u32)",reinterpret_cast<void*>(&draw_selected_preview<&available_draw_original>),reinterpret_cast<void**>(&available_draw_original));
@@ -601,7 +603,7 @@ extern "C" OPENRAC_MOD_EXPORT int openrac_mod_load(const openrac_api* api,openra
   hook("rac1.hud.quick_select.draw","i32(u32)",reinterpret_cast<void*>(quick_draw),reinterpret_cast<void**>(&quick_draw_original));
   hook("rac1.save.prepare","void(i32,i32)",reinterpret_cast<void*>(prepare_save),reinterpret_cast<void**>(&prepare_original));
   hook("rac1.save.request_autosave","i32(i32,i32)",reinterpret_cast<void*>(autosave),reinterpret_cast<void**>(&autosave_original));
-  hook("rac1.save.restore","void(u32)",reinterpret_cast<void*>(restore),reinterpret_cast<void**>(&restore_original));
+  hook("rac1.save.restore","void(i32)",reinterpret_cast<void*>(restore),reinterpret_cast<void**>(&restore_original));
   hook("rac1.save.restore_data","i32(u32,i32,u32)",reinterpret_cast<void*>(restore_data),reinterpret_cast<void**>(&restore_data_original));
   hook("rac1.save.new_game","void()",reinterpret_cast<void*>(new_game),reinterpret_cast<void**>(&new_game_original));
   hook("rac1.save.new_game_plus","void(i32)",reinterpret_cast<void*>(new_game_plus),reinterpret_cast<void**>(&new_game_plus_original));

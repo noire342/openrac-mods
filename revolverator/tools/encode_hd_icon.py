@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright (c) 2026 noire342
+# Copyright (c) 2026 lorenzogarrone
 """Encode a locally generated 128px icon for the native indexed HUD renderer.
 
 The header and binary are private, game-derived build inputs. Do not commit or

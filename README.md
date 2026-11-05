@@ -60,40 +60,46 @@ the game's memory cards. Load it after other level-loading hooks, including XP,
 if managing `plugins.json` by hand. Full details and validation limits are in the
 module READMEs and [validation notes](docs/VALIDATION.md).
 
-## Install Rotatore / Revolverator 0.3.2
+## Install Rotatore / Revolverator 0.3.3
 
-1. Set up [official OpenRAC 0.10.0](https://github.com/OpenRAC/OpenRAC/releases/tag/launcher-v0.10.0)
+1. Set up official OpenRAC on Windows x64 with **mod interface 1.12 or newer**
    with your own **PAL Europe v2.00 / SCES_509.16** data, the reference region.
    NTSC-U has a separate supported binding profile. Use **Check and play** if
-   the updated client asks to rebuild the extracted levels in format 4.
+   the client asks to refresh the extracted levels.
 2. In **Mods**, add [this repository](https://github.com/noire342/openrac-mods),
    select Revolverator and install it.
 3. Enable Revolverator and start normally. Italian UI calls the weapon
-   **Rotatore**; **Rotatore sbloccato da subito** enables an immediate trial.
+   **Rotatore**; **Revolverator unlocked from the start** enables an immediate trial.
 
-The native package contains the weapon assets and its two private utility DLLs.
+The native package contains original authored ammunition art and one private
+asset-mount adapter. It prepares its drill models, Golden finish and native
+icon variants automatically from the player's own installed game data.
 It requires no extra utility cards, external launch script, custom `--levels`
 path or replacement client. The Gold upgrade adds a Novalis Gold-shop case:
 **50,000 ordinary bolts, zero Gold Bolts**. It retains the same ammunition,
 independent XP and quick-select identity. Gold-thrown enemies create a
 charge-scaled impact explosion.
 
-Rotatore 0.3.2 keeps tanks, Toxic Crabs and armored Alien Snappers outside the
+Rotatore keeps tanks, Toxic Crabs and armored Alien Snappers outside the
 capture system while preserving their native Walloper damage. Blarg Commanders
 remain capturable with their own native update hook. The weapon builds itself
 when equipped; its attack enlargement stays unchanged. PAL weapon-menu
 confirmation also correctly switches back to native weapons.
 
-For local import, choose `revolverator-0.3.2-windows-x86_64.zip` with **Mods → File**.
-The [0.3.2 release](https://github.com/noire342/openrac-mods/releases/tag/revolverator-v0.3.2)
-is available through ordinary repository discovery. It carries all four native
-packages: Weapon Experience, Revolverator, Skill Points and Cinematic Journeys.
-Skill Points retains its declared NTSC-U scope; its presence in the catalog does
-not make it PAL-compatible.
+Version 0.3.3 adds native contact sparks at the drill tip while a captured enemy
+spins. Compatible future OpenRAC minor interfaces are accepted when the required
+capabilities remain available; no exact client version or executable hash is
+required by the modern installation path.
+
+For local import, choose `revolverator-0.3.3-windows-x86_64.zip` with **Mods → File**.
+The [0.3.3 release](https://github.com/noire342/openrac-mods/releases/tag/revolverator-v0.3.3)
+includes the installable weapon, complete corresponding source, native validation
+and checksums. Other mods retain their own releases and region requirements.
+See the [weapon README](revolverator/README.md) for the current installation path.
 
 | Component | Current source | Role |
 |---|---|---|
-| [Revolverator](revolverator/README.md) |0.3.2 PAL reference | Additional weapon, Gold upgrade, native inventory/API v3 and automatic asset staging |
+| [Revolverator](revolverator/README.md) |0.3.3 PAL reference | Additional weapon, Gold upgrade, native contact sparks, API v3 and automatic player-disc asset preparation |
 | [Weapon Experience](weapon-xp/README.md) |0.6.4 | Optional API v4 progression companion with PAL HUD/camera corrections |
 | [Skill Points: RetroAchievements](skill-points-ra/README.md) |0.1.3 | Native menu, offline rules and read-only/event C API v1 |
 | [Cinematic Journeys](cinematic-journeys/README.md) |0.1.1 | Cutscene protection and configurable original flight animation |
@@ -118,7 +124,8 @@ SHA256 `e720a59d130b4b2289a4eb15cad3e33f739a72a385992db171ef43490205fb0e`.
 The corresponding NTSC-U 0.10 client is also recognized through an explicit
 region profile. Unknown/mismatched builds fail clearly. The plugin reads source
 manifests and mounts owned temporary copies while the extraction and client
-remain unchanged. See [PAL scope](revolverator/docs/PAL.md) and
+remain unchanged. Revolverator 0.3.3 instead uses its [minimum-interface and capability requirements](revolverator/docs/COMPATIBILITY.md).
+See [historical PAL scope](revolverator/docs/PAL.md) and
 [XP PAL evidence](weapon-xp/docs/PAL.md) for tested scenarios and limitations.
 
 - [Installation](docs/INSTALLATION.md) and [compatibility](docs/COMPATIBILITY.md).
@@ -129,8 +136,9 @@ remain unchanged. See [PAL scope](revolverator/docs/PAL.md) and
 This is a preview. Native proof is scoped to its exact binaries and scenarios;
 other native platforms, complete campaigns and all mod combinations are not certified.
 The original drill geometry is read from the player's extraction. The authored
-Gold recolour and ammunition recipe retain their explicit AI/art provenance. The [old engine patch](docs/arsenal-bridge/README.md) is historical.
+ammunition recipe retains its explicit AI/art provenance. Version 0.3.3 derives
+the Golden finish locally and ships no game atlas. The [old engine patch](docs/arsenal-bridge/README.md) is historical.
 
-Implementation code is [GPL-3.0-or-later](LICENSE), Copyright (c) 2026 noire342.
+Implementation code is [GPL-3.0-or-later](LICENSE), Copyright (c) 2026 lorenzogarrone.
 Explicit MIT interoperability files, OpenRAC SDK notices, vendored OpenRAC GPL
 JSON reader and MinHook BSD notices retain their respective licenses.

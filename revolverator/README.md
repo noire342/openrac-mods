@@ -1,205 +1,123 @@
-# Revolverator 0.3.2 — Rotatore
+# Revolverator 0.3.3
 
-Carri armati, granchi tossici e la variante beige corazzata non possono essere afferrati:
-ricevono i normali colpi del Colpitore, con le regole native di danno e corazza.
-I comandanti Blarg possono invece essere afferrati. La regola vale anche per
-il Rotatore d'oro. Dettagli e prove:
-[nemici pesanti](docs/HEAVY_ENEMIES.md).
+By **lorenzogarrone**. The Italian in-game name is **Rotatore**.
 
-La resa dell'arma nella 0.3.2 ha un gestore
-dedicato per gioco, pausa e anteprime. La testa si ingrandisce dall'innesto
-meccanico corretto. Quando viene selezionato, il corpo si compone con un
-rimbalzo e la trivella si avvita fino alla lunghezza normale in 0,60 secondi,
-con il suono meccanico nativo.
-Aprire il menu Armi conserva la stessa selezione senza ripetere il montaggio.
-Corretto anche il cambio d'arma dal menu PAL, compreso il Guanto Bomba:
-[selezione e montaggio](docs/EQUIP_MENU_FIX.md).
-Architettura e prove: [presentazione visiva](docs/VISUAL_PRESENTATION.md).
+Restores the cut Revolverator as a separate Ratchet & Clank weapon: strike,
+catch, spin and throw enemies. It uses the game's weapon menus, ammunition
+HUD, acquisition presentation and save flow. The original Walloper remains a
+separate weapon.
 
-La build 0.3.2 supera 33 gruppi di test e 297 controlli nativi PAL in nove
-scenari: [nemici pesanti](docs/validation/pal-032-heavy-enemies.json) e
-[menu, presentazione e combattimento](docs/validation/pal-032-regression.json).
-I vecchi receipt restano associati alle rispettive DLL precedenti.
+Version 0.3.3 adds native metal sparks at the drill's contact with a spinning
+enemy. Their rate follows the rotation speed. The weapon's models are prepared
+automatically from the player's installed disc data, so the public package
+contains no copied game models, textures or HUD artwork.
 
-La versione 0.3.2 usa **OpenRAC 0.10 su Windows e PAL Europe v2.00
-(`SCES_509.16`) come riferimento**, mantenendo l'adattatore NTSC-U. Le prove
-specifiche della migrazione sono descritte in [PAL](docs/PAL.md). Aggiorna anche
-il caricamento degli asset al formato 4: dopo l'aggiornamento di OpenRAC usa
-**Check and play** nel launcher per rileggere i livelli, se richiesto. Il
-pacchetto non contiene un client modificato e non altera l'eseguibile.
+## Install
 
-La ripresa dopo il lancio richiede al massimo **150 ms**, con Cerchio memorizzato
-durante il recupero e fino a otto nemici in volo indipendenti. Ratchet accompagna
-il lancio con un gesto di 250 ms, interrotto dalla pressione successiva.
+1. Use the official OpenRAC launcher on Windows x64, with **mod interface 1.12
+   or newer** and your own extracted PAL or NTSC-U copy of Ratchet & Clank.
+2. In **Mods**, add [this repository](https://github.com/noire342/openrac-mods),
+   choose **Revolverator**, and install it. Alternatively, import
+   revolverator-0.3.3-windows-x86_64.zip with **File**.
+3. Enable the mod and start the game. The first start prepares its local
+   graphics cache automatically. No separate Python installation, graphics
+   pack, utility mod card or replacement client is required.
 
-Su entrambe le versioni, un tap di Cerchio produce un impulso di **160 ms**:
-la sola testa della trivella raggiunge **2× in larghezza, 1,2× lungo l'asse e
-55 rad/s**, con un breve rientro. L'impulso rimane visibile anche con un tap di
-un solo frame. Appena il nemico inizia a roteare, la testa torna subito alla
-scala normale e segue la sua rotazione. Il tentativo senza munizioni conserva
-il breve scatto a vuoto.
+To try the weapon immediately, enable **Revolverator unlocked from the start**
+in its settings. It grants the weapon once with 20 rounds if it is not already
+owned. Existing ammunition and progress are preserved.
 
-La vetrina Gold è ingrandita, centrata e ferma, con l'illuminazione delle
-cupole originali. Acquisto Gold e aumenti di livello usano l'animazione nativa
-del Colpitore con nome e modello Rotatore, anche dorato; il presenter non
-richiede Weapon XP per l'acquisto. L'acquisto base conserva la scena del negozio.
+The requirement is a minimum interface and the capabilities the mod uses,
+rather than one fixed OpenRAC version. Later clients can work when those
+capabilities remain available. The release receipt identifies the exact client
+used for testing; it is evidence, not an executable-version requirement.
+See [compatibility](docs/COMPATIBILITY.md).
 
-Prove della 0.3.1: [compatibilita e verifica nativa](docs/OPENRAC_0_10.md).
+If OpenRAC asks to refresh the extracted levels, use **Check and play** in the
+official launcher. Preparation errors are reported in the mod's load status
+and local log; players do not need to run build commands.
 
-La 0.3 aggiunge il **Rotatore d'oro**: una cupola in piu nel negozio Gold di
-Novalis, **50.000 bolt normali e zero bolt d'oro**, stesso modello e finitura
-dorata ispirata alle armi Gold originali. L'upgrade conserva munizioni, XP e
-Scelta Rapida. Il nemico lanciato esplode all'impatto: il raggio cresce con la
-rotazione fino al lancio automatico dopo tre secondi. Ogni lancio ha una breve
-pausa di150ms nella locomozione di Ratchet per dare peso al gesto.
+## Controls and balance
 
-Le precedenti revisioni sono state verificate sul client ufficiale Windows NTSC-U.
-Le prove della 0.3 su OpenRAC 0.9 restano separate dalle nuove prove su 0.10.
-Dettagli: [upgrade e salvataggi](docs/GOLDEN_UPGRADE.md),
-[esplosione e controlli](docs/GOLDEN_EFFECTS.md).
+Tap **Circle** for a melee strike. Hold it continuously for at least 0.18 seconds
+to catch an eligible enemy, then release to throw. An uninterrupted hold throws
+automatically after three seconds. Ratchet moves at up to 50% of his native
+horizontal speed while holding an enemy; the limit ends when the target is
+released. A brief 150 ms movement hold gives the throw weight.
 
-Ricostruzione del Revolverator rimosso da Ratchet & Clank: colpo ravvicinato,
-presa, sollevamento, rotazione e lancio del nemico. Il trapano originale viene
-ricostruito dagli asset della propria copia PAL o NTSC-U del gioco.
-
-**Sorgenti di sviluppo per OpenRAC su Windows; anteprima, non versione definitiva.** La 0.2 aggiunge
-il Revolverator mantenendo il Walloper originale. Combattimento, XP separati,
-commercio e salvataggi hanno prove native; modello, anteprime e HUD sono stati
-verificati su Novalis nella combinazione riportata in NATIVE_VALIDATION.md.
-Non è una dichiarazione di compatibilità PAL o di campagna completa.
-
-## Installazione della preview
-
-Nel launcher ufficiale OpenRAC, pagina Mods, aggiungi
-[questa repository](https://github.com/noire342/openrac-mods), seleziona
-Revolverator e installalo. In alternativa importa con **File** lo ZIP
-`revolverator-0.3.2-windows-x86_64.zip`. Abilita la mod e avvia
-la regione supportata della tua copia del gioco.
-Per provarla subito attiva **Rotatore sbloccato da subito** nelle impostazioni
-(**Revolverator sbloccato da subito** nella precedente0.2).
-
-Asset e utility sono nello stesso pacchetto: non servono
-card di supporto separate, script esterni o un client sostitutivo. L'indirizzo
-esplicito di una release seleziona quella versione. La 0.3.1 è pubblicata sul
-canale normale, quindi è disponibile anche dall'URL generico della repository.
-
-## Armi e menu
-
-| Identità | Chiave per le API | Ruolo |
-| --- | ---: | --- |
-| Walloper originale | `18` | Arma nativa, con possesso e funzionamento propri |
-| Revolverator | `65554` (`0x10012`) | Arma aggiuntiva, con munizioni e XP indipendenti |
-
-Il Revolverator usa temporaneamente il trasporto nativo 18 nelle operazioni del
-gioco che lo richiedono. La sua chiave logica non viene usata come indice negli
-array nativi. Possedere il Walloper non assegna automaticamente il Revolverator.
-
-Il menu Armi e l'editor Scelta Rapida usano i pannelli nativi con una griglia di
-**4 righe × 5 colonne**, fino a 20 celle visibili e scorrimento oltre 20. Gli otto
-preferiti rimangono quelli originali: Walloper e Revolverator possono occupare
-due posizioni distinte anche se condividono il trasporto interno. Il registro
-prepara l'aggiunta di altre armi; l'API v2 attuale non espone una registrazione
-arbitraria da parte di altre mod.
-
-## Bilanciamento e controlli
-
-| Voce | Valore base |
+| Property | Value |
 | --- | ---: |
-| Prima disponibilità | Visita di Hoven |
-| Prezzo standard | 15.000 bolt |
-| Capacità | 20 cariche |
-| Consumo | 1 carica per attivazione |
-| Pickup normale, se posseduto | 2 cariche, fino a 20 |
-| Prezzo per carica dal venditore | 25 bolt |
-| Velocità mentre tiene un nemico | Massimo 50% della velocità nativa, normale e Gold |
+| Normal availability | After visiting Hoven |
+| Weapon price | 15,000 bolts |
+| Capacity | 20 rounds |
+| Cost per activation | 1 round |
+| Normal ammunition pickup, when owned | 2 rounds, capped at 20 |
+| Vendor price per round | 25 bolts |
+| Golden upgrade | 50,000 ordinary bolts, no Gold Bolts |
 
-Il toggle **Rotatore sbloccato da subito** (`start_unlocked`) è disattivato
-di default. Se attivo, assegna ed equipaggia l'arma con 20 cariche alla prima
-fase giocabile soltanto se non è già posseduta. Cambiare livello, ricaricare
-il salvataggio o riavviare non rifornisce un'arma già posseduta; disattivare il
-toggle conserva arma e progressi acquisiti.
+Tanks, Toxic Crabs and the beige armored Alien Snapper cannot be caught. They
+still receive native Walloper-style melee damage, including the game's armor
+and vulnerability rules. **Blarg Commanders can be caught.** Bosses remain
+melee targets. See [enemy eligibility](docs/HEAVY_ENEMIES.md).
 
-Premi brevemente Cerchio per il colpo ravvicinato. Per la presa serve una
-pressione continua di almeno 0,18 secondi; rilascia per lanciare. I boss e i
-bersagli non ammessi alla presa conservano la risposta ravvicinata nativa.
-Mentre tiene un nemico, Ratchet si muove più lentamente: la velocità orizzontale
-è limitata al 50% di quella nativa. Il limite termina appena lascia o lancia
-il bersaglio; resta la breve pausa di 150 ms che accompagna il lancio.
-Dettagli e prove: [movimento durante la presa](docs/CARRY_SPEED.md).
-La punta gira lentamente a riposo, segue la rotazione del nemico durante la
-presa e si ferma senza cariche. Il tentativo a vuoto produce un breve scatto.
+The drill turns slowly at rest, stops when empty, and follows the captive's
+rotation while spinning. An empty activation produces a short failed motor
+jerk. The attack pulse briefly enlarges only the head; the head stays at its
+normal size while carrying an enemy. Selecting the weapon builds its housing
+first and screws the drill into place over 0.6 seconds. Reopening the weapon
+menu without changing equipment does not replay that presentation.
 
-La cartuccia è una singola cella energetica industriale. Modello e texture sono
-stati creati con assistenza AI; la mesh viene generata dalla ricetta del
-progetto. Nell'HUD durante l'uso compare la cartuccia delle munizioni. La trivella resta
-l'icona di inventario e scelta rapida, dal simbolo nativo `59901:13` ingrandito con
-[Real-ESRGAN ncnn Vulkan](https://github.com/xinntao/Real-ESRGAN-ncnn-vulkan).
-La combinazione grafica verificata e le prove ancora aperte sono elencate in
-[NATIVE_VALIDATION.md](docs/NATIVE_VALIDATION.md).
+The Golden upgrade is sold in an additional case in Novalis's native Gold
+weapon shop. It shares ammunition, XP and quick-select bindings with the base
+weapon. Thrown enemies explode on collision; the blast grows with spin time
+up to a fixed cap. Switching weapons does not change a shot already in flight.
 
-## Salvataggi e Weapon XP
+## Native menus, saves and optional XP
 
-Il file nativo conserva Walloper e ID originali. Le associazioni rapide custom
-vengono rimosse dalla rappresentazione nativa durante la serializzazione e
-ripristinate subito in RAM. Il Revolverator viene salvato in un sidecar
-`saveN.bin.arsenal`, scritto atomicamente e associato all'impronta del preciso
-salvataggio nativo di quello slot. Un sidecar assente, danneggiato o riferito a
-un'altra versione del salvataggio non viene applicato.
+The weapon and its ammunition use the existing UI. The cartridge appears in
+the gameplay ammunition HUD; the drill glyph appears in inventory and quick
+select, with a Golden variant for the upgrade. The weapon grid has 20 visible
+cells and scrolls for additional entries. The original eight quick-select
+slots can hold Walloper and Revolverator independently.
 
-La mod funziona anche senza Weapon XP. Per la progressione opzionale occorre
-un provider con **API v4**; il companion corrispondente è
-`weapon-xp 0.6.3-arsenal`. I provider precedenti che non possono escludere i
-colpi custom vengono rifiutati chiaramente. Gli XP seguono i bolt nativi del
-nemico e le regole configurate del trasporto 18, mantenendo un totale separato.
-Il limite è livello 10; danni e munizioni aggiuntivi restano disattivati di default.
+| Identity | API key |
+| --- | ---: |
+| Original Walloper | 18 |
+| Revolverator | 65554 / 0x10012 |
 
-## Requisiti della 0.3.1
+The native save retains the original items. Custom ownership, ammunition,
+Golden upgrade, XP and favorites use an atomic saveN.bin.arsenal sidecar bound
+to the matching native save. Missing, corrupt or mismatched sidecars are not
+applied. PAL and NTSC-U cards are separate; automatic cross-region save
+conversion is not provided.
 
-- OpenRAC ufficiale **0.10**, Windows x64, R&C1 NTSC-U, con livelli nel
-  **formato 4**. Usa **Check and play** per aggiornare un'estrazione precedente.
-- EXE verificato: SHA256
-  `f70a9f2bc6de39ed42b9f9f64fc5cea98ffad8b8bd7795c7adfb965a9875c95b`.
-- ABI richiesta dal plugin **1.1**. La tabella SDK **1.10** conserva il prefisso
-  usato dalla mod e le firme dei suoi 27 hook pubblici.
-- Utility compatibilità e file alias incluse privatamente nel pacchetto:
-  caricamento automatico dalla cartella DLL della mod; niente card aggiuntive.
-  I 30 hook privati restano necessari e vengono attivati come transazione
-  tipizzata sul client riconosciuto, senza sostituire l'EXE.
-- Asset del trapano e della cartuccia inclusi nello ZIP nativo; la ricostruzione
-  locale serve soltanto per una build dai sorgenti.
-- Weapon XP API v4 soltanto se si vuole la progressione opzionale.
+Weapon Experience is optional. A compatible **API v4** provider gives this
+weapon its own XP total and up to ten levels. The original Walloper's progress
+stays separate. Damage and ammunition-capacity bonuses remain off by default.
+The mod-to-mod interface is documented in [API.md](docs/API.md).
 
-La mod legge i manifest originali, crea copie temporanee proprie e carica gli
-asset inclusi tramite utility private. Conserva il formato 3 o 4 del manifest;
-su un runtime con API 1.10 richiede il formato 4 prima di montare gli asset.
-L'hash del precedente client 0.9 `b7f3762a…df94081` rimane riconosciuto;
-le nuove prove della DLL 0.3.1 riguardano la 0.10. Le ricevute della 0.2 e 0.3
-su 0.9 restano storiche e non sostituiscono queste prove.
-ISO, salvataggi e RAM non fanno parte dei sorgenti pubblici.
+## Assets and attribution
 
-## Documentazione
+The weapon model, Golden finish and native icon variants are derived locally
+from the player's own installed assets. The ammunition model and texture are
+original artwork created with AI assistance. The public release discloses
+that AI tools helped develop the mod.
 
-- [Architettura del menu e identità](docs/WEAPON_MENU_AUDIT.md)
-- [API v3 per altre mod](docs/API.md)
-- [OpenRAC 0.10, requisiti e prove della 0.3.1](docs/OPENRAC_0_10.md)
-- [Animazione nativa di ottenimento](docs/NATIVE_ACQUISITION.md)
-- [Verifiche Golden 0.3](docs/GOLDEN_VALIDATION.md)
-- [Build e asset locali](docs/BUILD_AND_ASSETS.md)
-- [Prove native e limiti](docs/NATIVE_VALIDATION.md)
-- [Verifiche ancora aperte](docs/QA_CHECKLIST.md)
-- [Packaging e provenienza](docs/PACKAGING.md)
-- [Icona HD](docs/HD_ICON_INTEGRATION.md)
-- [Localizzazione](docs/LOCALIZATION.md)
+Authored code is [GPL-3.0-or-later](LICENSE), Copyright (c) 2026 lorenzogarrone.
+Third-party code retains its original notices. The code license does not
+relicense Insomniac Games / Sony's game artwork. See
+[runtime assets](docs/RUNTIME_ASSETS.md) and [packaging](docs/PACKAGING.md).
 
-## Licenza
+## Documentation and validation
 
-Il codice della mod scritto per questo progetto è distribuito con licenza
-[GPL-3.0-or-later](LICENSE), Copyright (c) 2026 noire342. I notice di terze parti restano
-validi. La licenza del codice non copre modelli, texture, icone o altri asset
-derivati dal gioco; il runtime OpenRAC e la relativa patch mantengono le loro
-licenze GPL e gli altri notice upstream.
+- [Contact sparks](docs/CONTACT_SPARKS.md)
+- [Compatibility and later clients](docs/COMPATIBILITY.md)
+- [Build instructions and asset preparation](docs/BUILD_AND_ASSETS.md)
+- [Native validation and historical receipts](docs/NATIVE_VALIDATION.md)
+- [Golden upgrade](docs/GOLDEN_UPGRADE.md) and [impact effects](docs/GOLDEN_EFFECTS.md)
+- [Visual ownership](docs/VISUAL_PRESENTATION.md) and [weapon menu](docs/WEAPON_MENU_AUDIT.md)
+- [Publication checklist](docs/PUBLICATION.md)
 
-La variante di texture Golden e stata preparata con AI partendo dall'atlante
-originale e dalla palette del Blaster Gold; geometria e coordinate UV del
-modello sono invariate. Il modello della munizione e stato generato con AI,
-come riportato nella sua documentazione di provenienza.
+Validation is specific to the recorded binary, region and scenarios.
+Historical receipts stay associated with their original builds; they do not
+establish whole-campaign coverage or every combination of mods.

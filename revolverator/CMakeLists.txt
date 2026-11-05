@@ -8,6 +8,7 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
 endif()
 add_library(revolverator_core STATIC src/controller.cpp src/arm_math.cpp src/attachment.cpp src/rotor_controller.cpp src/arsenal_state.cpp src/arsenal_store.cpp)
 target_sources(revolverator_core PRIVATE src/golden_impact.cpp src/release_recoil.cpp src/equip_assembly.cpp)
+target_sources(revolverator_core PRIVATE src/contact_sparks.cpp)
 target_sources(revolverator_core PRIVATE src/region_bindings.cpp)
 set_target_properties(revolverator_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_compile_features(revolverator_core PUBLIC cxx_std_17)
@@ -19,10 +20,49 @@ target_sources(revolverator PRIVATE src/native_gold_vendor.cpp src/native_acquis
 target_sources(revolverator PRIVATE src/native_vendor_icons.cpp)
 target_sources(revolverator PRIVATE src/native_icon_variants.cpp)
 target_sources(revolverator PRIVATE src/native_weapon_visual.cpp src/native_equip_audio.cpp)
+target_sources(revolverator PRIVATE src/native_contact_sparks.cpp)
 target_include_directories(revolverator PRIVATE third_party/openrac)
 target_compile_features(revolverator PRIVATE cxx_std_20)
 if(WIN32)
   target_link_libraries(revolverator PRIVATE shell32)
+  add_library(revolverator_minhook STATIC third_party/minhook/src/buffer.c third_party/minhook/src/hook.c
+    third_party/minhook/src/trampoline.c third_party/minhook/src/hde/hde64.c)
+  target_include_directories(revolverator_minhook PUBLIC third_party/minhook/include)
+  target_link_libraries(revolverator PRIVATE revolverator_minhook)
+  # Private asset adapter, built from the corresponding source shipped with
+  # this weapon. Names are scoped so a root build's other utilities can coexist.
+  set(revolverator_overlay_source "${CMAKE_CURRENT_SOURCE_DIR}/support/file-overlay")
+  add_library(revolverator_file_overlay SHARED
+    "${revolverator_overlay_source}/src/mod.cpp"
+    "${revolverator_overlay_source}/src/windows_overlay.cpp"
+    "${revolverator_overlay_source}/src/overlay_core.cpp")
+  set_target_properties(revolverator_file_overlay PROPERTIES
+    PREFIX "" OUTPUT_NAME "arsenal_file_overlay"
+    CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
+  target_include_directories(revolverator_file_overlay PRIVATE
+    "${revolverator_overlay_source}/src" "${revolverator_overlay_source}/include")
+  target_link_libraries(revolverator_file_overlay PRIVATE OpenRAC::mod revolverator_minhook bcrypt)
+  # Preserve the helper's own loader ABI; its v2 install entry accepts 1.12+.
+  target_compile_definitions(revolverator_file_overlay PRIVATE OPENRAC_MOD_TARGET_MINOR=1)
+  if(MSVC)
+    target_compile_options(revolverator_file_overlay PRIVATE /W4 /EHsc)
+  endif()
+  get_target_property(revolverator_package revolverator OPENRAC_MOD_PACKAGE_DIR)
+  add_custom_command(TARGET revolverator_file_overlay POST_BUILD
+    COMMAND "${CMAKE_COMMAND}" -E make_directory "${revolverator_package}/lib/${OPENRAC_MOD_PLATFORM}"
+    COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:revolverator_file_overlay>"
+      "${revolverator_package}/lib/${OPENRAC_MOD_PLATFORM}/arsenal_file_overlay.dll"
+    VERBATIM)
+  add_dependencies(revolverator revolverator_file_overlay)
+  file(COPY assets/ammunition DESTINATION "${revolverator_package}/assets")
+  file(COPY tools/prepare_runtime_assets.py tools/build_model_pack.py tools/build_golden_assets.py
+    DESTINATION "${revolverator_package}/tools")
+  file(COPY docs/ DESTINATION "${revolverator_package}/docs")
+  file(COPY third_party/minhook/LICENSE.txt third_party/minhook/AUTHORS.txt
+    DESTINATION "${revolverator_package}/licenses/minhook")
+  file(COPY "${revolverator_overlay_source}/LICENSE" "${revolverator_overlay_source}/README.md"
+    "${revolverator_overlay_source}/docs/LICENSE-MIT.md"
+    DESTINATION "${revolverator_package}/licenses/file-overlay")
 endif()
 if(UNIX AND NOT APPLE)
   # The SDK supplies a restrictive ELF version script. Include the optional
@@ -42,6 +82,20 @@ else()
   target_compile_options(revolverator PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 if(BUILD_TESTING)
+  add_executable(revolverator_bundled_overlay_test
+    support/file-overlay/tests/overlay_core_test.cpp support/file-overlay/src/overlay_core.cpp)
+  target_include_directories(revolverator_bundled_overlay_test PRIVATE
+    support/file-overlay/src support/file-overlay/include)
+  target_compile_features(revolverator_bundled_overlay_test PRIVATE cxx_std_17)
+  add_test(NAME revolverator_bundled_overlay COMMAND revolverator_bundled_overlay_test)
+  find_package(Python3 QUIET COMPONENTS Interpreter)
+  if(Python3_Interpreter_FOUND)
+    add_test(NAME revolverator_runtime_asset_preparation
+      COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/runtime_asset_preparation_test.py")
+  endif()
+  add_executable(revolverator_contact_sparks_test tests/contact_sparks_test.cpp src/native_contact_sparks.cpp)
+  target_link_libraries(revolverator_contact_sparks_test PRIVATE revolverator_core OpenRAC::mod)
+  add_test(NAME revolverator_contact_sparks COMMAND revolverator_contact_sparks_test)
   add_executable(revolverator_native_equip_audio_test tests/native_equip_audio_test.cpp src/native_equip_audio.cpp)
   target_link_libraries(revolverator_native_equip_audio_test PRIVATE revolverator_core OpenRAC::mod)
   add_test(NAME revolverator_native_equip_audio COMMAND revolverator_native_equip_audio_test)
@@ -74,7 +128,7 @@ if(BUILD_TESTING)
   add_executable(revolverator_native_gold_vendor_test tests/native_gold_vendor_test.cpp src/native_gold_vendor.cpp src/native_weapon_alias.cpp)
   target_link_libraries(revolverator_native_gold_vendor_test PRIVATE revolverator_core OpenRAC::mod)
   add_test(NAME revolverator_native_gold_vendor COMMAND revolverator_native_gold_vendor_test)
-  add_executable(revolverator_native_world_test tests/native_world_test.cpp src/native_world.cpp src/native_arm.cpp src/native_ammunition.cpp src/native_rotor.cpp)
+  add_executable(revolverator_native_world_test tests/native_world_test.cpp src/native_world.cpp src/native_arm.cpp src/native_ammunition.cpp src/native_rotor.cpp src/native_contact_sparks.cpp)
   target_link_libraries(revolverator_native_world_test PRIVATE revolverator_core OpenRAC::mod)
   add_test(NAME revolverator_native_world COMMAND revolverator_native_world_test)
   foreach(pure IN ITEMS golden_impact release_recoil golden_upgrade)
@@ -93,6 +147,9 @@ if(BUILD_TESTING)
   target_include_directories(revolverator_native_runtime_hooks_test PRIVATE src include)
   target_compile_features(revolverator_native_runtime_hooks_test PRIVATE cxx_std_17)
   target_link_libraries(revolverator_native_runtime_hooks_test PRIVATE OpenRAC::mod)
+  if(WIN32)
+    target_link_libraries(revolverator_native_runtime_hooks_test PRIVATE revolverator_minhook)
+  endif()
   add_test(NAME revolverator_native_runtime_hooks COMMAND revolverator_native_runtime_hooks_test)
   add_executable(revolverator_controller_test tests/controller_test.cpp)
   target_link_libraries(revolverator_controller_test PRIVATE revolverator_core)

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright (c) 2026 noire342
+# Copyright (c) 2026 lorenzogarrone
 """Build original Revolverator ammunition art and an isolated native-level extension.
 
 The installed levels and other mods are never modified. Standard model packs

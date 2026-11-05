@@ -1,6 +1,6 @@
 # Golden upgrade and Novalis offer
 
-## Current 0.3.1 shop presentation
+## Historical 0.3.1 shop presentation proof
 
 The OpenRAC 0.10 native fixtures verify all eleven live Novalis cases, the new
 display's size/centre/lighting, a real Triangle purchase from 3.35 m and the

@@ -1,0 +1,29 @@
+{
+  "scope": "Isolated POC host build/config-policy tests and standalone C ABI only; no native redirection proof",
+  "date": "2026-10-30",
+  "id": "arsenal-file-overlay",
+  "version": "0.1.0",
+  "dll_sha256": "aec87cbfd6eb3133dbb51e62edbce7fae46081355dcd4b5b5aa458876860ca14",
+  "host_checks": {
+    "windows": 1865,
+    "linux": 1865,
+    "status": "PASS"
+  },
+  "standalone_exports": [
+    "openrac_file_overlay_install",
+    "openrac_file_overlay_remove",
+    "openrac_file_overlay_last_error",
+    "openrac_file_overlay_stats"
+  ],
+  "unsupported_host_executable": "rejected before configuration IO or hook creation",
+  "null_config": "rejected",
+  "uninstalled_remove": "idempotent OK",
+  "unsupported_host_stats": {
+    "version": 1,
+    "aliases": 0,
+    "installed": 0
+  },
+  "frozen_preview_provider_modified": false,
+  "native_redirection_verified": true,
+  "native_receipt": "NATIVE_VALIDATION.json; separate scoped stock-client asset proof"
+}

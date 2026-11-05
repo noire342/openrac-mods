@@ -1,6 +1,8 @@
+> Historical validation record. Client versions, hashes and private-provider requirements below describe the recorded build only. For the current minimum interface and later-client capability checks, see [COMPATIBILITY.md](COMPATIBILITY.md).
+
 # Revolverator 0.3.1 and OpenRAC 0.10
 
-The current Windows preview targets the official OpenRAC 0.10 NTSC-U client.
+This historical 0.3.1 preview targeted the official OpenRAC 0.10 NTSC-U client.
 Import the native mod ZIP in the launcher's Mods page. It includes the weapon
 assets and private compatibility libraries; no replacement client is bundled.
 After upgrading OpenRAC, use **Check and play** to read the levels again if

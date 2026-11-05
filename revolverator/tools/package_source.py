@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright (c) 2026 noire342
+# Copyright (c) 2026 lorenzogarrone
 """Create an audited source snapshot; this tool never publishes it."""
 from __future__ import annotations
 import argparse
@@ -10,7 +10,7 @@ from pathlib import Path
 import zipfile
 
 ROOT_FILES = {'CMakeLists.txt', 'openrac-mod.json', 'README.md', 'LICENSE', 'COPYING'}
-ROOT_DIRS = {'src', 'include', 'docs', 'tests', 'tools', 'examples', 'third_party'}
+ROOT_DIRS = {'src', 'include', 'docs', 'tests', 'tools', 'examples', 'third_party', 'support'}
 SUFFIXES = {'.c', '.cpp', '.h', '.hpp', '.py', '.ps1', '.md', '.json', '.txt', '.tsv', '.cmake'}
 PRIVATE_ASSET_NAMES = {'revolverator_hd_icon_data.hpp'}
 
@@ -28,11 +28,11 @@ def snapshot(source: Path) -> dict[str, bytes]:
         relative = path.relative_to(source)
         parts = relative.parts
         selected = (len(parts) == 1 and path.name in ROOT_FILES) or (
-            parts[0] in ROOT_DIRS and path.suffix.lower() in SUFFIXES) or (
+            parts[0] in ROOT_DIRS and (path.suffix.lower() in SUFFIXES or path.name in {'LICENSE','COPYING','NOTICE','AUTHORS'})) or (
             parts[:2] == ('assets', 'ammunition') and
-            len(parts) == 3 and path.name in {'recipe.json', 'README.md'})
+            len(parts) == 3 and path.name in {'recipe.json', 'README.md', 'model.glb', 'texture.png'})
         selected = selected or (parts[:2] == ('assets', 'golden') and len(parts) == 3
-                                 and path.name in {'moby_revolverator_gold.png', 'README.md'})
+                                 and path.name == 'README.md')
         if not selected or '__pycache__' in parts or path.name in PRIVATE_ASSET_NAMES:
             continue
         if path.is_symlink() or source not in path.resolve(strict=True).parents:

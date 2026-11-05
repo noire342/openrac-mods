@@ -1,0 +1,351 @@
+{
+  "format": 1,
+  "kind": "native-pal-contact-sparks-current-official-client-validation",
+  "scope": "Official OpenRAC1.0.2 Windows PAL Europev2.00 / interface1.12, isolated Novalis Base and native Gold purchase fixtures",
+  "pass": true,
+  "revolverator_sha256": "425cb7ee886ef6ee868ee009d78b1e3fecd037fdb7e2a2fefae7b74c5af139f3",
+  "official_runtime_sha256": "5f7f6d73744a22923695150d99966f82bc41bb99ddb830757b427b68c23c9789",
+  "native_checks_passed": 136,
+  "accepted_scenarios": 2,
+  "scenarios": [
+    {
+      "name": "contact-sparks-base-current-03",
+      "passed": true,
+      "native_checks": 62,
+      "native_result": {
+        "event": "result",
+        "mode": "combatshort",
+        "pass": true,
+        "checks": 62,
+        "failures": 0,
+        "host_frame": 1686,
+        "tick": 160,
+        "triangle_pulses": 0,
+        "purchase_events": 0,
+        "gold_transitions": 0,
+        "gold_render_views": 0,
+        "launch_blast": 0.0,
+        "recoil_frames": 0,
+        "recoil_seconds": 0.0,
+        "recoil_motion_samples": 9,
+        "max_recoil_speed": 0.0,
+        "max_recoil_displacement": 0.0,
+        "resumed_motion_samples": 0
+      },
+      "native_contact_result": {
+        "event": "result",
+        "pass": true,
+        "checks": 51,
+        "failures": 0,
+        "pool_samples": 1093,
+        "max_live_type19": 13,
+        "births": 37,
+        "hold_births": 37,
+        "idle_births": 0,
+        "paused_births": 0,
+        "hold_frames": 72,
+        "paused_frames": 446,
+        "outside_frames": 575,
+        "max_birth_tip_error": 0.0120183
+      },
+      "native_particle_spawns": 37,
+      "native_spawn_batches": 37,
+      "native_pool_births_match_emission_trace": true,
+      "process_exit_code": 0,
+      "original_inputs_checked": 131,
+      "original_inputs_changed": 0,
+      "runtime_and_module_pins": {
+        "revolverator\\lib\\windows-x86_64\\arsenal_file_overlay.dll": {
+          "sha256": "8a69d4411696c76e6ea7229ad66999bbddd107bac76a7338771acd67a20b14c4",
+          "matches_fixture_pin": true
+        },
+        "pal-contact-sparks-qa\\lib\\windows-x86_64\\pal_contact_sparks_qa.dll": {
+          "sha256": "8ad9eca0af9a1a43296fcf0ce5f1fd1da3acf6f78fdc4ec2e902dafae94fe49d",
+          "matches_fixture_pin": true
+        },
+        "runtime": {
+          "sha256": "5f7f6d73744a22923695150d99966f82bc41bb99ddb830757b427b68c23c9789",
+          "matches_fixture_pin": true
+        },
+        "revolverator\\lib\\windows-x86_64\\revolverator.dll": {
+          "sha256": "425cb7ee886ef6ee868ee009d78b1e3fecd037fdb7e2a2fefae7b74c5af139f3",
+          "matches_fixture_pin": true
+        },
+        "weapon-xp\\lib\\windows-x86_64\\weapon_xp.dll": {
+          "sha256": "29406690a04910737cc14b02d1ef1cdea39d3c26650bf51b72ca71a1fbf758ea",
+          "matches_fixture_pin": true
+        }
+      },
+      "fixture_sha256": "3e04b93356c9d4d451b982e387aadeefc63f5a0ff0872c65d3548998036da17c",
+      "original_manifest_sha256": "15e80d32e644419dc31e59f358eb8169530b5c43d32a31219045f8b3b82e4ccf",
+      "log_sha256": "34b1ffc177f7f99f0de0c1feed1e682e70df2f756ac76da8248cb8c339df4a6c",
+      "analysis_sha256": "de9728743e43a8645e4c5d0f592d12acbc9ce195baa0fe8c6ef637e6a0ef57e5",
+      "observed_angular_speed_range": [
+        24.187,
+        37.312
+      ],
+      "first_emission_point": [
+        168.25433,
+        131.73649,
+        60.63893
+      ],
+      "last_emission_point": [
+        170.34463,
+        131.23641,
+        62.01655
+      ]
+    },
+    {
+      "name": "contact-sparks-gold-current-03",
+      "passed": true,
+      "native_checks": 74,
+      "native_result": {
+        "event": "result",
+        "mode": "combatshort",
+        "pass": true,
+        "checks": 74,
+        "failures": 0,
+        "host_frame": 2042,
+        "tick": 311,
+        "triangle_pulses": 1,
+        "purchase_events": 1,
+        "gold_transitions": 1,
+        "gold_render_views": 693,
+        "launch_blast": 0.0,
+        "recoil_frames": 0,
+        "recoil_seconds": 0.0,
+        "recoil_motion_samples": 9,
+        "max_recoil_speed": 0.0,
+        "max_recoil_displacement": 0.0,
+        "resumed_motion_samples": 0
+      },
+      "native_contact_result": {
+        "event": "result",
+        "pass": true,
+        "checks": 63,
+        "failures": 0,
+        "pool_samples": 1093,
+        "max_live_type19": 13,
+        "births": 37,
+        "hold_births": 37,
+        "idle_births": 0,
+        "paused_births": 0,
+        "hold_frames": 72,
+        "paused_frames": 446,
+        "outside_frames": 575,
+        "max_birth_tip_error": 0.012016
+      },
+      "native_particle_spawns": 37,
+      "native_spawn_batches": 37,
+      "native_pool_births_match_emission_trace": true,
+      "process_exit_code": 0,
+      "original_inputs_checked": 131,
+      "original_inputs_changed": 0,
+      "runtime_and_module_pins": {
+        "revolverator\\lib\\windows-x86_64\\arsenal_file_overlay.dll": {
+          "sha256": "8a69d4411696c76e6ea7229ad66999bbddd107bac76a7338771acd67a20b14c4",
+          "matches_fixture_pin": true
+        },
+        "pal-contact-sparks-qa\\lib\\windows-x86_64\\pal_contact_sparks_qa.dll": {
+          "sha256": "8ad9eca0af9a1a43296fcf0ce5f1fd1da3acf6f78fdc4ec2e902dafae94fe49d",
+          "matches_fixture_pin": true
+        },
+        "runtime": {
+          "sha256": "5f7f6d73744a22923695150d99966f82bc41bb99ddb830757b427b68c23c9789",
+          "matches_fixture_pin": true
+        },
+        "revolverator\\lib\\windows-x86_64\\revolverator.dll": {
+          "sha256": "425cb7ee886ef6ee868ee009d78b1e3fecd037fdb7e2a2fefae7b74c5af139f3",
+          "matches_fixture_pin": true
+        },
+        "weapon-xp\\lib\\windows-x86_64\\weapon_xp.dll": {
+          "sha256": "29406690a04910737cc14b02d1ef1cdea39d3c26650bf51b72ca71a1fbf758ea",
+          "matches_fixture_pin": true
+        }
+      },
+      "fixture_sha256": "00b8fefc4e9008a71ff524cc346ee3871b7ca7598a7955895d4040602b6875ae",
+      "original_manifest_sha256": "15e80d32e644419dc31e59f358eb8169530b5c43d32a31219045f8b3b82e4ccf",
+      "log_sha256": "80c20a39b7088cefd4cbe4701aba3f45c7c0219ffa349f5a9f9eb5f00513ab0b",
+      "analysis_sha256": "109fb009cc3d82c3eae5a58b22a6633df940e2ad9988953c5bae758e715a509a",
+      "observed_angular_speed_range": [
+        24.187,
+        37.312
+      ],
+      "first_emission_point": [
+        168.21542,
+        131.81063,
+        60.63741
+      ],
+      "last_emission_point": [
+        170.27079,
+        131.17848,
+        62.01656
+      ]
+    }
+  ],
+  "os_ui_automation_used": false,
+  "user_saves_copied": false,
+  "enemy_health_rewards_or_xp_written": false,
+  "observations": {
+    "native_type19_births_per_case": 37,
+    "source_emission_and_native_birth_count_match": true,
+    "new_particles_only_while_enemy_spins": true,
+    "paused_new_particles": 0,
+    "idle_attack_equip_flight_new_particles": 0,
+    "max_birth_distance_from_actual_drill_tip": 0.0120183,
+    "native_texture_and_streak_shape": "Original wrench-impact Type19 particle; original native pool and expiry"
+  },
+  "source_code_pins": [
+    {
+      "file": "src/contact_sparks.cpp",
+      "sha256": "a87ec064c5def752fa90db55356d6c437ec6f460726f01ab33563b833479de92"
+    },
+    {
+      "file": "src/contact_sparks.hpp",
+      "sha256": "80a76f5bf94130118040f3db07a08d2a28a3e1a0747951b85d7f97f5262e424e"
+    },
+    {
+      "file": "src/native_contact_sparks.cpp",
+      "sha256": "db653fa2f6e65af90be16f0218965d845ef20f7410a651d3b264cbca0fcfc556"
+    },
+    {
+      "file": "src/native_contact_sparks.hpp",
+      "sha256": "89da84906199cc1120ad14bd76b85a938c18d6b288651838aad7d4f6280495e2"
+    },
+    {
+      "file": "src/native_world.cpp",
+      "sha256": "03ca713221cc2bd33088df1f2f0614c6050c9b243d9cd6ee8f596b7c464ab246"
+    },
+    {
+      "file": "src/native_world.hpp",
+      "sha256": "f55495d19cf4ba0092f8986a1f842e8bc41798d0263ab4fee4d0ab8ce526663b"
+    },
+    {
+      "file": "src/mod.cpp",
+      "sha256": "78a4d5614adff9065a0898ef66ea944a64cbfde43b57e4d5db1c6c21ebc4f908"
+    },
+    {
+      "file": "src/region_bindings.cpp",
+      "sha256": "8e3f0b01e9047a248aa6bce9f482d8881ccc4d59b86f7ab60fddac235b783b17"
+    },
+    {
+      "file": "src/native_runtime_hooks.cpp",
+      "sha256": "56b3fc7db8317c1f233e22b50b24f0947255d1edea090c43a3f723d8c711ec10"
+    },
+    {
+      "file": "src/native_compatibility_modules.cpp",
+      "sha256": "3fe0c8ea9c75f0a010855c74de55947cd89f4faef1de49232fefa560dfe061e5"
+    },
+    {
+      "file": "src/native_asset_bundle.cpp",
+      "sha256": "5634f639d69a49fc225e80bac6024c1cfc369b91a3c12798589b4455bbe044cc"
+    },
+    {
+      "file": "tests/contact_sparks_test.cpp",
+      "sha256": "4965903f0e8a62931689c53575e19b4671970b8fb7c6b0bd614b7d23352627d7"
+    },
+    {
+      "file": "tests/native_world_test.cpp",
+      "sha256": "02ef24f33f67d090d9020342430938a371ecb627acd0ed61615ab34080d0b9fb"
+    }
+  ],
+  "private_helper_pins": [
+    {
+      "file": "contact-sparks-probe/probe.cpp",
+      "sha256": "ec746498501f873b3057dc5cfd120d49a3e734636ab6227707225e02f71a0fd1"
+    },
+    {
+      "file": "contact-sparks-probe/probe_bindings.hpp",
+      "sha256": "c5b3e4d4c08c7dec5af202ed865983815bc347853056e442ef5e5da794e80487"
+    },
+    {
+      "file": "contact-sparks-probe/visual_fixture.inc",
+      "sha256": "d30d5e1819091e702b0abef35d21c74d054ddcb57eea6349fd32cb0a8dfec1af"
+    },
+    {
+      "file": "contact-sparks-probe/contact_particles.inc",
+      "sha256": "5eedff09da596471caaec6e4078bcdc2efcc93f7fe37576cc16de88978127c39"
+    },
+    {
+      "file": "contact-sparks-probe/CMakeLists.txt",
+      "sha256": "6c7f3625f9279c36fc5499a2974fda4d8db12346a2ef1a8828e5eb7836e577f7"
+    },
+    {
+      "file": "contact-sparks-probe/openrac-mod.json",
+      "sha256": "abe47adaa12d602ec344f24ee7c8364bceb7c3430da32363a762a7df7187a3e6"
+    },
+    {
+      "file": "contact-sparks-probe/analyze.py",
+      "sha256": "e84a0234265cb6fff6d6b2355c7373bd7caa0e6b0ca12dfec991d35413970ee7"
+    },
+    {
+      "file": "contact-sparks-probe/aggregate.py",
+      "sha256": "a695ab29f4484634d31ac9aacd18c288753d692484698673a56d535a566f39fb"
+    }
+  ],
+  "reviewed_native_screenshots": [
+    {
+      "description": "Enemy held while contact sparks leave the drill tip",
+      "path": "runs/contact-sparks-base-current-03/shots/frame888.png",
+      "sha256": "e700156424032871a276531020d42279e214adc01c23b4d952afab3eecc6b76c",
+      "native_snapshot_index": 888,
+      "latest_helper_witness_frame": 896,
+      "native_snapshot_index_is_not_helper_counter": true,
+      "visually_reviewed": true,
+      "generated_or_retouched": false
+    },
+    {
+      "description": "Wrench selected, no contact emitter",
+      "path": "runs/contact-sparks-base-current-03/shots/frame1245.png",
+      "sha256": "211cb7fe7805ad379b09e3a117caae3e8e0de5e0313dd7b5daec88a1b0a1fbcb",
+      "native_snapshot_index": 1245,
+      "latest_helper_witness_frame": 1230,
+      "native_snapshot_index_is_not_helper_counter": true,
+      "visually_reviewed": true,
+      "generated_or_retouched": false
+    },
+    {
+      "description": "Enemy held while contact sparks leave the drill tip",
+      "path": "runs/contact-sparks-gold-current-03/shots/frame1242.png",
+      "sha256": "9ab6cf1383461cbd673a38e83b31eac082bfebe3500d8ff78e765ec6411bda5e",
+      "native_snapshot_index": 1242,
+      "latest_helper_witness_frame": 1251,
+      "native_snapshot_index_is_not_helper_counter": true,
+      "visually_reviewed": true,
+      "generated_or_retouched": false
+    },
+    {
+      "description": "Enemy released, particles expire",
+      "path": "runs/contact-sparks-gold-current-03/shots/frame1422.png",
+      "sha256": "96a071ee287ca6748e3bee8eea9afd52a54444ca3290584b187f9ae3e423efe6",
+      "native_snapshot_index": 1422,
+      "latest_helper_witness_frame": 1410,
+      "native_snapshot_index_is_not_helper_counter": true,
+      "visually_reviewed": true,
+      "generated_or_retouched": false
+    }
+  ],
+  "excluded_runs": [
+    {
+      "names": [
+        "contact-sparks-base-current-01",
+        "contact-sparks-gold-current-01"
+      ],
+      "reason": "Revolverator failed native cold asset validation before gameplay; no spark or gameplay acceptance."
+    },
+    {
+      "names": [
+        "contact-sparks-base-current-02",
+        "contact-sparks-gold-current-02"
+      ],
+      "reason": "First synchronization had tiny positive speed and an early visual particle; production cosmetic gate now rejects angular speed<=1rad/s. The private observation window was also extended from15 to70live hold ticks. Earlier failures remain excluded."
+    }
+  ],
+  "limitations": [
+    "Targeted PAL Base/Gold native fixtures, not whole-campaign or every-enemy certification.",
+    "Exact slot allocation is native-owned; production never retains or writes a spawned particle record.",
+    "Native particles persist for their ordinary short lifetime after emission stops.",
+    "Native screenshot indices differ from helper frame counters; approximate times are correlated by renderer-log ordering.",
+    "Muted fixtures verify visuals and native lifecycle; they do not provide subjective audio review."
+  ]
+}

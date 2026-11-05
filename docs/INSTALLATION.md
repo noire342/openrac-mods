@@ -1,21 +1,25 @@
 # Installation
 
-## Rotatore / Revolverator 0.3.1 through the normal launcher
+## Rotatore / Revolverator 0.3.3 through the normal launcher
 
-Use official OpenRAC 0.10.0 Windows x64 with your own PAL Europe v2.00
+Use official OpenRAC Windows x64 with **mod interface 1.12 or newer** and your own PAL Europe v2.00
 (`SCES_509.16`) data, the reference region. NTSC-U remains a separate supported
-profile. Re-extract with **Check and play** if format-4 levels are requested.
+profile. Refresh with **Check and play** if updated extracted levels are requested.
 In **Mods**, add [the repository](https://github.com/noire342/openrac-mods), select
-Revolverator and install it. The 0.3.1 release is a normal discoverable release,
+Revolverator and install it. The 0.3.3 release is a normal discoverable release,
 so the repository-root link works. Local import of
-`revolverator-0.3.1-windows-x86_64.zip` through **Mods → File** is also available.
+`revolverator-0.3.3-windows-x86_64.zip` through **Mods → File** is also available.
 The launcher verifies the exact asset against that release's `SHA256SUMS`.
 
-Enable the mod and launch normally. Its two utility DLLs are private components,
-not separate mod cards. No replacement EXE, external launch script, custom
+Enable the mod and launch normally. Its asset adapter is a private component,
+not a separate mod card. Models and icon variants are prepared automatically
+from your own game data using the official client's bundled Python. No manual
+Python installation or copied game-art pack is required.
+No replacement EXE, external launch script, custom
 `--levels` argument or manual manifest editing is part of this flow. The catalog
-still lists all four public mod IDs. Older historical prereleases require their
-explicit tag address; that restriction does not apply to 0.3.1.
+retains the other mod releases and their individual requirements. Compatible
+later minor interfaces are allowed when the required capabilities remain
+available; see [the current compatibility contract](../revolverator/docs/COMPATIBILITY.md).
 
 ## Progress and upgrades
 

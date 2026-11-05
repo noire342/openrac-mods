@@ -54,8 +54,9 @@ NativeCompatibilityModules::NativeCompatibilityModules(const openrac_api* api, o
         const std::filesystem::path& configuration) : state_(std::make_unique<State>()) {
     const auto directory = utility_directory();
     auto& state = *state_;
-    state.provider = GetModuleHandleW(L"arsenal_compat.dll");
-    if (!state.provider) {
+    const bool official_hooks = api && api->api_major == 1 && api->api_minor >= 12;
+    if (!official_hooks) state.provider = GetModuleHandleW(L"arsenal_compat.dll");
+    if (!official_hooks && !state.provider) {
         state.provider = load_private(directory / L"arsenal_compat.dll");
         state.owned_provider = true;
         const auto query = reinterpret_cast<openrac_mod_query_fn>(GetProcAddress(state.provider, OPENRAC_MOD_QUERY));
@@ -72,11 +73,12 @@ NativeCompatibilityModules::NativeCompatibilityModules(const openrac_api* api, o
     }
     state.overlay = load_private(directory / L"arsenal_file_overlay.dll");
     const auto install = reinterpret_cast<openrac_file_overlay_install_fn>(GetProcAddress(state.overlay, "openrac_file_overlay_install"));
+    const auto install_modern = reinterpret_cast<openrac_file_overlay_install_v2_fn>(GetProcAddress(state.overlay, "openrac_file_overlay_install_v2"));
     state.remove_overlay = reinterpret_cast<openrac_file_overlay_remove_fn>(GetProcAddress(state.overlay, "openrac_file_overlay_remove"));
     const auto error = reinterpret_cast<openrac_file_overlay_last_error_fn>(GetProcAddress(state.overlay, "openrac_file_overlay_last_error"));
-    if (!install || !state.remove_overlay || !error)
+    if (!install || !state.remove_overlay || !error || (official_hooks&&!install_modern))
         throw std::runtime_error("The bundled asset-loading library is incompatible");
-    if (install(configuration.c_str()) != FILE_OVERLAY_OK)
+    if ((official_hooks?install_modern(api,configuration.c_str()):install(configuration.c_str())) != FILE_OVERLAY_OK)
         throw std::runtime_error(std::string("Cannot mount Revolverator assets: ") + error());
     state.overlay_started = true;
 }

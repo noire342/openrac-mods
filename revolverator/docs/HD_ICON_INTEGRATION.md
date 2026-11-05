@@ -1,5 +1,9 @@
 # Native glyph and optional HD icon
 
+The public 0.3.3 build derives its clean blue, Golden and AMMO variants from
+the player's resident native glyph. It does not embed a copied icon header.
+The optional private HD workflow below remains historical development guidance.
+
 The selected original drill glyph is bank 59901, frame 13, for inventory and
 quick select. The gameplay ammunition HUD uses the cartridge icon. `build_hd_icon.py` extracts
 the actual 32×32 PSMT8 image and CSM1 palette from local game data, then uses

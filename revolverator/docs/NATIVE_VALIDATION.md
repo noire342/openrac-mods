@@ -1,201 +1,185 @@
-# Verifica corrente 0.3.1 su OpenRAC 0.10
+# Native validation
 
-Le prove nuove usano il client ufficiale Windows NTSC-U 0.10 invariato e livelli
-nel formato 4. L'EXE installato e quello estratto dall'installer ufficiale hanno
-SHA256 `f70a9f2bc6de39ed42b9f9f64fc5cea98ffad8b8bd7795c7adfb965a9875c95b`.
-Provenienza e compatibilità SDK sono in [OPENRAC_0_10.md](OPENRAC_0_10.md).
+Release validation identifies the exact weapon DLL, asset adapter, official
+client, source snapshot, disc region and native scenarios. Use the validation
+attached to the release being installed. A historical pass does not certify a
+newly rebuilt DLL or every later client.
 
-Artefatti della serie finale con impulso della trivella:
+Version 0.3.3 adds contact sparks, automatic player-disc asset derivation and
+minimum-interface compatibility. Its host, native renderer, clean-install and
+publication checks are recorded separately from the receipts below. See
+[contact sparks](CONTACT_SPARKS.md), [runtime assets](RUNTIME_ASSETS.md) and
+[compatibility](COMPATIBILITY.md).
 
-| Componente | SHA256 |
+The [0.3.3 release receipt](validation/release-0.3.3.json) records the accepted
+PAL Base and Golden runs on the official client: **136 native checks passed**,
+both processes exited normally, and all 131 original inputs stayed unchanged
+in each run. Each case produced 37 actual native Type19 particles, matching
+the 37 emission requests, within 0.01202 units of the drill tip. No new
+contact particles appeared during pause, idle, ordinary attack, equipment
+changes or flight. Four unmodified native screenshots were reviewed.
+
+The accepted weapon DLL is
+425cb7ee886ef6ee868ee009d78b1e3fecd037fdb7e2a2fefae7b74c5af139f3;
+the native-tested asset adapter is
+8a69d4411696c76e6ea7229ad66999bbddd107bac76a7338771acd67a20b14c4.
+These hashes identify evidence, not future client-version requirements.
+The [asset preparation](validation/runtime-asset-preparation-0.3.3.json) and
+[actual C++ constructor](validation/runtime-asset-constructor-0.3.3.json)
+receipts separately cover cold/warm cache behavior, corruption repair,
+unchanged source assets and long Windows paths. Failed exploratory native
+runs remain excluded in the contact-sparks receipt.
+
+## Version 0.3.2: PAL gameplay and presentation
+
+The accepted 0.3.2 DLL is
+9d9ba8704588b5838589d6d0042e7a8cc8ee972b4e0fee24cf3c26672fce7a52.
+Its [native regression receipt](validation/pal-032-regression.json) covers
+264 checks in six scenarios; [enemy eligibility](validation/pal-032-heavy-enemies.json)
+adds 33 checks in three scenarios. All nine processes exit normally, with
+107 original inputs unchanged per run. Windows host tests pass 33 groups.
+
+These receipts establish their recorded equipment-menu, actual Bomb shot,
+construction, pause, attack, Base/Gold carrying and original Walloper paths.
+The heavy-enemy comparison records equal native per-hit damage for Alien
+Snapper1048 and Bomber Tank253, plus actual Blarg Commander1371 capture,
+held-update suspension and throw. Toxic Crab1202 native Orxon attempts are
+explicitly excluded because a stable usable Ratchet state was not reached;
+its unchanged exclusion is source/host verified. Heavy-target Golden coverage
+and complete mounted-Commander behavior are not implied by that test.
+
+Earlier PAL receipts, including carry-speed, preview/title and visual-assembly
+corrections, retain their original DLL hashes under docs/validation. Their
+binary-specific scope is described in the corresponding documents.
+
+## Historical version 0.3.1: OpenRAC 0.10 NTSC-U
+
+The official Windows NTSC-U 0.10 executable matched the installer-extracted
+file, SHA256 f70a9f2bc6de39ed42b9f9f64fc5cea98ffad8b8bd7795c7adfb965a9875c95b.
+It used format-4 levels. [OPENRAC_0_10.md](OPENRAC_0_10.md) retains that SDK and
+client provenance; it is not the current minimum-interface requirement.
+
+| Historical component | SHA256 |
 | --- | --- |
-| Revolverator 0.3.1 | `c9294347cacad667bd9436feb6ac7c22196ddfff151c745dec8437d3554739f7` |
-| Arsenal Compatibility | `36a52a6501dd2737a7f5957151e29ad961726a66eca5670727715d277cf2414d` |
-| File overlay | `ba99b27d68168630d206020cc75b8888760958d3110b855e8598833335a7dc12` |
-| Weapon XP, dove attivo | `68205f76fea997336d4ee01fcb7c2812a2fdd32b6d79d3b67cc51a8b162cb67c` |
+| Revolverator 0.3.1 | c9294347cacad667bd9436feb6ac7c22196ddfff151c745dec8437d3554739f7 |
+| Arsenal Compatibility | 36a52a6501dd2737a7f5957151e29ad961726a66eca5670727715d277cf2414d |
+| File overlay | ba99b27d68168630d206020cc75b8888760958d3110b855e8598833335a7dc12 |
+| Weapon XP, when enabled | 68205f76fea997336d4ee01fcb7c2812a2fdd32b6d79d3b67cc51a8b162cb67c |
 
-Le ricevute locali sono in `work/revolverator-openrac-010-review/`.
-I probe assegnano arma base, accesso NG+, bolt normali e posizioni controllate;
-non assegnano Golden, XP, salute o ricompense dei nemici. La fixture level-up
-abbassa soltanto le soglie della sessione per esercitare il passaggio, poi
-ripristina le regole originali.
+The local final-pulse receipts were recorded under
+work/revolverator-openrac-010-review. Fixtures seed base ownership, challenge
+access, ordinary bolts and positions, but not Golden ownership, enemy health,
+rewards or XP. The level-up fixture temporarily lowers session thresholds and
+restores the original rules.
 
-| Ricevuta | Risultato nativo osservato |
+| Receipt | Observed native result |
 | --- | --- |
-| `final-shop-no-xpfinalpulse.json` | PASS 23 controlli: acquisto reale da 3,35 m, undici cupole con luce nativa, vetrina ferma/centrata e scena Gold completa senza XP |
-| `final-combatshortfinalpulse.json` | PASS 40: un lancio, un'esplosione, tre hit/morti native, Revo 117 XP e Walloper 0; impulso grande/veloce e scala normale durante la rotazione |
-| `final-combatlongfinalpulse.json` | PASS 40: rilascio automatico a 3 s, un'esplosione, cinque hit/morti native, Revo 156 XP e Walloper 0 |
-| `final-switch-flightfinalpulse.json` | PASS 39: cambio alla chiave durante il volo, esplosione e attribuzione conservate, Revo 117 XP e Walloper 0 |
-| `final-levelingfinalpulse.json` | PASS 44: XP reali del nemico, una scena aggiuntiva v2, modello Gold, un solo Ratchet visibile e input bloccato |
-| `final-savefinalpulse.json` | PASS 27: acquisto salvato con 7 cariche e 10.000 bolt, sidecar codec 2 associato al salvataggio nativo |
-| `final-reloadfinalpulse.json` | PASS 4: nuovo processo ripristina Golden, esattamente 7 cariche e 10.000 bolt |
+| final-shop-no-xpfinalpulse.json | 23 checks: actual purchase at 3.35 m, eleven naturally lit cases, stationary centered display and complete acquisition without XP |
+| final-combatshortfinalpulse.json | 40 checks: one throw/explosion, three accepted hits/deaths, Revo117 XP and Walloper0; activation pulse and normal carrying scale |
+| final-combatlongfinalpulse.json | 40 checks: automatic release at 3 s, one explosion, five accepted hits/deaths, Revo156 XP and Walloper0 |
+| final-switch-flightfinalpulse.json | 39 checks: switch to wrench during flight; explosion and attribution preserved; Revo117 XP and Walloper0 |
+| final-levelingfinalpulse.json | 44 checks: earned enemy XP, one V2 acquisition, Gold model, one visible Ratchet and blocked input |
+| final-savefinalpulse.json | 27 checks: purchase saved with 7 rounds and 10,000 bolts, codec2 sidecar bound to native save |
+| final-reloadfinalpulse.json | 4 checks: new process restores Golden, exactly7 rounds and 10,000 bolts |
 
-Le ricevute riportano 84 input originali immutati e nessun errore nativo. Nei
-test di combattimento il recupero blocca solo Ratchet per 9 tick, circa 150 ms,
-senza deriva orizzontale; la locomozione riprende e polso/trivella eseguono il
-gesto di lancio. L'impulso su Cerchio raggiunge 2× radiale, 1,2× assiale e 55 rad/s;
-la scala torna immediatamente a 1 quando il nemico comincia a roteare.
+These receipts report 84 unchanged original inputs and no native errors.
+Release recovery holds Ratchet for nine ticks, about150 ms, without horizontal
+drift. The activation pulse reaches2x radial/1.2x axial size and55 rad/s; size
+returns to1 while carrying.
 
-Nel log `work/qa-vendor-031-010-base-pulse-final/data/openrac-rac1-ntsc.log`,
-`BASE_SINGLE_TAP_PASS` conferma gli stessi valori su un tap base senza cattura
-e il consumo di una sola carica (20→19). `REVO_EARNED_PASS` conferma poi una
-cattura/lancio/impatto/morte reali: Revo 39 XP, Walloper 0, danni e capacità
-senza bonus. Questa prova non include una successiva uccisione con il Walloper.
+The separate base-tap log records BASE_SINGLE_TAP_PASS with those same values
+and one-round cost20 to19. REVO_EARNED_PASS records an actual capture, throw,
+impact and death: Revo39 XP, Walloper0, with damage/capacity bonuses disabled.
+It does not include a subsequent Walloper kill.
 
-La prima `final-rapidfinalpulse.json` non è una prova riuscita: l'input fisico
-ha interferito con l'acquisto della fixture. Il nuovo pass con input isolato
-va registrato separatamente. Le ricevute precedenti di riuso rapido non
-certificano da sole la DLL finale. La successiva prova XP del Walloper viene
-registrata separatamente quando disponibile.
+The first final-rapidfinalpulse.json is excluded: physical input interfered
+with fixture purchase. Earlier rapid-reuse results do not independently
+certify that final DLL. The 25-group host suite includes4027 rotor,
+493 native-adapter and95 Gold-shop checks. Those host results remain separate
+from Novalis native observations and do not establish PAL, complete campaigns,
+every boss phase or native Linux/macOS play.
 
-La suite host comprende 25 gruppi; i test mirati finali includono 4.027 controlli
-del rotore, 493 dell'adapter nativo e 95 del negozio Gold. Compilazione e test
-host restano distinti dalle osservazioni del gioco sopra. Queste fixture su
-Novalis non certificano campagna completa, ogni fase dei boss, PAL, native
-Linux/macOS o combinazioni arbitrarie di mod.
+## Historical version 0.2: launcher-installable package
 
----
+The then-tested package included private utility DLLs and graphics companions
+on the unchanged official NTSC-U client. That packaging predates the current
+player-disc derivation boundary. The retained receipt is
+[revolverator-0.2.0-native-package.json](validation/revolverator-0.2.0-native-package.json).
 
-# Verifiche storiche 0.2: preview nativa installabile dal launcher
-
-La combinazione allora provata è un singolo pacchetto Revolverator con asset e DLL
-utility private. Parte nel client ufficiale NTSC-U invariato usando i livelli
-originali; niente script di preparazione, asset pack esterno o card utility.
-La ricevuta pubblica `docs/validation/revolverator-0.2.0-native-package.json`
-contiene i sei scenari nuovi e gli hash esatti, separati dalle prove precedenti.
-
-| Scenario storico 0.2 | Evidenza |
+| Scenario | Evidence |
 | --- | --- |
-| Smoke 900 frame | Solo mod di produzione Revo/XP, nessun helper; 20 cariche e controllo al frame 521 |
-| Menu 2.400 frame | 16 armi, griglia nativa 4×5, preferiti 18/65554 e preview/HUD reali; fase 18 terminata |
-| XP 1.800 frame | Presa/lancio/impatto/morte: Revo 39 indipendenti, poi Walloper 39; nessun XP imposto |
-| Save 2.200 frame | Card isolata reale: 7 snapshot→3 pending→7 reload, CRC/fingerprint validi, Walloper non posseduto |
-| Venditore/pickup 2×2.400 frame | 24 controlli nativi superati, capacità 20 e inventari indipendenti |
+| 900-frame smoke | Production Revo/XP only; no helper;20 rounds and control at frame521 |
+| 2400-frame menu | 16 weapons, native4x5 grid, favorites18/65554 and actual previews/HUD |
+| 1800-frame XP | Actual capture/throw/impact/death; separate Revo39 then Walloper39, without seeded XP |
+| 2200-frame save | Isolated real card;7-round snapshot,3 while pending,7 on reload; valid CRC/fingerprint and original Walloper unowned |
+| Two2400-frame vendor/pickup runs | 24 native checks, capacity20 and independent inventories |
 
-Le fixture mirate includono probe QA dichiarati nella ricevuta; lo smoke non
-li usa. Gli helper non sono dipendenze installabili del pacchetto. Novalis
-carica 345 modelli e 61 input originali, incluso l'EXE, restano immutati.
+The smoke has no QA helper; targeted runs name their helper. Helpers are not
+installable dependencies. Novalis loads345 models and61 original inputs,
+including the executable, stay unchanged. Historical DLL hashes:
 
-DLL Revo: `ebe140838d24ebb4707b74fc06ad94a935c9ab135c885ad87a78d9f2081fdef5`.
-Utility file: `aec87cbfd6eb3133dbb51e62edbce7fae46081355dcd4b5b5aa458876860ca14`.
-Utility hook: `077a7306b71ac5f35776b74c261cceb1ff0c1144961a847696eabc961c71d55a`.
-Client ufficiale: `b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081`.
+- Revo: ebe140838d24ebb4707b74fc06ad94a935c9ab135c885ad87a78d9f2081fdef5
+- File utility: aec87cbfd6eb3133dbb51e62edbce7fae46081355dcd4b5b5aa458876860ca14
+- Hook utility: 077a7306b71ac5f35776b74c261cceb1ff0c1144961a847696eabc961c71d55a
+- Official client: b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081
 
-I 34 gruppi host Windows/Linux passano, ma restano distinti dalle osservazioni
-native. Campagna completa, tutte le boss fight/mod, NG+, ogni slot e sistemi
-non supportati non sono certificati. La preview rimane distinta dalla finale.
+The34 Windows/Linux host groups are separate from gameplay proof.
 
----
+## Historical version 0.2: manually configured stock-client utilities
 
-# Verifiche storiche con utility/card configurate manualmente
+The original pass-through boundary used official NTSC-U commit77a2f052,
+client b7f3762a...df94081 and Arsenal Compatibility0.1.0,
+provider077a7306...c71d55a. The1800-frame pass-through fixture resolved and
+committed30 detours. Observed calls included NewGame1, Restore2,
+RestoreData42 and UpdateState1056. Registering30 hooks does not mean30 game
+paths were exercised; vendor, pickup and menu were not tested by that fixture.
 
-Il percorso storico usa il client Windows x64 NTSC-U ufficiale invariato,
-commit `77a2f052`, SHA256
-`b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081`,
-con Arsenal Compatibility 0.1.0. La DLL provider è
-`077a7306b71ac5f35776b74c261cceb1ff0c1144961a847696eabc961c71d55a`.
+The [stock native receipt](validation/revolverator-0.2.0-stock-native.json)
+records six scenarios using Revo
+ca5d978e86bcd06e0d253b5c5f01a324bda7192871f72e489626f55e8a88f28c,
+the same stock provider/client, and Weapon XP68205f76...2cb67c when enabled.
+It covers a720-frame no-helper startup, vendor/pickup24 checks, earned Revo
+and Walloper XP, pending-save snapshot restoration and the16-weapon menu.
+The original61 files stay unchanged;32 host groups and5158 fake-backend
+provider checks do not enlarge the native scenario scope.
 
-## Prime verifiche native sul client invariato
+## Historical modified-runtime development
 
-La fixture `qa-vendor-arsenal-stock-pass-01` ha completato 1.800 frame senza
-errori nativi, con provider e consumer di pass-through. Sono stati verificati
-hash del client, risoluzione/eseguibilità dei 30 target e commit dei 30 detour.
-Le chiamate osservate includono NewGame 1, Restore 2, RestoreData 42 e
-UpdateState 1.056. Menu, venditore e pickup non sono stati esercitati da questa
-fixture: la registrazione di 30 hook non equivale a 30 percorsi eseguiti.
-Questa è una prova del confine provider; non certifica gameplay Revolverator,
-XP guadagnati, salvataggi completi o resa grafica della nuova combinazione.
+Early0.2 fixtures used NTSC-U Windows runtime77a2f052 with30 added hooks and
+optional Weapon XP0.6.3-arsenal. These are isolated development results, not
+the current installation requirement. Early XP tests used capacity10; later
+commerce/pickup/HUD tests explicitly repeat with capacity20.
 
-## Ricevuta finale nativa sul client stock
+Retained observations include30 matching hook signatures,2400 menu frames,
+separate Revo39 and Walloper39 earned XP,24 commerce checks, sixteen weapons
+in the native4x5 panel, cartridge HUD, assembled previews, pending-save
+snapshot handling and658 host XP-consumer checks including ASan/UBSan.
 
-La ricevuta pubblica `docs/validation/revolverator-0.2.0-stock-native.json`
-registra sei scenari con la DLL Revolverator
-`ca5d978e86bcd06e0d253b5c5f01a324bda7192871f72e489626f55e8a88f28c`,
-provider `077a7306...c71d55a`, client ufficiale B7F3762A…94081 e, dove attivo,
-Weapon XP `68205f76fea997336d4ee01fcb7c2812a2fdd32b6d79d3b67cc51a8b162cb67c`.
+The Rilgar5, Nebula6 and Quartu15 standalone HUD fixtures each run2400 frames.
+They show a held weapon and cartridge HUD19/20 with exact frame3 texels/CLUT.
+Rilgar/Nebula use32px drill glyphs and Quartu128px; remaining HUD heaps are
+3456/624/12304 bytes. They do not exercise menus or XP. The binary is
+62cbd609ec86b2088888eef4c55b901e17b3107fa90f89e615b1816047b312cd;
+the local receipt is packed-hud-native-62cbd-03.json.
 
-| Scenario | Esito osservato |
-| --- | --- |
-| Trial 720 frame | Avvio incluso, nessun helper; Novalis isolato e 20 cariche |
-| Venditore/pickup 2×2.400 frame | 24 controlli, acquisto/rifornimento e Walloper indipendente, cap 20 |
-| XP guadagnati 1.800 frame | Presa/lancio/impatto e morte reali: Revo 39 con Walloper invariato, poi Walloper 39 separati; nessun XP assegnato dal probe |
-| Salvataggio 2.200 frame | Card isolata reale: snapshot 7, RAM 3 mentre pending, reload 7; CRC/fingerprint validi e Walloper originale ancora non posseduto |
-| Menu 2.400 frame | 16 armi, griglia nativa 4×5, preferiti 18/65554; schermate 1080/1560 con trivella assemblata e cartuccia |
+The reproducible earned-XP fixture runs1800 frames with actual Birdbots.
+It assigns weapon ownership and positions but not enemy health, rewards or XP.
+Accepted origins2017 and180 reach native death handling separately. Its Revo
+hash is dd3ae8723a7eb5d0071e7bf0c1321a9a8b29aee0e714c952ead7074a442d537e,
+with runtime fc717cd0526ca1977895f3baf8e86186adcc5bfd41d0d75b5622148f0e689f9b.
 
-I file originali verificati immutati sono 61, compreso il client installato.
-I 32 gruppi host Windows/Linux passano; il provider comprende 5.158 controlli
-con backend fittizio. Questi test restano distinti dalle prove native sopra.
-Non sono certificati campagna completa, tutte le boss fight/mod, NG+, ogni slot,
-PAL, altri sistemi operativi o hash del client diversi. La preview pubblica
-resta separata dalla versione definitiva.
+The menu/preview fixture runs2400 frames with Revo0.2.0 and XP0.6.3-arsenal.
+Frames960/990/1020 and1500/1560/1620 show assembled previews;2340 shows the
+cartridge HUD after closing quick select. Its Revo hash is
+402c5e92c215130529a9d3f80c08a232857c33b58f593f258fd671e85814a054.
+Held and neutral-preview rotors stay separate. The dedicated cartridge frame3
+leaves inventory/quick-select drill frames intact;63 HUD-contract checks and
+the then-complete17-group Windows suite pass.
 
----
+## Scope
 
-# Verifiche storiche della 0.2 con runtime modificato
-
-R&C1 NTSC-U, Windows x64, runtime locale basato su OpenRAC `77a2f052` con 30 hook
-aggiuntivi. Weapon XP opzionale: build privata `0.6.3-arsenal`. Le prove sotto
-riguardano fixture isolate; non modificano l'installazione ufficiale. La nuova
-capacità è 20. Le prove XP storiche usavano ancora il limite10; acquisti,
-pickup e UI sono stati riprovati con20.
-
-| Prova | Evidenza osservata |
-| --- | --- |
-| Bridge | 30 firme compilate corrispondenti; registrazione di tutti gli hook; 2400 frame fra gioco, Armi e Scelta Rapida |
-| Menu aggiuntivo | Walloper 18 e Revolverator 65554 distinti; griglia nativa 4×5 e preferiti logici separati |
-| XP guadagnati | Primo Birdbot: cattura 1, lancio 1, impatto 1, morte nativa; Revo 0→39, Walloper fermo a 0 |
-| Walloper normale dopo il Revo | Secondo Birdbot: morte nativa; Walloper 0→39, Revo rimasto 39 |
-| Munizioni e impostazioni della fixture XP | 10→9 cariche, capacità 10; moltiplicatori danni/munizioni 1 |
-| Commercio/pickup nativi con20 | 24 controlli: Hoven15.000→20; refill2→20 costa450; acquisto Walloper7.500 indipendente; pickup4→6, 19→20 e pieno20 invariato |
-| HUD e menu finali Novalis | 2400 frame,16 armi nel pannello nativo4×5, icone Walloper/Revo distinte nei preferiti; cartuccia32px nell'HUD20/20+LV1 |
-| HUD nei livelli con poca memoria, senza XP | Rilgar (5), Nebula G34 (6) e Quartu (15): 2.400 frame ciascuno, arma impugnata completa a riposo e cartuccia 32px con 19/20; texel e CLUT del frame3 verificati esatti in RAM. Glifo arma 32px nei livelli5/6, 128px nel15; heap HUD residuo rispettivamente 3.456/624/12.304 byte, senza crash o errori nativi di allocazione. DLL `62cbd609ec86b2088888eef4c55b901e17b3107fa90f89e 615b1816047b312cd`; ricevuta `work/arsenal-commerce-tools/packed-hud-native-62cbd-03.json`. Menu e anteprime non esercitati da questi tre smoke test |
-| Anteprima rotante | Punta e corpo assemblati a più angoli, sia Armi sia piccolo pannello Scelta Rapida; nessun taglio superiore |
-| Autosave duplicato | Richiesta con 7 cariche, RAM portata a 3 e seconda richiesta mentre pending; ricaricamento conserva 7 |
-| Consumer XP host | 658 controlli Windows e Linux, anche con ASan/UBSan: attribuzione, expiry, duplicati, frazioni, configurazione e danni opzionali |
-
-## Prova XP riproducibile
-
-La fixture locale `work/qa-vendor-arsenal-earned-xp-01` ha completato 1800 frame con
-Revolverator 0.2.0 e Weapon XP 0.6.3-arsenal caricati. Il probe assegna le due armi
-tramite API e porta due Birdbot originali a distanza di combattimento. Non
-modifica XP, salute dei nemici o valori delle ricompense.
-
-Il primo GetHit accettato porta origine 2017; il secondo combattimento usa il
-Walloper nativo con origine 180. Entrambi arrivano a RecordDeath. La ricevuta
-`work/arsenal-xp-tools/receipt.json` registra i passaggi 0→39 separati, lo stato
-dei plugin e gli hash dei file effettivamente provati. I contatori di impatto da
-soli non sarebbero una prova di danno o esperienza guadagnata.
-
-La DLL Revo di quella fixture ha SHA-256
-`dd3ae8723a7eb5d0071e7bf0c1321a9a8b29aee0e714c952ead7074a442d537e`;
-il runtime ha SHA-256
-`fc717cd0526ca1977895f3baf8e86186adcc5bfd41d0d75b5622148f0e689f9b`.
-Le ricompilazioni successive richiedono una ricevuta propria per essere
-identificate come artefatto finale.
-
-## Combinazione grafica provata
-
-La fixture `work/qa-vendor-arsenal-menu-additive-06` ha concluso2400 frame con
-Weapon XP0.6.3-arsenal e Revolverator0.2.0. Gli screenshot960/990/1020 e
-1500/1560/1620 mostrano le due anteprime assemblate;2340 mostra l'HUD della
-cartuccia dopo la chiusura della ruota. La DLL della fixture ha SHA-256
-`402c5e92c215130529a9d3f80c08a232857c33b58f593f258fd671e85814a054`.
-
-La correzione conserva separati rotore impugnato e posa neutra dell'anteprima.
-Il renderer HUD usa un frame3 dedicato alla cartuccia, lasciando la trivella
-nei frame di inventario e selezione rapida. La regressione host relativa al
-contratto nativo60018 comprende63 controlli; la suite Windows completa passa17/17.
-
-## Verifiche aperte annotate per la combinazione storica 0.2
-
-Questo paragrafo conserva i limiti della ricevuta 0.2. Per le nuove prove di
-acquisizione e combattimento della 0.3.1 su 0.10 fa fede la sezione iniziale.
-
-La prova grafica descritta riguarda Novalis nella configurazione della fixture.
-Carica, livelli, animazione di acquisizione, tutti i pianeti e formati video
-richiedono verifiche della combinazione finale; gli esiti sopra non le sostituiscono.
-
-I test della precedente 0.1 non certificano automaticamente la 0.2. Non sono
-coperti una campagna completa, tutte le boss fight, ogni combinazione di mod,
-PAL o il comportamento nativo macOS. I test host Linux non sono una prova di
-esecuzione del gioco su Linux. La lista operativa è in [QA_CHECKLIST.md](QA_CHECKLIST.md).
+Every historical section retains the limits of its own receipt. Neither
+source tests nor targeted Novalis observations prove a complete campaign,
+every boss, every mod combination, every save slot, every language/aspect ratio
+or native gameplay on an untested operating system. The operational plan is
+[QA_CHECKLIST.md](QA_CHECKLIST.md).

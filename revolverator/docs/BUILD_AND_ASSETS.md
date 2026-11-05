@@ -1,93 +1,73 @@
-# Build e asset della 0.3
+# Building Revolverator
 
-La0.3 aggiunge due identita visuali Golden:2018 per l'arma riggata e2019 per
-la sola esposizione statica nella cupola di Novalis. Dopo aver predisposto il
-package con gli asset base e la munizione, eseguire:
+The source uses CMake 3.20 or newer, a C++20 compiler and the OpenRAC mod SDK.
+The public manifest requires mod interface 1.12 or newer. The module's build
+helper pins the exact upstream source archive supplying that SDK and verifies
+its SHA256 before extracting only the MIT SDK subtree. This development step
+is separate from the player's automatic local-asset preparation.
 
-```powershell
-python revolverator/tools/build_golden_assets.py --plugin <build>/package/revolverator --report <output>/golden-art-validation.json
-```
+~~~powershell
+python revolverator/tools/fetch_build_sdk.py
+cmake -S revolverator -B build-revolverator -DOpenRACMod_DIR="$PWD/.sdk/rotatore-build-sdk/sdk/cmake" -DBUILD_TESTING=ON
+cmake --build build-revolverator --config Release
+ctest --test-dir build-revolverator -C Release --output-on-failure
+~~~
 
-Il builder include l'atlante Golden in19 livelli e genera l'esposizione2019
-soltanto per Novalis. L'atlante e in `assets/golden` nei sorgenti. Non modifica
-vertici, UV, indici, pesi o matrici del modello: cambiano il riferimento alla
-texture e il nome della mesh; il display statico omette soltanto il binding
-della skin. Rifiuta output gia presenti e non modifica i livelli installati.
-La versioneGolden si acquista, non si seleziona con una modifica manuale al
-salvataggio nativo. Vedi [contratto dell'upgrade](GOLDEN_UPGRADE.md).
+The native package is staged under build-revolverator/package/revolverator.
+On Windows the weapon build also builds and stages its private file-overlay
+adapter from support/file-overlay. No separately installed provider card or
+prebuilt helper download is required to build this source tree.
+Run the Python runtime-asset tests with the official client's bundled Python,
+or a normal development Python installation:
 
-La mod richiede R&C1 NTSC-U e gli asset estratti dalla propria copia del gioco.
-I builder leggono il formato livelli 3; non richiedono R&C2 e non modificano la
-ISO. I sorgenti pubblicabili non includono il trapano o le texture originali.
+~~~powershell
+python revolverator/tests/runtime_asset_preparation_test.py
+~~~
 
-## Plugin
+Host tests exercise controller, attachment, rotor, contact effects, ammunition,
+inventory, native menu, save sidecars, regional bindings and optional XP. They
+do not replace native gameplay or rendered-image checks. Linux source tests
+do not establish native gameplay support for a Windows-only release.
 
-Dal checkout `rac1-mods`, con CMake, un compilatore C++20 e SDK OpenRAC 1.3:
+## Public package
 
-```powershell
-cmake -S revolverator -B <build> -DOpenRACMod_DIR=<sdk>/cmake -DBUILD_TESTING=ON
-cmake --build <build> --config Release
-ctest --test-dir <build> -C Release --output-on-failure
-```
+Include the weapon DLL, its required asset-mount adapter, original authored
+ammunition art, preparation scripts and license notices. Required scripts are:
 
-Il package formato 2 viene scritto sotto `<build>/package/revolverator`. Il
-manifest richiede ABI 1.1 e gli hook nominati in `openrac-mod.json`. I test host
-coprono controller, presa/posa, munizioni, rotore, registro, sidecar, menu, alias
-e consumer XP; non sostituiscono una prova nel gioco. Su Linux il target usa
-`${CMAKE_DL_LIBS}` e un export esplicito per `openrac_revolverator_query`.
+- tools/prepare_runtime_assets.py
+- tools/build_model_pack.py
+- tools/build_golden_assets.py
 
-## Client e utility integrate
+Do not include copied assets/graphics, copied or recoloured game atlases,
+embedded game-derived HD icon headers, extracted levels, ISOs, RAM dumps,
+cards or sidecars. The original ammunition model/texture can be generated
+from the project's recipe during packaging. Development-only ammunition
+builders may require Pillow; players do not need it.
 
-La mod usa il client ufficiale Windows x64 NTSC-U invariato (hash B7F3762A…94081).
-I due helper DLL sono inclusi nella directory del plugin e inizializzati dalla
-mod, senza card esterne. `NativeAssetBundle` legge 19 manifest originali e crea
-copie proprie con percorsi assoluti agli asset del pacchetto. L'alias esatto
-in sola lettura di KernelBase CreateFileW permette il caricamento senza cambiare
-`--levels`, aggiungere `--mods` o sostituire l'eseguibile.
+Do not set REVOLVERATOR_HD_ICON_DIR for a public build. Without that private
+input, the runtime derives its blue, Golden and AMMO variants from the player's
+resident native icon. The cartridge HUD icon is original authored artwork.
 
-Il reader JSON upstream GPL rimane in `third_party/openrac` con NOTICE. Serializer,
-staging, discovery e cleanup sono adapter separati, testati con root esplicite.
-Gli XP opzionali richiedono il companion 0.6.3-arsenal/API v4.
+## First-start preparation
 
-## Asset aggiuntivi
+Players do not run these development commands. The official client contains
+Python, which the mod locates from the running client's installation. The
+helper uses only the standard library, reads the player's extracted Hoven
+drill and held-weapon skeletons, and generates the 19-level model set in a
+cache outside both game data and mod files.
 
-Gli esempi usano cartelle di output nuove e percorsi scelti localmente:
+The Golden model retains the base geometry and UVs. A local colour transform
+produces its warm-metal atlas from native shading and alpha. The static
+class-2019 shop display removes its skin binding and does not borrow the pose
+of the weapon Ratchet is currently holding.
 
-```powershell
-python revolverator/tools/build_model_pack.py --levels <livelli-ntsc> --editor <editor-openrac> --out <trapano>
-python revolverator/tools/build_ammunition.py --levels <livelli-ntsc> --weapon-pack <trapano> --out <livelli-estesi>
-```
+See [runtime assets](RUNTIME_ASSETS.md) for cache checks and diagnostics,
+[packaging](PACKAGING.md) for distribution, and
+[compatibility](COMPATIBILITY.md) for minimum-interface behavior.
 
-Il builder del modello usa la classe originale del trapano di Hoven e la
-geometria/scheletro necessari al suo impiego come arma. L'output predefinito è
-una classe visuale aggiuntiva 2017; `--target-class 180` identifica invece il
-vecchio workflow di sostituzione e non è la configurazione 0.2.
+## Historical tools
 
-Corpo e impugnatura sono separati dalla spirale rotante. La cartuccia è generata
-dalla ricetta originale `assets/ammunition/recipe.json`: una singola cella
-industriale, non un gruppo di trivelle. Il suo modello e la texture sono stati
-creati con assistenza AI. Pickup e venditore usano i rispettivi alias visuali,
-mentre raccolta, quantità e prezzo passano dalle operazioni native.
-
-Le viste estese collegano gli asset immutati; non modificarli attraverso questi
-collegamenti. I manifest base devono restare identici prima e dopo la build.
-Nel workspace le fixture 0.2 usano `work/revolverator-model-additive-01` e
-`work/revolverator-levels-additive-01/levels`. Questi percorsi sono output locali,
-non dipendenze da includere nel repository pubblico.
-
-L'upscale privato del simbolo nativo usa Real-ESRGAN. Per includere l'header
-locale configurare `REVOLVERATOR_HD_ICON_DIR`; senza di esso rimane il fallback
-nativo. Il clone 128×128 deve mantenere il footprint HUD 32×32. Vedi
-[contratto dell'icona](HD_ICON_INTEGRATION.md).
-
-## Pacchetto nativo del launcher
-
-La release usa `revolverator-0.2.0-windows-x86_64.zip` e SHA256SUMS, con manifest,
-DLL principale, utility private, asset companion e notices. Il root index della
-repository elenca solo le due mod pubbliche. Le utility restano dipendenze
-interne del pacchetto, anche se i rispettivi sorgenti/test sono separati.
-
-I corresponding sources comprendono il reader GPL, stager, helper e dipendenze
-MinHook; l'eventuale header HD usato dal binario deve essere fornito con i suoi
-input corrispondenti separatamente dal normale snapshot Git privo di art del gioco.
-I precedenti script di avvio e ZIP esterni sono workflow storici di sviluppo.
+Older private-bundle scripts and companion-pack commands remain in source
+for reproducibility. Their exact-client and manual-launch instructions are
+historical, not the public installation path. Corresponding-source archives
+retain authored code and notices while excluding private game-derived outputs.

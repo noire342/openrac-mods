@@ -71,9 +71,13 @@ jobs:
         with:
           python-version: '3.12'
       - name: Fetch pinned SDK
+        if: matrix.mod != 'revolverator'
         run: python tools/fetch_sdk.py
+      - name: Fetch Revolverator interface 1.12 SDK
+        if: matrix.mod == 'revolverator'
+        run: python revolverator/tools/fetch_build_sdk.py
       - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_WEAPON_XP=${{ matrix.xp }} -DBUILD_REVOLVERATOR=${{ matrix.revolverator }} -DBUILD_ARSENAL_COMPAT=${{ matrix.compat }} -DBUILD_ARSENAL_FILE_OVERLAY=${{ matrix.overlay }} -DBUILD_SKILL_POINTS_RA=${{ matrix.skill_points }} -DBUILD_CINEMATIC_JOURNEYS=${{ matrix.cinematic }} -DBUILD_TESTING=ON -DBUILD_ROBOT_SALVAGE=${{ matrix.salvage || 'OFF' }}
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_WEAPON_XP=${{ matrix.xp }} -DBUILD_REVOLVERATOR=${{ matrix.revolverator }} -DBUILD_ARSENAL_COMPAT=${{ matrix.compat }} -DBUILD_ARSENAL_FILE_OVERLAY=${{ matrix.overlay }} -DBUILD_SKILL_POINTS_RA=${{ matrix.skill_points }} -DBUILD_CINEMATIC_JOURNEYS=${{ matrix.cinematic }} -DBUILD_TESTING=ON -DBUILD_ROBOT_SALVAGE=${{ matrix.salvage || 'OFF' }} ${{ matrix.mod == 'revolverator' && format('-DOpenRACMod_DIR={0}/.sdk/rotatore-build-sdk/sdk/cmake', github.workspace) || '' }}
       - name: Build
         run: cmake --build build --config Release --parallel
       - name: Test

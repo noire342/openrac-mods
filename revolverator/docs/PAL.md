@@ -1,3 +1,5 @@
+> Historical validation record. Client versions, hashes and private-provider requirements below describe the recorded build only. For the current minimum interface and later-client capability checks, see [COMPATIBILITY.md](COMPATIBILITY.md).
+
 # PAL reference region and validation
 
 Revolverator0.3.1 uses the official Windows x64 OpenRAC0.10 client and

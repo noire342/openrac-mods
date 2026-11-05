@@ -30,6 +30,9 @@ public:
         std::filesystem::path mod_root;
         // Parent of the unique owned session directory, not a source root.
         std::filesystem::path cache_root;
+        // Optional explicit interpreter for isolated constructor tests. Normal
+        // runtime discovery always uses Python from the running official client.
+        std::filesystem::path preparation_python{};
     };
 
     // Windows: derive roots from the actual process command line, this module

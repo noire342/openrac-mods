@@ -1,9 +1,9 @@
-The Golden atlas is an AI-assisted recolour of the original Revolverator atlas,
-using the original game's Golden Blaster material palette as a reference.
-The underlying artwork belongs to Insomniac Games / Sony. It is intended for
-players who own Ratchet & Clank. The mod's authored code is GPL-3.0-or-later.
+Golden artwork is generated locally from the player's own extracted Hoven
+drill texture by `tools/prepare_runtime_assets.py`. The authored warm-metal
+colour ramp preserves its dimensions, UV layout, native shading and alpha.
+The same local retargeted model is used; its binary geometry is unchanged.
 
-Generated with the built-in imagegen tool. The edit specification preserved
-every UV island, seam, rivet, vent and warning symbol at its original normalized
-coordinates; it changed painted metal surfaces to warm gold and retained
-dark rubber and recesses. The native GLB geometry is not altered.
+No original, recoloured or AI-edited game atlas belongs in the release or
+corresponding-source archive. The old private AI recolour is not distributed.
+The cartridge model/texture remain original AI-assisted authored artwork,
+separate from Insomniac Games / Sony's native drill and HUD art.

@@ -1,6 +1,6 @@
-# Equipped preview and level-up title correction (unreleased)
+# Historical PAL preview and level-up title correction
 
-Two PAL regressions reported after 0.3.1 are corrected in this local build:
+This retained record describes two PAL corrections introduced after 0.3.1:
 
 - The inventory Ratchet preview now uses a separate root-preserving rotor pose.
   Native Walloper finger animation can no longer separate the drill head from

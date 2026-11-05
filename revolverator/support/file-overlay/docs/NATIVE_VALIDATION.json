@@ -1,0 +1,35 @@
+{
+  "scope": "Isolated native stock-client file-alias POC; no original files or executable altered",
+  "date": "2026-10-30",
+  "fixture": "qa-arsenal-file-overlay-fix-02",
+  "frames": 2400,
+  "overlay_dll_sha256": "aec87cbfd6eb3133dbb51e62edbce7fae46081355dcd4b5b5aa458876860ca14",
+  "runtime_sha256": "b7f3762aa7076f0d93cad4033b49b4e966975a17885a05d70f61c9fe8df94081",
+  "original_levels_argument": true,
+  "mods_argument_used": false,
+  "configured_aliases": 19,
+  "manifest_reads_redirected": 1,
+  "unconfigured_menu_levels_98_99": "passed through",
+  "native_level_1_model_count": 345,
+  "baseline_before_fix_model_count": 342,
+  "root_cause": "UCRT API-set CreateFileW resolves KernelBase entry; previous Kernel32 wrapper hook was bypassed",
+  "actual_api": "KernelBase!CreateFileW; CreateFile2 not required by observed CRT path",
+  "visual_checks": {
+    "frame960": "Revolverator drill in native weapon preview and held character preview, single cartridge3D ammo preview",
+    "frame2160": "Drill held in gameplay; cartridge HUD20/20"
+  },
+  "image_sha256": {
+    "960": "ab1546189e4cecb276275f637ba75d17696bbbfe074db12f4c16335b6795ba05",
+    "2160": "0f471813f0f40f56a6c844a0b523d288ac3ce696a77f3a2231ff384f81d31553"
+  },
+  "input_files_checked_unchanged": 39,
+  "original_manifests_and_client_unchanged": 20,
+  "staged_manifests_unchanged": 19,
+  "log_sha256": "820633f757daa689da7c0101714a784c940d4c3f7a1cffdace7c8abdd892d5cb",
+  "host_policy_checks": 1865,
+  "limitations": [
+    "Only Novalis manifest redirect was exercised; the other18 configured level aliases were not loaded.",
+    "No pickup collection, combat, save roundtrip or full-campaign claim from this fixture.",
+    "Gameplay/UI helpers seeded inventory; this is asset-redirection proof, not progression proof."
+  ]
+}

@@ -235,6 +235,77 @@ NativeAssetBundle::Paths process_paths(const char* version){
     throw std::runtime_error("asset bundle: native module discovery is supported on Windows only");
 #endif
 }
+
+// Quote one argument using the inverse of CommandLineToArgvW. No shell or PATH
+// lookup is involved: only Python from the running official client's own tree
+// may execute our shipped, standard-library-only preparation script.
+#ifdef _WIN32
+std::wstring quoted_argument(const Path& argument){
+    std::wstring result=L"\"";unsigned slashes=0;
+    for(const wchar_t c:argument.native()){
+        if(c==L'\\'){++slashes;continue;}
+        if(c==L'\"'){result.append(slashes*2+1,L'\\');result+=c;slashes=0;continue;}
+        result.append(slashes,L'\\');slashes=0;result+=c;
+    }
+    result.append(slashes*2,L'\\');result+=L'\"';return result;
+}
+Path official_python(){
+    std::wstring text(32768,L'\0');const auto count=GetModuleFileNameW(nullptr,text.data(),DWORD(text.size()));
+    if(!count||count>=text.size())throw std::runtime_error("asset bundle: running client path is unavailable");
+    text.resize(count);auto parent=Path(text).parent_path();
+    for(unsigned i=0;i<7&&!parent.empty();++i){
+        const auto python=parent/"python/python.exe";
+        if(fs::is_regular_file(python))return python;
+        const auto next=parent.parent_path();if(next==parent)break;parent=next;
+    }
+    throw std::runtime_error("Revolverator: the official client's bundled Python was not found. Update OpenRAC through its launcher.");
+}
+#endif
+Path prepared_graphics(const Path& levels,const Path& mod,const Path& cache,const char* version,const Path& interpreter){
+    // Explicit private companion packs remain supported for old QA fixtures.
+    // Public packages omit this directory and always derive from local data.
+    if(fs::is_directory(mod/"assets/graphics"))return mod/"assets/graphics";
+    const auto script=mod/"tools/prepare_runtime_assets.py";require_file(script);
+    require_file(mod/"tools/build_model_pack.py");require_file(mod/"tools/build_golden_assets.py");
+#ifdef _WIN32
+    const auto python=interpreter.empty()?official_python():absolute_path(interpreter);require_file(python);
+    fs::create_directories(cache);
+    const auto stamp=std::to_string(process_id())+"-"+std::to_string(std::chrono::steady_clock::now().time_since_epoch().count());
+    const auto result=cache/("prepared-"+stamp+".txt"),log=cache/("prepare-"+stamp+".log");
+    const std::vector<Path> arguments{python,"-I",script,"--levels",levels,"--cache",cache/"derived","--version",version,"--result",result};
+    std::wstring command;
+    for(const auto& argument:arguments){if(!command.empty())command+=L' ';command+=quoted_argument(argument);}
+    SECURITY_ATTRIBUTES security{sizeof(SECURITY_ATTRIBUTES),nullptr,TRUE};
+    const HANDLE output=CreateFileW(log.c_str(),GENERIC_WRITE,FILE_SHARE_READ,&security,CREATE_NEW,FILE_ATTRIBUTE_NORMAL,nullptr);
+    const HANDLE input=CreateFileW(L"NUL",GENERIC_READ,FILE_SHARE_READ|FILE_SHARE_WRITE,&security,OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL,nullptr);
+    if(output==INVALID_HANDLE_VALUE||input==INVALID_HANDLE_VALUE){
+        if(output!=INVALID_HANDLE_VALUE)CloseHandle(output);if(input!=INVALID_HANDLE_VALUE)CloseHandle(input);
+        throw std::runtime_error("asset bundle: cannot create local preparation diagnostics");
+    }
+    STARTUPINFOW startup{};startup.cb=sizeof startup;startup.dwFlags=STARTF_USESTDHANDLES;
+    startup.hStdInput=input;startup.hStdOutput=output;startup.hStdError=output;
+    PROCESS_INFORMATION process{};
+    const BOOL started=CreateProcessW(python.c_str(),command.data(),nullptr,nullptr,TRUE,CREATE_NO_WINDOW,nullptr,nullptr,&startup,&process);
+    CloseHandle(output);CloseHandle(input);
+    if(!started)throw std::runtime_error("Revolverator: could not start automatic local asset preparation. See "+utf8(log));
+    CloseHandle(process.hThread);
+    const auto waited=WaitForSingleObject(process.hProcess,120000);
+    DWORD code=1;
+    if(waited==WAIT_OBJECT_0)GetExitCodeProcess(process.hProcess,&code);
+    else{TerminateProcess(process.hProcess,1);WaitForSingleObject(process.hProcess,5000);}
+    CloseHandle(process.hProcess);
+    if(waited!=WAIT_OBJECT_0||code!=0||!fs::is_regular_file(result))
+        throw std::runtime_error("Revolverator: local asset preparation failed. Use Check and play in the official launcher; diagnostics: "+utf8(log));
+    const auto derived=fs::u8path(read_file(result));
+    std::error_code ignored;fs::remove(result,ignored);
+    if(!fs::is_directory(derived)||!within(fs::weakly_canonical(derived),fs::weakly_canonical(cache/"derived")))
+        throw std::runtime_error("asset bundle: derived graphics are outside the owned local cache");
+    require_file(derived/"READY.json");return derived;
+#else
+    (void)levels;(void)cache;(void)version;(void)interpreter;
+    throw std::runtime_error("asset bundle: automatic local asset preparation is supported by the Windows package");
+#endif
+}
 }
 
 namespace asset_bundle {
@@ -271,15 +342,17 @@ NativeAssetBundle::NativeAssetBundle(Paths paths,unsigned required_format,const 
         throw std::runtime_error("asset bundle: cache must be outside original levels and plugin assets");
     const auto ammo=mod/"assets/ammunition/model.glb";
     require_file(ammo);require_file(mod/"assets/ammunition/texture.png");
+    const auto graphics=prepared_graphics(levels,mod,cache,version,paths.preparation_python);
+    const bool derived=graphics!=mod/"assets/graphics";
     struct Staged {Path original;std::string text;};
     std::vector<Staged> manifests;manifests.reserve(19);
     for(unsigned level=0;level<19;++level){
         const auto name=level_name(level);
-        const auto art=mod/"assets/graphics"/name;
+        const auto art=graphics/name;
         const auto drill=art/"mobys/moby_2017.glb";
         const auto golden=art/"mobys/moby_2018.glb";
-        require_file(drill);require_file(art/"textures/moby_revolverator_original.png");
-        require_file(golden);require_file(art/"textures/moby_revolverator_gold.png");
+        require_file(drill);require_file(art/(derived?"textures/base.png":"textures/moby_revolverator_original.png"));
+        require_file(golden);require_file(art/(derived?"textures/gold.png":"textures/moby_revolverator_gold.png"));
         if(level==1)require_file(art/"mobys/moby_2019.glb");
         const auto original=levels/name/"manifest.json";
         require_file(original);

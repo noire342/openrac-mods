@@ -35,6 +35,10 @@ typedef struct file_overlay_stats_v1 {
  * {"original":<absolute path>,"replacement":<absolute staged path>} aliases.
  * Fails before activation on unsupported EXE/config/backend errors. */
 typedef int (*openrac_file_overlay_install_fn)(const wchar_t* config_file);
+/* Capability-based path for the official mod interface1.12 and compatible
+ * future minor versions. The loader supplies its unchanged public API prefix. */
+struct openrac_api;
+typedef int (*openrac_file_overlay_install_v2_fn)(const struct openrac_api* api,const wchar_t* config_file);
 typedef int (*openrac_file_overlay_remove_fn)(void);
 /* Thread-local description; valid until this thread's next last_error call. */
 typedef const char* (*openrac_file_overlay_last_error_fn)(void);

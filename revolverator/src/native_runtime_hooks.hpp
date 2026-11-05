@@ -4,6 +4,7 @@
 #include <openrac/openrac_mod.h>
 #include "arsenal_hooks_api.h"
 #include <string>
+#include <array>
 
 namespace revolverator {
 // Only the extra hook boundary is adapted. The original SDK table and its
@@ -22,6 +23,11 @@ private:
     const openrac_api* api_{};
     openrac_mod* mod_{};
     const arsenal_hooks_api_v1* provider_{};
+    bool official_{};
     bool claimed_{};
+    struct NativeBridge {void* target{};void* consumer{};bool enabled{};};
+    std::array<NativeBridge,2> bridges_{};
+    int bind_private(const char*,const char*,void*,void**);
+    void release_private() noexcept;
 };
 }

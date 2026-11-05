@@ -1,5 +1,22 @@
 # Build preview source
 
+## Revolverator 0.3.3
+
+Build the current weapon with its pinned **interface 1.12 SDK** helper and the
+standalone commands in [its build instructions](../revolverator/docs/BUILD_AND_ASSETS.md).
+The weapon target also builds its own scoped asset adapter from corresponding
+source under revolverator/support/file-overlay. Public builds omit private HD
+icon headers and game-derived models/textures; players prepare them automatically
+from their own disc. The root CI selects this SDK only for its Revolverator job;
+other jobs retain their existing SDK pins.
+
+The combined SDK1.3 commands and asset-pack details below describe earlier
+Revolverator versions and the other catalog modules. To include the current
+weapon in a root build, fetch its SDK first and set OpenRACMod_DIR explicitly
+to the resulting absolute .sdk/rotatore-build-sdk/sdk/cmake path.
+
+## Other modules and historical combined build
+
 Build Space Voyages separately with the frozen extended SDK in its own folder:
 `cmake -S space-voyages -B build-space`, then build and run CTest there.
 See [its complete instructions](../space-voyages/README.md#build-api-and-validation)

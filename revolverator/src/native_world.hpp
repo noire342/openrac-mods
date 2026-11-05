@@ -9,6 +9,7 @@
 #include "native_rotor.hpp"
 #include "golden_impact.hpp"
 #include "release_recoil.hpp"
+#include "native_contact_sparks.hpp"
 #include <array>
 namespace revolverator {
 class NativeWorld final:public World,public Memory {
@@ -55,6 +56,7 @@ public:
  std::size_t flight_count()const;
  void pose(Phase phase,float angle);
  void align_weapon(float angle);
+ void contact_sparks(Phase phase,float angle);
  void align_release(){if(arm_.releasing())arm_.align_weapon(weapon());}
  void reset();
  unsigned hero()const{return global(0x13f350);}
@@ -67,6 +69,8 @@ private:
  NativeArm arm_;
  NativeAmmunition& ammunition_;
  NativeRotor& rotor_;
+ NativeContactSparks sparks_;
+ std::optional<Vec3> contact_tip_;
  using Allocate=unsigned(*)(unsigned);
  using Hit=void(*)(unsigned,unsigned);
  using Ray=int(*)(unsigned,unsigned,int,unsigned,int);

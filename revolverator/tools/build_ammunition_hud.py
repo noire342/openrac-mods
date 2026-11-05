@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright (c) 2026 noire342
+# Copyright (c) 2026 lorenzogarrone
 """Render the existing cartridge GLB into a native transparent32px HUD icon.
 
 No artwork is generated or downloaded. Blender renders the same locally built
@@ -199,7 +199,7 @@ def encode(out: Path) -> dict:
                 for start in range(0, len(data), 32)]
         return 'inline constexpr std::uint8_t ' + name + '[]={\n' + ',\n'.join(rows) + '\n};\n'
     header = ('// SPDX-License-Identifier: GPL-3.0-or-later\n'
-              '// Copyright (c) 2026 noire342\n'
+              '// Copyright (c) 2026 lorenzogarrone\n'
               '// Generated from the original authored Revolverator ammunition model.\n'
               '// Recipe: tools/build_ammunition_hud.py; no original game artwork.\n'
               '#pragma once\n#include "hd_icon.hpp"\nnamespace revolverator::generated {\n'

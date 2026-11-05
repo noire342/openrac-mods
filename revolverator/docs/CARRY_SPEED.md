@@ -1,4 +1,4 @@
-# Carry movement balance (unreleased)
+# Carry movement balance
 
 While a live enemy is captured by the Revolverator, Ratchet's horizontal speed
 is capped at 50% of the current native ground-speed request. Base and Gold use

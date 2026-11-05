@@ -1,6 +1,6 @@
 # Credits and provenance
 
-Maintained by **Noire** ([noire342](https://github.com/noire342)).
+Maintained by **lorenzogarrone** ([noire342](https://github.com/noire342)).
 
 - **OpenRAC contributors:** the native game port, mod SDK, documented interfaces
   and the SDK fetch/packaging tooling used by this project. Upstream:
@@ -20,10 +20,13 @@ Maintained by **Noire** ([noire342](https://github.com/noire342)).
   original procedural mesh and texture recipe. It is new mod art; it is not an
   extracted game asset or an original Insomniac design.
 
-The Golden atlas is an **AI-assisted recolour** of the original drill atlas,
+Earlier private Golden art used an **AI-assisted recolour** of the original drill atlas,
 using the original Gold weapon palette as a reference. Its original artwork
 belongs to Insomniac Games / Sony; the software GPL does not relicense that art.
 See [Golden texture provenance](revolverator/assets/golden/README.md).
+Revolverator 0.3.3 ships no such atlas: its authored colour recipe transforms
+the player's native texture locally. Its original ammunition model/texture
+remain the only distributed weapon art and retain their AI-assistance disclosure.
 
 The Revolverator is a community reconstruction. Its proposed behavior and reused
 native animations should not be presented as recovered, complete original game
@@ -39,7 +42,7 @@ The optional local HUD-upscaling workflow uses
 Its runtime/model files and game-derived output are not vendored here.
 
 Source files retain their own SPDX/copyright notices. Mod implementation code
-is GPL-3.0-or-later, Copyright (c) 2026 noire342. The Weapon Experience and Arsenal Compatibility interop
+is GPL-3.0-or-later, Copyright (c) 2026 lorenzogarrone. The Weapon Experience and Arsenal Compatibility interop
 headers and intentionally MIT client examples retain their MIT notices. Downloaded
 OpenRAC SDK files remain MIT. The unchanged upstream `tools/fetch_sdk.py` remains
 GPL-3.0-or-later, Copyright (c) 2026 the OpenRAC contributors. Engine bridge changes
