@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (c) 2026 noire342
 cmake_minimum_required(VERSION 3.20)
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/openrac-mod.json")
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/openrac-mod.json" REVOLVERATOR_MANIFEST_JSON)
+string(JSON REVOLVERATOR_VERSION GET "${REVOLVERATOR_MANIFEST_JSON}" version)
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   project(revolverator LANGUAGES C CXX)
   find_package(OpenRACMod 1.3 REQUIRED)
@@ -14,6 +17,7 @@ set_target_properties(revolverator_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_compile_features(revolverator_core PUBLIC cxx_std_17)
 target_include_directories(revolverator_core PUBLIC src include)
 openrac_add_mod(revolverator MANIFEST openrac-mod.json SOURCES src/mod.cpp src/native_world.cpp src/native_arm.cpp src/native_ammunition.cpp src/native_vendor.cpp src/native_class_alias.cpp src/native_weapon_alias.cpp src/native_weapon_menu.cpp src/native_arsenal.cpp src/native_arsenal_save.cpp src/native_arsenal_xp.cpp src/native_runtime_hooks.cpp src/native_rotor.cpp src/hd_icon.cpp src/presentation.cpp)
+target_compile_definitions(revolverator PRIVATE REVOLVERATOR_VERSION="${REVOLVERATOR_VERSION}")
 target_link_libraries(revolverator PRIVATE revolverator_core ${CMAKE_DL_LIBS})
 target_sources(revolverator PRIVATE src/native_asset_bundle.cpp src/native_compatibility_modules.cpp third_party/openrac/common/json.cpp)
 target_sources(revolverator PRIVATE src/native_gold_vendor.cpp src/native_acquisition.cpp)

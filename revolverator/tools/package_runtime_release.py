@@ -13,6 +13,7 @@ import hashlib
 import json
 from pathlib import Path, PurePosixPath
 import struct
+import sys
 import zipfile
 from package_source import snapshot
 
@@ -39,6 +40,19 @@ def pe_library(data: bytes,name: str):
     machine=struct.unpack_from('<H',data,offset+4)[0]
     characteristics=struct.unpack_from('<H',data,offset+22)[0]
     if machine!=0x8664 or not characteristics&0x2000:raise ValueError(f'Not a Windows x64 DLL: {name}')
+def loader_metadata(path: Path,manifest: dict):
+    """Query the inert SDK identity export; never load an OpenRAC session."""
+    if sys.platform!='win32':return
+    import ctypes
+    class Info(ctypes.Structure):
+        _fields_=[('size',ctypes.c_uint32),('major',ctypes.c_uint32),
+                  ('minor',ctypes.c_uint32),('id',ctypes.c_char_p),('version',ctypes.c_char_p)]
+    provider=ctypes.CDLL(str(path));query=provider.openrac_mod_query
+    query.argtypes=[ctypes.POINTER(Info)];query.restype=None
+    info=Info(size=ctypes.sizeof(Info));query(ctypes.byref(info))
+    major,minor=map(int,manifest['api'].split('.'))
+    if (info.id,info.version,info.major,info.minor)!=(manifest['id'].encode(),manifest['version'].encode(),major,minor):
+        raise ValueError('Native loader identity/API/version differs from the package manifest')
 def archive(path: Path,files: dict[str,bytes]):
     if path.exists():raise ValueError(f'Refusing to overwrite {path.name}')
     with zipfile.ZipFile(path,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=9) as z:
@@ -75,6 +89,7 @@ def main():
     pe_library(weapon,plugin);pe_library(overlay,'arsenal_file_overlay.dll')
     if digest(weapon)!=a.dll_sha256.lower() or digest(overlay)!=a.overlay_sha256.lower():
         raise ValueError('A native library differs from the explicit tested hash')
+    loader_metadata(module/plugin,manifest)
     if validation.get('pass') is not True and validation.get('qa_passed') is not True:
         raise ValueError('An accepted release validation receipt is required')
     if validation.get('revolverator_sha256')!=digest(weapon):
@@ -114,6 +129,7 @@ def main():
     files['RELEASE-VALIDATION.json']=(json.dumps(meta,indent=2)+'\n').encode()
     native=out/f'revolverator-{version}-windows-x86_64.zip';archive(native,files)
     source_files={'revolverator/'+name:data for name,data in snapshot(source).items()}
+    source_files['RELEASE-VALIDATION.json']=files['RELEASE-VALIDATION.json']
     source_files['SOURCE-SNAPSHOT.json']=(json.dumps({'format':1,'source_commit':a.commit,
         'files':inventory(source_files),'game_derived_artwork_included':False},indent=2)+'\n').encode()
     source_zip=out/f'revolverator-{version}-source.zip';archive(source_zip,source_files)

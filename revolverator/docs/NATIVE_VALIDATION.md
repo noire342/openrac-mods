@@ -11,7 +11,16 @@ publication checks are recorded separately from the receipts below. See
 [contact sparks](CONTACT_SPARKS.md), [runtime assets](RUNTIME_ASSETS.md) and
 [compatibility](COMPATIBILITY.md).
 
-The [0.3.3 release receipt](validation/release-0.3.3.json) records the accepted
+The current binary's authoritative [release validation](https://github.com/noire342/openrac-mods/releases/download/revolverator-v0.3.3/revolverator-0.3.3-validation.json)
+is attached to the release and embedded as RELEASE-VALIDATION.json in both
+archives. It includes final native evidence and its source/binary pins.
+The [metadata-only query receipt](validation/version-metadata-0.3.3.json)
+separately verifies the manifest's single source of truth for version 0.3.3
+and required interface 1.12; a metadata query is not a gameplay test.
+
+### Earlier 0.3.3 candidate evidence
+
+The preserved [pre-publication receipt](validation/release-0.3.3.json) records the accepted
 PAL Base and Golden runs on the official client: **136 native checks passed**,
 both processes exited normally, and all 131 original inputs stayed unchanged
 in each run. Each case produced 37 actual native Type19 particles, matching
@@ -19,7 +28,7 @@ the 37 emission requests, within 0.01202 units of the drill tip. No new
 contact particles appeared during pause, idle, ordinary attack, equipment
 changes or flight. Four unmodified native screenshots were reviewed.
 
-The accepted weapon DLL is
+That earlier candidate's weapon DLL is
 425cb7ee886ef6ee868ee009d78b1e3fecd037fdb7e2a2fefae7b74c5af139f3;
 the native-tested asset adapter is
 8a69d4411696c76e6ea7229ad66999bbddd107bac76a7338771acd67a20b14c4.

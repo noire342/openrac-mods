@@ -555,7 +555,7 @@ const revolverator_api_v3 service_v3{sizeof(service_v3),3,get_state,cancel,get_m
 static_assert(offsetof(revolverator_api_v2,get_inventory)==sizeof(revolverator_api_v1),"v2 preserves the published v1 prefix");
 static_assert(offsetof(revolverator_api_v3,get_upgrade)==sizeof(revolverator_api_v2),"v3 preserves the published v2 prefix");
 }
-extern "C" { OPENRAC_MOD_DEFINE("revolverator","0.3.1") }
+extern "C" { OPENRAC_MOD_DEFINE("revolverator",REVOLVERATOR_VERSION) }
 extern "C" OPENRAC_MOD_EXPORT const revolverator_api_v1* openrac_revolverator_query(unsigned version){
  if(!session)return nullptr;
  if(version==1)return &service;
@@ -619,10 +619,10 @@ extern "C" OPENRAC_MOD_EXPORT int openrac_mod_load(const openrac_api* api,openra
   enemy<9>("rac1.moby.peckbot.update");enemy<10>("rac1.moby.extermibot.update");enemy<11>("rac1.moby.blarg_commander.update");
   enemy<12>("rac1.moby.sharkigator_35.update");enemy<13>("rac1.moby.sharkigator_1059.update");
   session->xp.frame();
-  if(!session->xp.compatible())throw std::runtime_error("Revolverator 0.3.0 requires Weapon XP API v4 when Weapon XP is enabled; update both mod packages");
+  if(!session->xp.compatible())throw std::runtime_error("Revolverator " REVOLVERATOR_VERSION " requires Weapon XP API v4 when Weapon XP is enabled; update both mod packages");
   if(api->on_frame(mod,+[](void*){if(session)session->frame();},nullptr))throw std::runtime_error("Frame registration failed");
   runtime_hooks->commit();
-  api->log(mod,OPENRAC_LOG_INFO,"Revolverator 0.3.0: Golden Novalis upgrade, charge-scaled impact explosions, weighted throw, independent arsenal saves, copy-only API v3");
+  api->log(mod,OPENRAC_LOG_INFO,"Revolverator " REVOLVERATOR_VERSION ": Golden Novalis upgrade, charge-scaled impact explosions, weighted throw, independent arsenal saves, copy-only API v3");
   return 0;
  }catch(const std::exception& e){if(api&&api->fail)api->fail(mod,e.what());session.reset();runtime_hooks.reset();compatibility_modules.reset();weapon_assets.reset();return 1;}
 }

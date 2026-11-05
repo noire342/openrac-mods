@@ -63,7 +63,11 @@ The validation receipt must report a successful native release gate and the
 same weapon DLL hash. The tool checks the generated manifest, Windows x64 DLL
 headers, both explicit binary hashes and authored-art hashes, then creates
 the native archive, complete source archive, validation JSON and SHA256SUMS.
+On Windows it also calls only the inert openrac_mod_query export and checks
+its id, version and required interface against the generated manifest.
 It verifies every ZIP member after writing and refuses to overwrite artifacts.
+Both archives contain the final release-validation receipt; source receipts
+from earlier candidates retain their original binary-specific identity.
 The bundled adapter source is under support/file-overlay and builds through
 the scoped revolverator_file_overlay target. Rebuilding that target does not
 silently replace the adapter chosen for a validated release.

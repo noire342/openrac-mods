@@ -1,0 +1,9 @@
+{
+  "scope": "Metadata-only native-library query and exact candidate copy; no game session",
+  "id": "revolverator",
+  "version": "0.3.3",
+  "api": "1.12",
+  "revolverator_sha256": "9c4ccccbb3d4b8bbdb6075a6e98f6f09a83fe6c73f5d53856e019e3bab601d88",
+  "overlay_sha256": "8a69d4411696c76e6ea7229ad66999bbddd107bac76a7338771acd67a20b14c4",
+  "manifest_sha256": "e76095660a7095cb54b4d754c5b0ea82c90134d7068b5b85312415120762b955"
+}

@@ -18,9 +18,16 @@ The release is prepared for the official [OpenRAC mod publication workflow](http
 
 ## Official index submission
 
-Submit the [GitHub form](https://github.com/OpenRAC/openrac-mods/issues/new?template=submit-mod.yml)
-once for mod id revolverator, repository https://github.com/noire342/openrac-mods.
-Its source folder is revolverator. The form asks for tags, impact, AI assistance,
+The upstream README supports a pull request adding index/revolverator.json.
+Set repo to https://github.com/noire342/openrac-mods and path to revolverator,
+include the metadata below, and run tools/build_index.py --check-entry on the
+entry in a checkout of the official index repository. Submit one listing PR
+after the release and archive audit pass. This route needs no issue-label
+permissions or computer UI automation.
+
+Alternatively submit the [GitHub form](https://github.com/OpenRAC/openrac-mods/issues/new?template=submit-mod.yml)
+once for mod id revolverator. Use one route, to avoid duplicate submissions.
+The form asks for tags, impact, AI assistance,
 documentation and bug links. Mark AI assistance **Yes**. The ammunition model
 and texture are original AI-assisted artwork; the disc-derived weapon artwork
 is prepared only on the player's machine.
