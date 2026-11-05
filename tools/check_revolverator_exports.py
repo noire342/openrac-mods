@@ -9,6 +9,9 @@ import subprocess
 import sys
 
 library = Path(sys.argv[1]).resolve(strict=True)
+manifest = json.loads((Path(__file__).resolve().parents[1] /
+    'revolverator/openrac-mod.json').read_text(encoding='utf-8-sig'))
+expected_api = tuple(int(part) for part in manifest['api'].split('.'))
 symbols = subprocess.check_output(['nm', '-D', '--defined-only', str(library)], text=True)
 names = {line.split()[-1] for line in symbols.splitlines()}
 expected = {'openrac_mod_query', 'openrac_mod_load', 'openrac_mod_unload',
@@ -31,8 +34,10 @@ info = ModInfo(size=ctypes.sizeof(ModInfo))
 provider.openrac_mod_query.argtypes = [ctypes.POINTER(ModInfo)]
 provider.openrac_mod_query.restype = None
 provider.openrac_mod_query(ctypes.byref(info))
-if (info.id, info.api_major, info.api_minor) != (b'revolverator', 1, 1):
+if (info.id, info.api_major, info.api_minor) != (b'revolverator', *expected_api):
     raise RuntimeError('Unexpected OpenRAC loader identity or API version')
+if info.version.decode() != manifest['version']:
+    raise RuntimeError('Unexpected Revolverator loader version')
 print(json.dumps({'scope': 'ELF loader; no game session', 'exports': sorted(names),
     'query_without_session': 'null', 'id': info.id.decode(),
     'version': info.version.decode(), 'openrac_api': [info.api_major, info.api_minor]}, indent=2))
