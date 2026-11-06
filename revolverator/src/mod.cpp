@@ -7,6 +7,7 @@
 #include "native_class_alias.hpp"
 #include "native_weapon_visual.hpp"
 #include "native_equip_audio.hpp"
+#include "primary_button.hpp"
 #include "native_weapon_menu.hpp"
 #include "native_arsenal_save.hpp"
 #include "native_arsenal_xp.hpp"
@@ -35,6 +36,7 @@ struct Session {
  NativeArsenal arsenal;NativeWeaponMenu menu;NativeArsenalSave saves;NativeArsenalXP xp;
  NativeGoldVendor gold_vendor;NativeAcquisition acquisition;
  bool primary=false;unsigned epoch=0;int level=-1;
+ PrimaryButton primary_button;
  bool golden()const{const auto* state=registry.state(arsenal::RevolveratorKey);return state&&state->owned&&state->golden;}
  unsigned grant_override=0,native_save_depth=0;bool new_game_plus=false;
  std::deque<NativeArsenalXP::LevelUp> animations,events;
@@ -49,6 +51,7 @@ struct Session {
  }
  ~Session(){before_load();}
  void before_load(){
+  primary_button.reset();
   acquisition.reset();gold_vendor.reset();
   controller.cancel();visuals.reset();world.reset();menu.reset();arsenal.reset();presentation.reset();vendor.reset();alias.reset();ammunition.reset();core_arena.reset();arena.reset();xp.reset();animations.clear();events.clear();
  }
@@ -167,7 +170,10 @@ MenuCall item_ammo_original{};
 MenuCall available_draw_original{},selected_draw_original{};
 template<int Index>struct EnemyHook{
  static inline Update original{};
- static void update(U32 moby){if(!session||!session->world.frozen(moby))original(moby);}
+ static void update(U32 moby){
+  if(!session){original(moby);return;}
+  if(!session->world.frozen(moby)){original(moby);if(session)session->world.enemy_updated(moby);}
+ }
 };
 void hook(const char* id,const char* signature,void* replacement,void** original){
  const int r=runtime_hooks->bind(id,signature,replacement,original);
@@ -206,15 +212,19 @@ void motion_input(){motion_input_original();if(session){session->world.enforce_c
 void planar_velocity(float angle){planar_velocity_original(angle);if(session){session->world.enforce_carry_speed();session->world.enforce_release_recoil();}}
 void gold_offer(unsigned moby){if(!session||!session->gold_vendor.update(moby))gold_offer_original(moby);}
 void pad(U32 address,U32 report,int size){
+ std::optional<bool> physical;
  if(session&&address==session->world.global(0x13c940)&&size>0&&Memory::valid(report,unsigned(size)))
   session->acquisition.filter_report(session->api->memory+report,size);
+ if(session&&address==session->world.global(0x13c940)&&size>=2&&Memory::valid(report,unsigned(size)))
+  physical=(session->world.read<unsigned char>(report+1)&0x20u)==0;
  pad_original(address,report,size);
  if(!session||address!=session->world.global(0x13c940))return;
  auto& w=session->world;
  w.set_active(session->arsenal.revolverator_active());
  const auto f=w.snapshot(false,session->epoch);
- if(!f.equipped||!f.playing||session->acquisition.active()){session->primary=false;return;}
- session->primary=(w.read<unsigned>(address+0x1a0)&0x20)!=0;
+ const bool enabled=f.equipped&&f.playing&&!session->acquisition.active();
+ session->primary=session->primary_button.update(f.paused,enabled,physical,(w.read<unsigned>(address+0x1a0)&0x20)!=0);
+ if(f.paused||!enabled)return;
  for(unsigned off:{0x1a0u,0x1a4u,0x1a8u,0x1b0u,0x1b4u,0x1b8u,0x1c0u,0x1c4u,0x1c8u})w.write<unsigned>(address+off,w.read<unsigned>(address+off)&~0x20u);
  const unsigned index=w.read<unsigned short>(address+0x18e);
  if(index<30){const auto at=address+0x1e0+((index+29)%30)*4;w.write<unsigned>(at,w.read<unsigned>(at)&~0x20u);}

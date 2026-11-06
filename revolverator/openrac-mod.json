@@ -2,11 +2,11 @@
   "format": 2,
   "id": "revolverator",
   "name": "Revolverator",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "author": "lorenzogarrone",
   "license": "GPL-3.0-or-later",
   "api": "1.12",
-  "description": "Restores the Revolverator as an additional weapon on the official Windows client, with PAL Europe v2.00 as the reference region and NTSC-U support. Gold upgrade sold in an additional Novalis case for 50000 ordinary bolts, with charge-scaled impact explosions and a weighted throw. Twenty rounds, native menus, independent saves and optional Weapon XP API v4.",
+  "description": "Restores the Revolverator as a separate weapon with native menus, 20 rounds, independent saves and optional Weapon XP. Release early to drop a captured enemy; fill the charge bar to throw. Includes a Golden upgrade and contact sparks, with the original game sounds. PAL reference with NTSC-U bindings.",
   "extensions": {
     "noire342.arsenal": {
       "version": 1,

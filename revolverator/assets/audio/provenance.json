@@ -1,0 +1,88 @@
+{
+  "format": 1,
+  "source_handoff_sha256": "cb10ce0a035f696f992531b5ab513ad431a4a806b01d0d0ac145b8d9d6cae2c9",
+  "source_manifest_sha256": "af6087bae1e02ff18aeee338852ee01facef44808ddff2217b94d1f3c8f93970",
+  "waveforms_modified": false,
+  "files": {
+    "LICENSE-GPL-3.0.txt": {
+      "bytes": 35823,
+      "sha256": "230184f60bae2feaf244f10a8bac053c8ff33a183bcc365b4d8b876d2b7f4809"
+    },
+    "README.md": {
+      "bytes": 1394,
+      "sha256": "6ed8322b396be4e4af29e95de0b2a7a1275a0d0aa000804fa4171615c0f7e973"
+    },
+    "attack.wav": {
+      "bytes": 74924,
+      "sha256": "58a57feb0024a6d7f6092f7565f6397b87801912db26b7de5b9c1c93d73734d0"
+    },
+    "capture.wav": {
+      "bytes": 97964,
+      "sha256": "cddcdb1f4ec5cc6da9762da11c2ee06c1b803573fc2e9cd6addf96d7a1bde1fe"
+    },
+    "charge_ready.wav": {
+      "bytes": 82124,
+      "sha256": "7e8478ff56c4ace986fc60fca2008c66f790a84b0cdb133d5a9fdd1966c77c1f"
+    },
+    "early_release.wav": {
+      "bytes": 89324,
+      "sha256": "db0350a254d4fa1b29b29abb7e27488e7b82f94a9b35dbc9e0288e29ef2a96e8"
+    },
+    "gold_acquisition.wav": {
+      "bytes": 169964,
+      "sha256": "8102624a8d7939ef1e0709a62860415daa40dbe1372d958b8af320e61b4ff9c7"
+    },
+    "gold_explosion_full.wav": {
+      "bytes": 237644,
+      "sha256": "9b90f2d1ac65af04e330d655373d2eb8217e0a02e320f0e7dc4b1ac56458df84"
+    },
+    "gold_explosion_low.wav": {
+      "bytes": 161324,
+      "sha256": "8cc524345b3de726f552df8c659b2c01705f13715cc7ed22d8b860157dcc66a5"
+    },
+    "ground_contact.wav": {
+      "bytes": 66284,
+      "sha256": "7999449b4953e763cd8be865aa70455e59ac8e7fa50ff3a6bd0ee40a2f9dbdc7"
+    },
+    "heavy_hit.wav": {
+      "bytes": 93644,
+      "sha256": "780c5f3c7d748de002b26f115aaf094a6eb62ed21c917cb9de00e09bdfdc773e"
+    },
+    "idle_loop.wav": {
+      "bytes": 288044,
+      "sha256": "5298faef03631b75f9338b2135fb29319872b4f140b486209513b479d8dc20bc"
+    },
+    "manifest.json": {
+      "bytes": 10418,
+      "sha256": "114db36556617a991edf789884f0f31c8aa7749a8c02c67ac1e2e18415113353"
+    },
+    "projectile_impact.wav": {
+      "bytes": 123884,
+      "sha256": "2f56d940a37e56d2fbab69611008189b3c37e58fc91137ba5215a4ea9aea435f"
+    },
+    "source/make_extra_cues.py": {
+      "bytes": 7213,
+      "sha256": "9ab03962e3a27121b2cd255ed4667ad410b85bfadd6e0fb27ca155499fa2fd32"
+    },
+    "source/make_sounds.py": {
+      "bytes": 15276,
+      "sha256": "7aad78dc4bac6b2f64a0ae7aa21fb85341e6bfa5ebbec1340986f04822402ba0"
+    },
+    "source/manifest-original.json": {
+      "bytes": 17254,
+      "sha256": "af6087bae1e02ff18aeee338852ee01facef44808ddff2217b94d1f3c8f93970"
+    },
+    "spin_fast_loop.wav": {
+      "bytes": 288044,
+      "sha256": "7185f8f372dbeb4e180aa0d26ec5f1198a8094e8dddd95b3a0d7846877a1cd34"
+    },
+    "spin_loop.wav": {
+      "bytes": 288044,
+      "sha256": "f6f2f889fb84df285039977bc09c5db656bb3c5d3f6e3efbcc00818184f01675"
+    },
+    "throw.wav": {
+      "bytes": 103724,
+      "sha256": "c7e07ef2ac3238cd46a7daf50af702d37d4965f949478f9cffa5166cfadb2fe1"
+    }
+  }
+}

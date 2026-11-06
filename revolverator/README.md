@@ -1,4 +1,4 @@
-# Revolverator 0.3.3
+# Revolverator 0.3.4 (development)
 
 By **lorenzogarrone**. The Italian in-game name is **Rotatore**.
 
@@ -7,8 +7,18 @@ catch, spin and throw enemies. It uses the game's weapon menus, ammunition
 HUD, acquisition presentation and save flow. The original Walloper remains a
 separate weapon.
 
-Version 0.3.3 adds native metal sparks at the drill's contact with a spinning
-enemy. Their rate follows the rotation speed. The weapon's models are prepared
+Version 0.3.4 adds charge-gated throws and a deliberate early ground drop.
+The development runtime keeps the original game sounds; the custom
+sound experiment is parked in source only. The published
+[0.3.3 release](https://github.com/noire342/openrac-mods/releases/tag/revolverator-v0.3.3)
+remains available. The local 0.3.4 candidate passed 38 Release host test groups
+and 81 targeted native PAL checks across the base and Golden variants. The
+[native validation receipt](docs/validation/native-audio-0.3.4.json) identifies
+that exact binary and its tested scenarios. These source changes do not publish
+a new installable release.
+
+Native metal sparks follow the drill's contact with a spinning enemy. Their
+rate follows the rotation speed. The weapon's models are prepared
 automatically from the player's installed disc data, so the public package
 contains no copied game models, textures or HUD artwork.
 
@@ -18,7 +28,7 @@ contains no copied game models, textures or HUD artwork.
    or newer** and your own extracted PAL or NTSC-U copy of Ratchet & Clank.
 2. In **Mods**, add [this repository](https://github.com/noire342/openrac-mods),
    choose **Revolverator**, and install it. Alternatively, import
-   revolverator-0.3.3-windows-x86_64.zip with **File**.
+   revolverator-0.3.4-windows-x86_64.zip with **File** when this update is released.
 3. Enable the mod and start the game. The first start prepares its local
    graphics cache automatically. No separate Python installation, graphics
    pack, utility mod card or replacement client is required.
@@ -40,8 +50,14 @@ and local log; players do not need to run build commands.
 ## Controls and balance
 
 Tap **Circle** for a melee strike. Hold it continuously for at least 0.18 seconds
-to catch an eligible enemy, then release to throw. An uninterrupted hold throws
-automatically after three seconds. Ratchet moves at up to 50% of his native
+to catch an eligible enemy. Once captured, keep holding until the existing
+charge bar is full, then release to throw. The bar fills over 1.6 seconds of
+spinning; an uninterrupted hold still throws automatically after three seconds.
+Releasing before the displayed bar is full drops the live enemy onto the ground
+in front of Ratchet, returning it to native enemy behavior and its counterattack.
+That early drop does not launch a projectile, trigger a Golden explosion,
+play the throw animation or refund the round. See [charge release](docs/CHARGE_RELEASE.md).
+Ratchet moves at up to 50% of his native
 horizontal speed while holding an enemy; the limit ends when the target is
 released. A brief 150 ms movement hold gives the throw weight.
 
@@ -103,6 +119,12 @@ from the player's own installed assets. The ammunition model and texture are
 original artwork created with AI assistance. The public release discloses
 that AI tools helped develop the mod.
 
+The runtime uses the game's original sounds and ships no custom WAV files.
+The experimental procedural sound set, its generators, license and hash
+provenance remain in the development source for possible later work. It is not
+connected to the weapon or loaded by the current runtime. No extracted game
+audio is distributed. See [audio status](docs/AUDIO.md).
+
 Authored code is [GPL-3.0-or-later](LICENSE), Copyright (c) 2026 lorenzogarrone.
 Third-party code retains its original notices. The code license does not
 relicense Insomniac Games / Sony's game artwork. See
@@ -111,6 +133,7 @@ relicense Insomniac Games / Sony's game artwork. See
 ## Documentation and validation
 
 - [Contact sparks](docs/CONTACT_SPARKS.md)
+- [Charge-gated release](docs/CHARGE_RELEASE.md) and [audio status](docs/AUDIO.md)
 - [Compatibility and later clients](docs/COMPATIBILITY.md)
 - [Build instructions and asset preparation](docs/BUILD_AND_ASSETS.md)
 - [Native validation and historical receipts](docs/NATIVE_VALIDATION.md)

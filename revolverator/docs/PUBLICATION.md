@@ -11,22 +11,26 @@ The release is prepared for the official [OpenRAC mod publication workflow](http
   official client, including first-start asset derivation and contact sparks.
 - Keep game files out of the ZIP and source archive; retain authored recipes,
   AI attribution, corresponding native source and third-party notices.
-- Publish a stable revolverator-v0.3.3 tag with the Windows ZIP, corresponding
+- Publish a stable revolverator-v0.3.4 tag with the Windows ZIP, corresponding
   source, observed validation and SHA256SUMS.
 - Download every public asset and verify hashes, archive contents, required
   scripts and the exact native-validated DLL before announcing availability.
 
 ## Official index submission
 
-The upstream README supports a pull request adding index/revolverator.json.
-Set repo to https://github.com/noire342/openrac-mods and path to revolverator,
-include the metadata below, and run tools/build_index.py --check-entry on the
-entry in a checkout of the official index repository. Submit one listing PR
-after the release and archive audit pass. This route needs no issue-label
-permissions or computer UI automation.
+The maintainer closed [listing PR #71](https://github.com/OpenRAC/openrac-mods/pull/71)
+on 6 November 2026 and requested the official submission form. Submit the stable
+revolverator id once; the bot checks the submission and opens the listing PR for
+maintainer review. Once that PR is merged, later releases use the same
+repository/path and still need the external-native review gate. The public
+0.3.3 release stays unchanged while the local 0.3.4 update is tested.
 
-Alternatively submit the [GitHub form](https://github.com/OpenRAC/openrac-mods/issues/new?template=submit-mod.yml)
-once for mod id revolverator. Use one route, to avoid duplicate submissions.
+### First listing procedure
+
+Use the [GitHub form](https://github.com/OpenRAC/openrac-mods/issues/new?template=submit-mod.yml)
+once for mod id revolverator. Repository is https://github.com/noire342/openrac-mods
+without a folder suffix, and Mod ids is revolverator. The bot locates the
+manifest in that subfolder and opens the listing PR after its checks.
 The form asks for tags, impact, AI assistance,
 documentation and bug links. Mark AI assistance **Yes**. The ammunition model
 and texture are original AI-assisted artwork; the disc-derived weapon artwork
@@ -36,7 +40,7 @@ A suitable short description is:
 
 > Restores the cut Revolverator as a separate weapon: catch, spin and throw enemies, with native menus, ammo, saves and a Golden upgrade. Sparks mark the drill contact while holding a target. Assets are prepared automatically from your own disc.
 
-Suggested tags: gameplay, cosmetic, ui. Suggested impact: gameplay,
+Suggested tags: gameplay, ui. Suggested impact: gameplay,
 touches-saves. Link the repository's issue tracker and Revolverator README.
 Screenshots are optional; if included, upload them to the GitHub form rather
 than linking images hosted elsewhere. A YouTube link is the only supported

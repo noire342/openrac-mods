@@ -12,3 +12,12 @@ arsenal-compat/third_party/minhook/** text eol=lf
 arsenal-file-overlay/third_party/minhook/** text eol=lf
 *.png binary
 *.glb binary
+*.wav binary
+# Preserve byte-exact source evidence and build recipes pinned by native QA.
+revolverator/assets/audio/source/manifest-original.json -text whitespace=cr-at-eol
+revolverator/assets/audio/LICENSE-GPL-3.0.txt -text whitespace=cr-at-eol
+revolverator/CMakeLists.txt -text whitespace=cr-at-eol
+revolverator/support/file-overlay/CMakeLists.txt -text whitespace=cr-at-eol
+revolverator/support/file-overlay/third_party/minhook/CMakeLists.txt -text whitespace=cr-at-eol,-blank-at-eol
+revolverator/tests/native_qa/golden/CMakeLists.txt -text whitespace=cr-at-eol
+revolverator/third_party/minhook/CMakeLists.txt -text whitespace=cr-at-eol,-blank-at-eol

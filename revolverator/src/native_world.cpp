@@ -62,14 +62,16 @@ Vec3 NativeWorld::damage_centre(Target t)const{
   centre:origin+Vec3{0,0,.5f};
 }
 bool NativeWorld::visible_from(Vec3 from,Target target,unsigned ignore)const{
- const Vec3 to=damage_centre(target);
- if(!finite(from)||!finite(to)||!identity_valid(target))return false;
+ return identity_valid(target)&&clear_path(from,damage_centre(target),target.address,ignore);
+}
+bool NativeWorld::clear_path(Vec3 from,Vec3 to,unsigned accepted_target,unsigned ignore)const{
+ if(!finite(from)||!finite(to))return false;
  if(length_squared(to-from)<.0001f)return true;
  Stack stack(api_,32);if(!stack.at)return false; // Failure is not clear line of sight.
  stack.put(0,std::array<float,4>{from.x,from.y,from.z,0});
  stack.put(16,std::array<float,4>{to.x,to.y,to.z,0});
  if(!ray_(stack.at,stack.at+16,0x24,ignore,0))return true;
- return read<unsigned>(level(0x173e58))==target.address;
+ return read<unsigned>(level(0x173e58))==accepted_target;
 }
 std::optional<Vec3> NativeWorld::ray(Vec3 from,Vec3 to,unsigned ignore)const{
  Stack stack(api_,32);if(!stack.at||!finite(from)||!finite(to))return std::nullopt;
@@ -126,6 +128,7 @@ bool NativeWorld::capture(Target t){
  lease_.local_sphere=rotate({-q[0],-q[1],-q[2],q[3]},read<Vec3>(t.address)*(1.f/1024.f)-lease_.origin);
  write<unsigned>(t.address+0x94,0);write<unsigned>(t.address+0x98,1);
  if(trace_){char s[240];std::snprintf(s,sizeof s,"captured class=%u moby=%08x local-grip=(%.3f,%.3f,%.3f)",t.klass,t.address,lease_.grip.local_point.x,lease_.grip.local_point.y,lease_.grip.local_point.z);log(s);}
+ if(audio_)audio_->emit(WeaponAudioCue::Capture);
  return true;
 }
 bool NativeWorld::lease_valid()const{return lease_.target&&valid(lease_.target);}
@@ -182,6 +185,87 @@ void NativeWorld::release(Target t,bool cancelled){
   if(cancelled)*entry={};
  }else return;
  if(trace_)log(cancelled?"target cancelled; native ownership restored":"target released; native ownership restored");
+}
+std::optional<Vec3> NativeWorld::drop_position(const Lease& lease)const{
+ if(!valid(lease.target)||!finite(last_frame_.position)||!std::isfinite(last_frame_.yaw))return {};
+ const float radius=collision_radius(lease.target);
+ const float distance=std::clamp(radius+.65f,.9f,1.7f);
+ const Vec3 upright_sphere=rotate(rotation_from_euler(lease.angles),lease.local_sphere);
+ const float lift=std::max(0.f,radius-upright_sphere.z)+.025f;
+ // Stay in the forward half-plane. Shorter and slightly lateral candidates
+ // handle a wall or ledge without sending the enemy through solid scenery.
+ for(float factor:{1.f,.75f,.5f})for(float offset:{0.f,.35f,-.35f,.7f,-.7f}){
+  const float yaw=last_frame_.yaw+offset;
+  const Vec3 candidate=last_frame_.position+Vec3{std::cos(yaw),std::sin(yaw),0}*(distance*factor);
+  const Vec3 top=candidate+Vec3{0,0,1.25f};
+  const Vec3 start=last_frame_.position+Vec3{0,0,1.25f};
+  if(ray(start,top,body()))continue;
+  const auto floor=ray(top,candidate+Vec3{0,0,-3.f},body());
+  if(!floor)continue;
+  const auto normal=read<Vec3>(level(0x173e80));
+  if(!finite(normal)||normal.z<.6f||floor->z>last_frame_.position.z+1.f)continue;
+  const Vec3 result{floor->x,floor->y,floor->z+lift};
+  if(finite(result))return result;
+ }
+ return {};
+}
+bool NativeWorld::counterstrike(Target enemy){
+ constexpr std::size_t required=offsetof(openrac_api,moby_slot_of)+sizeof(api_->moby_slot_of);
+ if(!mod_||api_->size<required||!api_->moby_slot_of||!api_->moby_hit||!valid(enemy)||
+    !last_frame_.playing||last_frame_.paused||!last_frame_.alive||read<unsigned>(enemy.address+0x98)!=0)return false;
+ const auto player=token(body());
+ if(!identity_valid(player)||player.klass!=0||read<int>(hero()+0x22a8)<=0)return false;
+ const Vec3 position=read<Vec3>(hero()+0x80),origin=read<Vec3>(enemy.address+0x10),delta=position-origin;
+ const float squared=delta.x*delta.x+delta.y*delta.y;
+ // A failed placement must not turn into a ranged or through-wall punishment.
+ if(!finite(position)||!finite(origin)||!std::isfinite(squared)||squared>4.f||std::abs(delta.z)>1.f)return false;
+ if(!clear_path(origin+Vec3{0,0,.75f},position+Vec3{0,0,.75f},player.address,enemy.address))return false;
+ const int victim=api_->moby_slot_of(player.address),attacker=api_->moby_slot_of(enemy.address);
+ if(victim<0||attacker<0)return false;
+ const float scale=squared>.0001f?.2f/std::sqrt(squared):0.f;
+ openrac_hit hit{};hit.size=sizeof hit;hit.victim=victim;hit.attacker=attacker;hit.mask=1;hit.damage=1.f;
+ hit.position[0]=position.x;hit.position[1]=position.y;hit.position[2]=position.z+.75f;
+ hit.velocity[0]=delta.x*scale;hit.velocity[1]=delta.y*scale;
+ // This is the native light-enemy melee contact, not a weapon-impact packet.
+ // The hero's own update owns Hurt, knockback, damage and invulnerability.
+ return api_->moby_hit(mod_,&hit)==OPENRAC_HOOK_OK;
+}
+void NativeWorld::drop(Target t){
+ // Only the current captive can be dropped. A stale token must never alter a
+ // recycled actor or an independent enemy that is already flying.
+ if(!lease_.target||!(lease_.target==t)||lease_.flying)return;
+ const auto position=drop_position(lease_);
+ if(!(lease_.target==t))return;
+ if(!lease_valid()){lease_={};return;}
+ Lease carried=lease_;lease_={};
+ // The capture origin is the safe fallback if there is no supported ground
+ // in front (for example, releasing over a void). Never invent a surface.
+ const Vec3 ground=position.value_or(carried.origin);
+ carried.angles.z=std::atan2(last_frame_.position.y-ground.y,last_frame_.position.x-ground.x);
+ move_origin(carried,ground,carried.angles);
+ restore_lease(carried,false);
+ if(audio_)audio_->emit(WeaponAudioCue::Drop);
+ ground_contact_=position?GroundContact{t,0}:GroundContact{};
+ const bool retaliation=counterstrike(t);
+ if(trace_){char message[240];std::snprintf(message,sizeof message,
+  "undercharged drop target=%08x class=%u grounded=%d point=(%.5f,%.5f,%.5f) counterstrike=%d; native AI restored",
+  t.address,t.klass,int(position.has_value()),ground.x,ground.y,ground.z,int(retaliation));log(message);}
+}
+void NativeWorld::enemy_updated(unsigned moby){
+ if(!ground_contact_.target||ground_contact_.target.address!=moby)return;
+ const auto target=ground_contact_.target;
+ if(!valid(target)||frozen(moby)||read<int>(mode())!=0){ground_contact_={};return;}
+ if(++ground_contact_.updates>12){ground_contact_={};return;}
+ // Called only after this enemy's real native update. Its live collision
+ // sphere, rather than the desired drop point, decides whether it has landed.
+ const Vec3 centre=read<Vec3>(moby)*(1.f/1024.f);
+ if(!finite(centre))return;
+ const float radius=collision_radius(target);
+ const auto floor=ray(centre,centre+Vec3{0,0,-radius-.12f},moby);
+ if(!floor||read<Vec3>(level(0x173e80)).z<.6f)return;
+ const float clearance=centre.z-radius-floor->z;
+ if(clearance<-.12f||clearance>.08f)return;
+ ground_contact_={};if(audio_)audio_->emit(WeaponAudioCue::GroundContact);
 }
 void NativeWorld::discarded(Target t){
  if(lease_.target&&lease_.target==t){restore_lease(lease_,true);attack_cancelled();return;}
@@ -303,6 +387,7 @@ void NativeWorld::impact_result(Target target,const ImpactContext& result){
  const Shot shot=entry->shot;
  const auto blast=entry->impact.consume(target,result.reason);
  restore_lease(entry->lease,false);*entry={}; // Clear before native FX/damage reentry.
+ if(audio_)audio_->emit(blast?WeaponAudioCue::GoldenImpact:WeaponAudioCue::Impact,blast?blast->charge:result.charge);
  if(blast)explode(target,result,*blast,shot);
  else base_impact(target,result.other,result.charge,shot);
 }
@@ -388,7 +473,7 @@ void NativeWorld::cancelled(){
  ++cancellation_generation_;
  restore_lease(lease_,true);
  for(auto& entry:flights_){restore_lease(entry.lease,true);entry={};}
- deferred_={};deferred_head_=deferred_size_=frame_hits_=0;attack_cancelled();
+ deferred_={};deferred_head_=deferred_size_=frame_hits_=0;ground_contact_={};attack_cancelled();
 }
 void NativeWorld::set_damage_multiplier(float value){damage_multiplier_=std::isfinite(value)?std::clamp(value,1.f,16.f):1.f;}
 bool NativeWorld::blocks_native_hit(Target victim,unsigned hit)const{
@@ -413,8 +498,9 @@ Frame NativeWorld::snapshot(bool primary,unsigned epoch)const{
 void NativeWorld::animate(Motion motion){
  if(motion==Motion::DryFire){rotor_.dry_fire();return;}
  if(api_->loaded_level()<0||api_->loaded_level()>18)return;
- if(motion==Motion::Strike){arm_.reset();state_(0x20,1);if(trace_)log("native Walloper strike");}
+ if(motion==Motion::Strike){if(audio_)audio_->emit(WeaponAudioCue::Attack);arm_.reset();state_(0x20,1);if(trace_)log("native Walloper strike");}
  if(motion==Motion::Release){
+  if(audio_)audio_->emit(WeaponAudioCue::Throw);
   // Do not enter wrench-boomerang recovery: its returning-weapon wait would
   // delay the enemy. Only our short horizontal recoil hold accompanies release.
   arm_.release();

@@ -1,9 +1,11 @@
 # Release packaging and provenance
 
-The Windows archive is revolverator-0.3.3-windows-x86_64.zip with
+The Windows archive is revolverator-0.3.4-windows-x86_64.zip with
 openrac-mod.json at its root. The manifest names author **lorenzogarrone**,
-version 0.3.3, GPL-3.0-or-later and minimum mod interface 1.12. The release
-tag is revolverator-v0.3.3.
+version 0.3.4, GPL-3.0-or-later and minimum mod interface 1.12. The release
+tag is revolverator-v0.3.4. This update remains unpublished until its final
+native validation gates pass; version 0.3.3 and its receipts remain
+unchanged.
 
 ## Installable files
 
@@ -12,6 +14,13 @@ authored ammunition model/texture, and the runtime preparation scripts in
 [BUILD_AND_ASSETS.md](BUILD_AND_ASSETS.md). Dependency metadata must match the
 DLLs actually included. Players install one weapon card, without manual
 support-card or graphics-pack installation.
+
+The current installable package contains no assets/audio files. The weapon uses
+the original native sounds, with no custom sound adapter connected. Never glob
+an old build directory into the runtime archive: it may contain stale WAVs from
+an earlier experiment. The source archive alone preserves the 14 audited
+procedural WAVs, original generators, manifest, provenance and license through
+tools/authored_audio.py. No extracted game sounds are distributed.
 
 Exclude game files and derived copies: the Hoven drill, native textures,
 recoloured native atlases, native HUD pixels, extracted levels, game code/data,
@@ -71,6 +80,11 @@ from earlier candidates retain their original binary-specific identity.
 The bundled adapter source is under support/file-overlay and builds through
 the scoped revolverator_file_overlay target. Rebuilding that target does not
 silently replace the adapter chosen for a validated release.
+
+The current validation receipt must contain audio_mode set to native, tied to
+the exact tested DLL. Confirm no custom sound load/play events and no WAV files
+in the installable archive. Earlier custom-audio receipts remain historical
+evidence for their own DLLs and do not validate this native-only build.
 
 Receipts distinguish host tests, native input/renderer observations, exact
 runtime hashes and publication checks. A build, installation or impact counter

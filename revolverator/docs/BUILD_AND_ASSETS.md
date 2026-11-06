@@ -29,6 +29,21 @@ inventory, native menu, save sidecars, regional bindings and optional XP. They
 do not replace native gameplay or rendered-image checks. Linux source tests
 do not establish native gameplay support for a Windows-only release.
 
+## Parked sound experiment
+
+The source tree retains the frozen procedural WAVs under assets/audio and their
+generators under assets/audio/source. The production target does not link the
+custom sound adapter, copy these WAVs, or connect a custom sound sink. It keeps
+the original native sound behavior. A normal build or game start needs no
+NumPy, FFmpeg or sound-lab workspace.
+
+For a new original handoff, maintainers use tools/stage_audio_bundle.py with its
+frozen handoff JSON. It verifies the pinned source catalog and every waveform
+before creating the English relative catalog, sources/license closure and
+provenance inventory. It refuses to overwrite an existing audio directory.
+The source packager preserves that audited experiment. The installable packager
+excludes it entirely; see [audio](AUDIO.md).
+
 ## Public package
 
 Include the weapon DLL, its required asset-mount adapter, original authored

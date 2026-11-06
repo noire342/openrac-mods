@@ -8,6 +8,7 @@
 #include <array>
 #include <functional>
 #include <vector>
+#include <algorithm>
 using namespace revolverator;
 #define CHECK(x) do{if(!(x)){std::fprintf(stderr,"line %d: %s\n",__LINE__,#x);std::exit(1);}}while(0)
 struct Fake:World {
@@ -25,16 +26,26 @@ struct Fake:World {
  void impact(Target,std::optional<Target>,float q)override{CHECK(!leased);CHECK(q>=0&&q<=1);++hits;}
  void animate(Motion m)override{motions.push_back(m);}
 };
+struct DropFake:Fake {
+ int drops=0,launches=0;std::function<void()> on_drop;
+ bool launchable=true;
+ void drop(Target target)override{++drops;release(target,false);if(on_drop)on_drop();}
+ void launched(Target,float,float)override{++launches;}
+ bool can_launch()const override{return launchable;}
+};
 Frame frame(){Frame f;f.epoch=1;f.equipped=f.playing=f.alive=f.grounded=true;return f;}
 void steps(Controller& c,Frame f,int count){while(count--)c.tick(f);}
 void spin(Controller& c,Frame& f){f.primary=true;steps(c,f,15);CHECK(c.phase()==Phase::Spinning);}
+void capture_only(Controller& c,Frame& f){f.primary=true;for(unsigned i=0;i<120&&c.attack_phase()!=Phase::Spinning;++i)c.tick(f);CHECK(c.attack_phase()==Phase::Spinning&&c.charge()==0);}
+void fill(Controller& c,Frame& f){f.primary=true;for(unsigned i=0;i<180&&c.charge()<1.f;++i)c.tick(f);CHECK(c.attack_phase()==Phase::Spinning&&c.charge()==1.f);}
+Settings rapid_flights(){Settings settings;settings.full_charge=.001f;return settings;}
 struct MultiFake:World {
  struct Actor {Target target{};bool exists=true,leased=false,flying=false,collision=false;unsigned moves{};Vec3 position{};};
  std::array<Actor,16> actors{};
  struct Hit {Target target{};float charge{},blast{};ImpactReason reason{};};
  std::vector<Hit> impacts;std::vector<Motion> motions;
  std::function<void()> on_impact;
- int ammunition=64,attempts=0,captures=0,restores=0,all_cancels=0,gesture_cancels=0;
+ int ammunition=64,attempts=0,captures=0,restores=0,drops=0,all_cancels=0,gesture_cancels=0;
  std::array<float,16> charge{},blast{};
  Target force_target{};
  MultiFake(){for(unsigned i=0;i<actors.size();++i)actors[i].target={0x20000+i*256,0x40000+i*128,459,i+1};}
@@ -51,6 +62,7 @@ struct MultiFake:World {
  std::optional<Vec3> carry_anchor(float angle)override{return Vec3{std::cos(angle),std::sin(angle),2};}
  void move(Target target,Vec3 position,float)override{auto* a=actor(target);CHECK(a&&a->leased);CHECK(finite(position));a->position=position;++a->moves;}
  void release(Target target,bool)override{auto* a=actor(target);CHECK(a&&a->leased);a->leased=a->flying=false;++restores;}
+ void drop(Target target)override{++drops;release(target,false);}
  std::optional<Contact> sweep(Target target,Vec3,Vec3 to)override{const auto* a=actor(target);return a&&a->collision?std::optional<Contact>{{to,{},{0,0,1}}}:std::nullopt;}
  void launched(Target target,float q,float b)override{auto* a=actor(target);CHECK(a&&a->leased);a->flying=true;const auto i=std::size_t(a-actors.data());charge[i]=q;blast[i]=b;}
  void impact(Target,std::optional<Target>,float)override{}
@@ -63,19 +75,19 @@ struct MultiFake:World {
 void launch(Controller& c,Frame& f){
  const auto before=c.counters().throws;f.primary=true;
  for(int i=0;i<60&&c.attack_phase()!=Phase::Spinning;++i)c.tick(f);
- CHECK(c.attack_phase()==Phase::Spinning);f.primary=false;
+ CHECK(c.attack_phase()==Phase::Spinning);fill(c,f);f.primary=false;
  for(int i=0;i<60&&c.counters().throws==before;++i)c.tick(f);
  CHECK(c.counters().throws==before+1);
 }
 int main(){
- {Fake w;Controller c(w);auto f=frame();spin(c,f);CHECK(w.takes==1);steps(c,f,90);CHECK(c.charge()>.9f);f.primary=false;c.tick(f);CHECK(c.phase()==Phase::Flying);w.collision=true;c.tick(f);CHECK(w.hits==1&&w.restores==1);steps(c,f,30);CHECK(c.phase()==Phase::Idle);CHECK(c.counters().throws==1);}
- {Fake w;Controller c(w);auto f=frame();spin(c,f);f.primary=false;steps(c,f,25);CHECK(c.phase()==Phase::Flying);CHECK(c.charge()<.5f);}
+ {Fake w;Controller c(w);auto f=frame();spin(c,f);CHECK(w.takes==1);fill(c,f);f.primary=false;c.tick(f);CHECK(c.phase()==Phase::Flying);w.collision=true;c.tick(f);CHECK(w.hits==1&&w.restores==1);steps(c,f,30);CHECK(c.phase()==Phase::Idle);CHECK(c.counters().throws==1);}
+ {Fake w;Controller c(w);auto f=frame();spin(c,f);f.primary=false;steps(c,f,25);CHECK(c.phase()==Phase::Idle&&w.restores==1&&w.interrupted&&w.hits==0);CHECK(c.charge()==0&&c.counters().throws==0);}
  {Fake w;Controller c(w);auto f=frame();spin(c,f);steps(c,f,200);CHECK(c.counters().throws==1);steps(c,f,200);CHECK(w.takes==1);}
- {Fake w;Controller c(w);auto f=frame();spin(c,f);float q=c.charge();f.paused=true;f.primary=false;steps(c,f,120);CHECK(c.phase()==Phase::Spinning&&c.charge()==q&&w.restores==0);f.paused=false;steps(c,f,25);CHECK(c.phase()==Phase::Flying);}
- for(int scenario=0;scenario<5;++scenario){Fake w;Controller c(w);auto f=frame();spin(c,f);if(scenario==0)f.equipped=false;if(scenario==1)f.alive=false;if(scenario==2)f.epoch++;if(scenario==3)f.playing=false;if(scenario==4)f.seconds=std::numeric_limits<float>::quiet_NaN();c.tick(f);CHECK(!w.leased&&w.restores==1&&w.interrupted);c.cancel();CHECK(w.restores==1);}
+ {Fake w;Controller c(w);auto f=frame();spin(c,f);float q=c.charge();f.paused=true;f.primary=false;steps(c,f,120);CHECK(c.phase()==Phase::Spinning&&c.charge()==q&&w.restores==0);f.paused=false;steps(c,f,25);CHECK(c.phase()==Phase::Idle&&w.restores==1&&w.interrupted&&c.counters().throws==0);}
+ for(int scenario=0;scenario<5;++scenario){DropFake w;Controller c(w);auto f=frame();spin(c,f);if(scenario==0)f.equipped=false;if(scenario==1)f.alive=false;if(scenario==2)f.epoch++;if(scenario==3)f.playing=false;if(scenario==4)f.seconds=std::numeric_limits<float>::quiet_NaN();c.tick(f);CHECK(!w.leased&&w.restores==1&&w.interrupted&&w.drops==0);c.cancel();CHECK(w.restores==1&&w.drops==0);}
  {Fake w;Controller c(w);auto f=frame();spin(c,f);w.exists=false;c.tick(f);CHECK(w.restores==0);CHECK(c.phase()==Phase::Recovery);}
  {Fake w;Controller c(w);auto f=frame();w.available=false;f.primary=true;steps(c,f,100);CHECK(w.takes==0&&w.hits==0);}
- {Fake w;Controller c(w);auto f=frame();spin(c,f);f.primary=false;steps(c,f,120);CHECK(w.restores==1&&w.hits==1);}
+ {Fake w;Controller c(w);auto f=frame();spin(c,f);f.primary=false;steps(c,f,120);CHECK(w.restores==1&&w.hits==0&&c.counters().throws==0);}
  CHECK(capturable_class(459));CHECK(!capturable_class(1422));CHECK(!capturable_class(11));CHECK(!capturable_class(1106));CHECK(!capturable_class(-1));
  for(int heavy:{253,625,1048,1202,1454})CHECK(!capturable_class(heavy));
  CHECK(capturable_class(1371));
@@ -100,7 +112,41 @@ int main(){
  {Fake w;Controller c(w);auto f=frame();w.available=false;f.seconds=.05f;f.primary=true;steps(c,f,8);
   CHECK(c.phase()==Phase::Windup&&w.queries>0&&w.takes==0);
   w.available=true;c.tick(f);CHECK(c.phase()==Phase::Spinning&&w.takes==1&&w.ammo==19);}
- {MultiFake w;Controller c(w);auto f=frame();launch(c,f);const auto first=w.actors[0].target;
+ {DropFake w;Controller c(w);auto f=frame();capture_only(c,f);w.launchable=false;
+  f.primary=false;c.tick(f);
+  CHECK(w.drops==1&&!w.leased&&w.exists&&!w.interrupted&&w.ammo==19&&w.launches==0);
+  CHECK(c.attack_phase()==Phase::Recovery&&c.flight_count()==0&&!c.target()&&c.counters().throws==0&&c.counters().impacts==0);
+  CHECK(std::count(w.motions.begin(),w.motions.end(),Motion::Release)==0&&w.motions.back()==Motion::Recover);
+  steps(c,f,120);CHECK(w.drops==1&&w.restores==1&&w.hits==0&&w.ammo==19&&w.launches==0);
+  w.launchable=true;f.primary=true;capture_only(c,f);CHECK(w.takes==2&&w.ammo==18&&w.drops==1);}
+ for(bool at_full:{false,true}){DropFake w;Settings settings;settings.full_charge=.5f;
+  Controller c(w,settings);auto f=frame();f.seconds=.0625f;capture_only(c,f);
+  steps(c,f,at_full?8:7);CHECK(c.charge()==(at_full?1.f:.875f));
+  f.primary=false;c.tick(f);
+  CHECK(w.drops==(at_full?0:1)&&w.launches==(at_full?1:0)&&c.counters().throws==(at_full?1u:0u));
+  CHECK(c.flight_count()==(at_full?1u:0u)&&w.ammo==19&&w.hits==0);
+  if(at_full)CHECK(c.charge()==1.f&&c.phase()==Phase::Flying);}
+ for(bool full:{false,true}){DropFake w;Controller c(w);auto f=frame();capture_only(c,f);if(full)fill(c,f);else steps(c,f,12);
+  const auto before=c.charge();f.paused=true;f.primary=false;steps(c,f,120);
+  CHECK(w.leased&&w.drops==0&&w.launches==0&&c.charge()==before);
+  f.paused=false;c.tick(f);CHECK(w.drops==(full?0:1)&&w.launches==(full?1:0)&&w.ammo==19);}
+ {DropFake w;Controller c(w);auto f=frame();capture_only(c,f);
+  w.on_drop=[&]{CHECK(!c.owns(w.enemy)&&!c.target()&&c.flight_count()==0);c.cancel();};
+  f.primary=false;c.tick(f);CHECK(c.attack_phase()==Phase::Idle&&w.drops==1&&w.restores==1&&w.launches==0);
+  CHECK(std::count(w.motions.begin(),w.motions.end(),Motion::Recover)==1);}
+ {DropFake w;Controller c(w);auto f=frame();capture_only(c,f);w.exists=false;f.primary=false;c.tick(f);
+  CHECK(w.drops==0&&w.restores==0&&w.launches==0&&c.attack_phase()==Phase::Recovery);}
+ {DropFake w;Settings settings;settings.full_charge=.5f;settings.maximum_spin=1.f;
+  Controller c(w,settings);auto f=frame();f.seconds=.0625f;capture_only(c,f);steps(c,f,16);
+  CHECK(w.launches==1&&w.drops==0&&c.counters().throws==1&&c.flight_count()==1&&c.charge()==1.f);}
+ {MultiFake w;auto settings=rapid_flights();settings.flight_seconds=100;Controller c(w,settings);auto f=frame();launch(c,f);
+  const auto first=w.actors[0].target;steps(c,f,9);capture_only(c,f);
+  const auto second=c.target();CHECK(!(first==second)&&c.flight_count()==1&&c.charge()==0);
+  const auto moved=w.actors[0].moves;f.primary=false;c.tick(f);
+  CHECK(w.drops==1&&w.restores==1&&c.counters().throws==1&&c.flight_count()==1&&c.flying(first)&&!c.owns(second));
+  CHECK(w.actors[0].leased&&w.actors[0].moves>moved&&!w.actor(second)->leased&&w.all_cancels==0);
+  w.actors[0].collision=true;c.tick(f);CHECK(w.impacts.size()==1&&w.impacts[0].target==first&&c.flight_count()==0&&w.drops==1);}
+ {MultiFake w;Controller c(w,rapid_flights());auto f=frame();launch(c,f);const auto first=w.actors[0].target;
   CHECK(c.phase()==Phase::Flying&&c.target()==first&&c.attack_phase()==Phase::Recovery&&c.flight_count()==1);
   const auto original_charge=c.charge(),original_blast=c.blast_charge();f.primary=true;c.tick(f);
   CHECK(w.attempts==1&&c.attack_phase()==Phase::Recovery);steps(c,f,7);CHECK(w.attempts==1);
@@ -117,41 +163,41 @@ int main(){
   c.tick(f);CHECK(w.impacts.size()==1);
   w.actors[1].collision=true;c.tick(f);CHECK(w.impacts.size()==2&&c.flight_count()==0&&w.restores==2);
  }
- {MultiFake w;Controller c(w);auto f=frame();launch(c,f);f.primary=true;c.tick(f);f.primary=false;
+ {MultiFake w;Controller c(w,rapid_flights());auto f=frame();launch(c,f);f.primary=true;c.tick(f);f.primary=false;
   steps(c,f,8);CHECK(w.attempts==2&&c.attack_phase()==Phase::Windup);
   c.tick(f);CHECK(c.attack_phase()==Phase::Recovery&&w.captures==1&&w.ammunition==62);
   steps(c,f,20);CHECK(w.captures==1&&c.counters().throws==1);}
- {MultiFake w;Controller c(w);auto f=frame();launch(c,f);steps(c,f,9);f.primary=true;c.tick(f);
+ {MultiFake w;Controller c(w,rapid_flights());auto f=frame();launch(c,f);steps(c,f,9);f.primary=true;c.tick(f);
   CHECK(w.attempts==2&&c.attack_phase()==Phase::Windup);f.equipped=false;c.tick(f);
   CHECK(c.flight_count()==1&&c.attack_phase()==Phase::Idle&&w.all_cancels==0&&w.actors[0].leased);
   w.actors[0].collision=true;c.tick(f);CHECK(w.impacts.size()==1&&c.flight_count()==0&&w.all_cancels==0);}
- {MultiFake w;Controller c(w);auto f=frame();launch(c,f);f.primary=true;c.tick(f);f.paused=true;
+ {MultiFake w;Controller c(w,rapid_flights());auto f=frame();launch(c,f);f.primary=true;c.tick(f);f.paused=true;
   const auto point=w.actors[0].position;const auto moves=w.actors[0].moves;steps(c,f,120);
   CHECK(c.flight_count()==1&&w.actors[0].moves==moves&&length_squared(point-w.actors[0].position)==0&&w.attempts==1);
   f.paused=false;steps(c,f,8);CHECK(w.attempts==2&&c.attack_phase()==Phase::Windup);}
- {MultiFake w;Settings settings;settings.flight_seconds=100;Controller c(w,settings);auto f=frame();launch(c,f);launch(c,f);
+ {MultiFake w;auto settings=rapid_flights();settings.flight_seconds=100;Controller c(w,settings);auto f=frame();launch(c,f);launch(c,f);
   const auto first=w.actors[0].target,second=w.actors[1].target;CHECK(c.flight_count()==2);
   c.discard(first);CHECK(c.flight_count()==1&&!w.actors[0].leased&&w.actors[1].leased&&w.impacts.empty());
   c.discard(first);CHECK(w.restores==1);w.actors[1].collision=true;c.tick(f);
   CHECK(w.impacts.size()==1&&w.impacts[0].target==second&&w.restores==2);}
- {MultiFake w;Settings settings;settings.flight_seconds=100;Controller c(w,settings);auto f=frame();launch(c,f);launch(c,f);
+ {MultiFake w;auto settings=rapid_flights();settings.flight_seconds=100;Controller c(w,settings);auto f=frame();launch(c,f);launch(c,f);
   w.actors[0].exists=false;c.tick(f);CHECK(c.flight_count()==1&&w.impacts.empty()&&!w.actors[0].leased&&w.actors[1].leased);
   c.cancel();CHECK(c.flight_count()==0&&!w.actors[1].leased&&w.impacts.empty()&&w.all_cancels==1);}
- {MultiFake w;Settings settings;settings.windup=settings.minimum_hold=settings.minimum_spin=.001f;settings.recovery=0;settings.flight_seconds=100;
+ {MultiFake w;auto settings=rapid_flights();settings.windup=settings.minimum_hold=settings.minimum_spin=.001f;settings.recovery=0;settings.flight_seconds=100;
   Controller c(w,settings);auto f=frame();for(unsigned i=0;i<maximum_flights;++i)launch(c,f);
   CHECK(c.flight_count()==maximum_flights&&w.attempts==int(maximum_flights));
   f.primary=true;steps(c,f,20);CHECK(c.flight_count()==maximum_flights&&w.attempts==int(maximum_flights));
   w.actors[0].collision=true;c.tick(f);CHECK(c.flight_count()==maximum_flights-1&&w.attempts==int(maximum_flights)+1&&c.attack_phase()==Phase::Windup);
   CHECK(w.ammunition==64-int(maximum_flights)-1);c.cancel();CHECK(c.flight_count()==0&&w.restores==int(maximum_flights));}
- {MultiFake w;Settings settings;settings.flight_seconds=100;Controller c(w,settings);auto f=frame();launch(c,f);const auto first=w.actors[0].target;
+ {MultiFake w;auto settings=rapid_flights();settings.flight_seconds=100;Controller c(w,settings);auto f=frame();launch(c,f);const auto first=w.actors[0].target;
   w.force_target=first;f.primary=true;steps(c,f,60);CHECK(w.captures==1&&c.flight_count()==1&&w.attempts==2);}
- for(unsigned event=0;event<3;++event){MultiFake w;Settings settings;settings.flight_seconds=100;Controller c(w,settings);auto f=frame();launch(c,f);launch(c,f);
+ for(unsigned event=0;event<3;++event){MultiFake w;auto settings=rapid_flights();settings.flight_seconds=100;Controller c(w,settings);auto f=frame();launch(c,f);launch(c,f);
   if(event==0)f.alive=false;
   if(event==1)f.playing=false;
   if(event==2)++f.epoch;
   c.tick(f);CHECK(c.flight_count()==0&&w.restores==2&&w.impacts.empty());c.cancel();CHECK(w.restores==2);}
- {MultiFake w;Settings settings;settings.flight_seconds=100;Controller c(w,settings);auto f=frame();launch(c,f);launch(c,f);
+ {MultiFake w;auto settings=rapid_flights();settings.flight_seconds=100;Controller c(w,settings);auto f=frame();launch(c,f);launch(c,f);
   w.on_impact=[&]{c.cancel();};w.actors[0].collision=w.actors[1].collision=true;c.tick(f);
   CHECK(c.phase()==Phase::Idle&&c.flight_count()==0&&w.impacts.size()==1&&w.restores==2&&w.all_cancels==1);}
- std::puts("controller: held/tap capture, buffered rapid reuse, eight independent flights, per-target discard, provenance, pause, equip switch, teardown and legacy regressions passed");
+ std::puts("controller: early live drop, exact displayed-charge threshold, full/automatic launch, reentry, independent flights, pause, switch and cancellation regressions passed");
 }

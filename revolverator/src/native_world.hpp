@@ -10,6 +10,7 @@
 #include "golden_impact.hpp"
 #include "release_recoil.hpp"
 #include "native_contact_sparks.hpp"
+#include "weapon_audio.hpp"
 #include <array>
 namespace revolverator {
 class NativeWorld final:public World,public Memory {
@@ -23,6 +24,7 @@ public:
  std::optional<Vec3> carry_anchor(float angle)override;
  void move(Target target,Vec3 position,float yaw)override;
  void release(Target target,bool cancelled)override;
+ void drop(Target target)override;
  std::optional<Contact> sweep(Target target,Vec3 from,Vec3 to)override;
  void impact(Target target,std::optional<Target> other,float charge)override;
  void observe_frame(const Frame& frame)override;
@@ -33,6 +35,8 @@ public:
  void attack_cancelled()override;
  void discarded(Target target)override;
  void animate(Motion motion)override;
+ void set_audio(WeaponAudioSink* audio){audio_=audio;}
+ void enemy_updated(unsigned moby);
  Frame snapshot(bool primary,std::uint32_t epoch)const;
  void set_active(bool active){active_=active;if(!active)recoil_.cancel();}
  void set_golden(bool golden){golden_=golden;}
@@ -70,6 +74,8 @@ private:
  NativeAmmunition& ammunition_;
  NativeRotor& rotor_;
  NativeContactSparks sparks_;
+ WeaponAudioSink* audio_{};
+ struct GroundContact {Target target{};unsigned updates{};} ground_contact_;
  std::optional<Vec3> contact_tip_;
  using Allocate=unsigned(*)(unsigned);
  using Hit=void(*)(unsigned,unsigned);
@@ -102,6 +108,8 @@ private:
  struct Site {Target target{};Vec3 point{},approach{};} site_;
  void move_origin(const Lease& lease,Vec3 position,Vec3 angles);
  void restore_lease(Lease& lease,bool cancelled);
+ std::optional<Vec3> drop_position(const Lease& lease)const;
+ bool counterstrike(Target enemy);
  Flight* flight(Target target);
  const Flight* flight(Target target)const;
  Lease* owned_lease(Target target);
@@ -111,6 +119,7 @@ private:
  Vec3 damage_centre(Target target)const;
  float collision_radius(Target target)const;
  bool visible_from(Vec3 origin,Target target,unsigned ignore)const;
+ bool clear_path(Vec3 from,Vec3 to,unsigned accepted_target,unsigned ignore)const;
  std::optional<Vec3> ray(Vec3 from,Vec3 to,unsigned ignore)const;
  bool hit(Target target,float damage,Vec3 direction,unsigned attacker,bool explosive=false);
  bool submit_hit(Target target,float damage,Vec3 direction,const Shot& shot,bool explosive=false);

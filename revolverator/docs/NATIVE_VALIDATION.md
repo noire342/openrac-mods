@@ -1,5 +1,25 @@
 # Native validation
 
+## Version 0.3.4: local native-sound rollback accepted
+
+This source adds charge-gated release and a deliberate ground drop. The current
+runtime restores the original game sounds; the custom sound experiment remains
+source only. The [native-only receipt](validation/native-audio-0.3.4.json) records
+81 passing PAL checks across Base and Golden scenarios and 38 passing Release
+host test groups, against DLL 3282185c…8fcaa63. Both native processes exited
+normally, and all 131 original inputs stayed unchanged in each run. Native
+early-drop/counterattack, pause/resume and charged/automatic throws passed.
+There were no custom sound events or runtime WAVs; the native stereo mixes
+contained nonzero audio. This is targeted local evidence, not a published
+release, subjective listening review or whole-campaign certification.
+The earlier [custom-audio candidate receipt](validation/charge-release-0.3.4.json)
+is historical and certifies only its own binary.
+
+See [charge release](CHARGE_RELEASE.md), [audio status](AUDIO.md) and the
+[verification plan](QA_CHECKLIST.md) for the required scope.
+
+## Published version 0.3.3
+
 Release validation identifies the exact weapon DLL, asset adapter, official
 client, source snapshot, disc region and native scenarios. Use the validation
 attached to the release being installed. A historical pass does not certify a

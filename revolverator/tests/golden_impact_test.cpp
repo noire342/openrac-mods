@@ -94,14 +94,15 @@ int main(){
  }
  {
   WorldFake world;Controller controller(world);auto f=frame();begin_spin(controller,f);
-  f.primary=false;tick(controller,f,20);require(world.throws==1,"manual release starts immediately at minimum spin");
+  tick(controller,f,104);require(controller.charge()==1,"flight-lifetime fixture charges until throwing is permitted");
+  f.primary=false;controller.tick(f);require(world.throws==1,"manual release starts immediately at full charge");
   f.paused=true;const auto point=world.point;tick(controller,f,100);
   require(world.impacts==0&&length_squared(world.point-point)==0,"pause freezes projectile lifetime");
   f.paused=false;f.equipped=false;tick(controller,f,120);
   require(world.impacts==1&&world.result.reason==ImpactReason::FlightTimeout,"timeout distinguished from terrain contact");
  }
  for(unsigned event=0;event<3;++event){
-  WorldFake world;Controller controller(world);auto f=frame();begin_spin(controller,f);f.primary=false;tick(controller,f,20);
+  WorldFake world;Controller controller(world);auto f=frame();begin_spin(controller,f);tick(controller,f,104);f.primary=false;controller.tick(f);
   if(event==0)f.alive=false;else if(event==1)f.playing=false;else ++f.epoch;
   controller.tick(f);require(world.impacts==0&&world.cancellations==1&&!world.leased,"death/scene/travel cancel flight without impact");
  }

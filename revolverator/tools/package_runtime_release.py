@@ -4,8 +4,8 @@
 """Package the tested Windows weapon and its complete corresponding source.
 
 The SDK-generated package manifest is used, never the raw source manifest.
-Only authored ammunition art ships; native drill and HUD art is derived on the
-player's machine. This tool writes artifacts and hashes but never publishes.
+Only authored ammunition art ships; native drill and
+HUD art is derived on the player's machine. This tool never publishes.
 """
 from __future__ import annotations
 import argparse
@@ -103,6 +103,10 @@ def main():
         blob=read(source,name)
         if digest(blob)!=wanted:raise ValueError(f'Authored ammunition provenance differs: {name}')
         files[name]=blob
+    # Custom sounds are parked in the development source only. A stale build's
+    # audio directory must never leak into the installable archive.
+    if validation.get('audio_mode')!='native':
+        raise ValueError('The current runtime requires native-only audio validation')
     for name in PREPARERS:files['tools/'+name]=read(source,'tools/'+name)
     for path in sorted((source/'docs').rglob('*')):
         if path.is_file() and path.suffix in ('.md','.json'):
@@ -126,6 +130,7 @@ def main():
           'revolverator_sha256':digest(weapon),'overlay_sha256':digest(overlay),
           'game_derived_artwork_included':False,'automatic_player_disc_preparation':True,
           'ai_assisted':True,'files':inventory(files),'native_validation':validation}
+    meta['audio_mode']='native'
     files['RELEASE-VALIDATION.json']=(json.dumps(meta,indent=2)+'\n').encode()
     native=out/f'revolverator-{version}-windows-x86_64.zip';archive(native,files)
     source_files={'revolverator/'+name:data for name,data in snapshot(source).items()}
@@ -135,11 +140,11 @@ def main():
     source_zip=out/f'revolverator-{version}-source.zip';archive(source_zip,source_files)
     receipt=out/f'revolverator-{version}-validation.json'
     if receipt.exists():raise ValueError('Validation artifact already exists')
-    receipt.write_text(json.dumps(meta,indent=2)+'\n',encoding='utf-8')
+    receipt.write_bytes(files['RELEASE-VALIDATION.json'])
     artifacts=(native,source_zip,receipt)
     sums=out/'SHA256SUMS'
     if sums.exists():raise ValueError('SHA256SUMS already exists')
-    sums.write_text(''.join(f'{digest(path.read_bytes())}  {path.name}\n' for path in artifacts),encoding='ascii')
+    sums.write_bytes(''.join(f'{digest(path.read_bytes())}  {path.name}\n' for path in artifacts).encode('ascii'))
     print(json.dumps({'version':version,'source_commit':a.commit,'artifacts':inventory({path.name:path.read_bytes() for path in (*artifacts,sums)})},indent=2))
 
 if __name__=='__main__':main()

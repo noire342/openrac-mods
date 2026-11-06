@@ -260,7 +260,10 @@ void Presentation::after_hud(unsigned e,const Controller& c){
  // number and above Weapon XP's existing bottom channel. No added panel.
  const int height=experience_enabled_?2:4;
  rect(left,y+21,width,height,rgb|((alpha/3)<<24));rect(left+1,y+22,width-2,height-1,(alpha*3/4)<<24);
- const int fill=int(std::round((width-2)*c.charge()));
+ // The last pixel is a gameplay promise: show it only when a release can
+ // actually throw. Rounding a partial charge made the bar look full early.
+ const float charge=c.charge();const int maximum_fill=width-2;
+ const int fill=charge>=1.f?maximum_fill:std::clamp(int(maximum_fill*charge),0,maximum_fill-1);
  rect(left+1,y+22,fill,height-1,color);
 }
 void Presentation::reset(){

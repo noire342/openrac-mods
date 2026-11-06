@@ -20,15 +20,23 @@ bool near(float a,float b){return std::abs(a-b)<.0001f;}
 float distance(Vec3 a,Vec3 b){return std::sqrt(length_squared(a-b));}
 constexpr unsigned hero=0x13f350,body=0x30000,weapon=0x31000,pool=0x40000,stack_base=0x1e00000;
 struct Packet {unsigned target;std::array<unsigned char,48> payload;};
+struct AudioWitness final:WeaponAudioSink {
+ std::vector<WeaponAudioCue> cues;
+ bool emit(WeaponAudioCue cue,float)override{cues.push_back(cue);return true;}
+ unsigned count(WeaponAudioCue cue)const{return unsigned(std::count(cues.begin(),cues.end(),cue));}
+};
 struct Fixture;
 Fixture* live;
 struct Fixture {
  std::vector<unsigned char> ram=std::vector<unsigned char>(0x2000000);
  openrac_api api{};GuestArena arena;NativeAmmunition ammunition;NativeRotor rotor;NativeWorld world;
  std::vector<Packet> packets;
+ std::vector<openrac_hit> counterstrikes;
  std::vector<float> burst_sizes;
  unsigned stack_cursor=stack_base,stack_fail_size{},burst_calls{},allocations{},ray_calls{};
  float burst_scale{},burst_flash{},wall_x=10000;
+ std::optional<float> floor_z;
+ Vec3 floor_normal{0,0,1};
  int current_level=1;Vec3 burst_position{};
  std::function<void()> on_burst;
  template<class T>void put(unsigned at,T value){std::memcpy(ram.data()+at,&value,sizeof value);}
@@ -57,6 +65,10 @@ struct Fixture {
    const float u=(live->wall_x-a.x)/(b.x-a.x);
    live->put(0x173e60,a+(b-a)*u);live->put(0x173e58,0u);live->put(0x173e80,Vec3{-1,0,0});return 1;
   }
+  if(live->floor_z&&a.z>*live->floor_z&&b.z<=*live->floor_z){
+   const float u=(*live->floor_z-a.z)/(b.z-a.z);
+   live->put(0x173e60,a+(b-a)*u);live->put(0x173e58,0u);live->put(0x173e80,live->floor_normal);return 1;
+  }
   return 0;
  }
  static void post_hit(unsigned target,unsigned payload){
@@ -83,12 +95,14 @@ struct Fixture {
   return nullptr;
  }
  static const openrac_api* prepare(Fixture* fixture){
-  live=fixture;auto& api=fixture->api;api.memory=fixture->ram.data();api.loaded_level=loaded;
+  live=fixture;auto& api=fixture->api;api.size=sizeof api;api.memory=fixture->ram.data();api.loaded_level=loaded;
   api.relocate_data=relocate;api.relocate_level_data=relocate_level;api.function=function;
   api.setting_bool=setting;api.log=log;api.stack_push=stack_push;api.stack_pop=stack_pop;
+  api.moby_slot_of=+[](unsigned address)->int{return address==body?0:address>=pool&&address<live->get<unsigned>(0x15ff20)?int(1+(address-pool)/256):-1;};
+  api.moby_hit=+[](openrac_mod*,const openrac_hit* hit)->int{live->counterstrikes.push_back(*hit);return OPENRAC_HOOK_OK;};
   return &api;
  }
- Fixture():ammunition(prepare(this)),rotor(&api,arena),world(&api,nullptr,ammunition,rotor,arena){
+ Fixture():ammunition(prepare(this)),rotor(&api,arena),world(&api,reinterpret_cast<openrac_mod*>(1),ammunition,rotor,arena){
   actor(body,0,{0,0,0},1);actor(weapon,180,{0,0,1},2);
   put(hero+0x2080,body);put(hero+0x1090,weapon);put(hero+0x10b8,18);put(hero+0x10b4,2);
   put(hero+0x22a8,4);put(hero+0x2084,0);put(hero+0x80,Vec3{});put(hero+0x98,0.f);
@@ -115,6 +129,68 @@ struct Fixture {
 };
 }
 int main(){
+ for(bool golden:{false,true}){
+  Fixture f;AudioWitness audio;f.world.set_audio(&audio);f.floor_z=0.f;const auto victim=f.enemy(0,459,{1,0,.6f});
+  f.world.set_golden(golden);f.world.observe_frame(f.frame());
+  require(f.world.find_target({0,0,0},0,2.8f)==victim&&f.world.capture(victim),"drop fixture captures an ordinary enemy");
+  f.world.move(victim,{0,0,4},1);
+  f.world.drop(victim);
+  const auto position=f.get<Vec3>(victim.address+0x10),angles=f.get<Vec3>(victim.address+0x40);
+  require(position.x>.5f&&position.x<1.8f&&near(position.y,0)&&position.z>.35f&&position.z<.4f,
+          "early release puts the actor on actual ground in front of Ratchet");
+  require(std::abs(std::abs(angles.z)-3.14159265f)<.0001f,"dropped enemy faces Ratchet instead of the old capture heading");
+  require(!f.world.frozen(victim.address)&&!f.world.lease_valid()&&f.world.flight_count()==0,
+          "drop restores native updates immediately without allocating a flight");
+  require(f.get<unsigned>(victim.address+0x94)==7&&f.get<unsigned>(victim.address+0x98)==0,
+          "drop restores the original collision and AI state");
+  require(f.packets.empty()&&f.burst_calls==0&&f.world.golden_explosions()==0&&!f.world.release_recoil_active(),
+          "drop never posts weapon damage, Golden explosions or throw recoil");
+  require(f.counterstrikes.size()==1&&f.counterstrikes[0].victim==0&&f.counterstrikes[0].attacker==1&&
+          f.counterstrikes[0].mask==1&&near(f.counterstrikes[0].damage,1.f),
+          "one native light-enemy melee hit names the released enemy and Ratchet");
+  require(near(f.counterstrikes[0].position[2],.75f)&&near(f.counterstrikes[0].velocity[0],-.2f)&&
+          f.get<int>(hero+0x22a8)==4,"the native SDK receives the contact and impulse without any direct health write");
+  const auto after=f.ram;f.world.drop(victim);require(f.ram==after,"repeating an early-release callback is inert");
+  require(f.counterstrikes.size()==1,"repeating a drop never posts a second counterstrike");
+  require(audio.count(WeaponAudioCue::Capture)==1&&audio.count(WeaponAudioCue::Drop)==1&&
+          audio.count(WeaponAudioCue::GroundContact)==0&&audio.count(WeaponAudioCue::Throw)==0&&
+          audio.count(WeaponAudioCue::GoldenImpact)==0,"early release cues are distinct from throwing and landing waits for native update");
+  f.world.enemy_updated(victim.address);f.world.enemy_updated(victim.address);
+  require(audio.count(WeaponAudioCue::GroundContact)==1,"ground contact sounds once after a native enemy update confirms its live collision sphere");
+  require(f.stack_cursor==stack_base,"ground probes restore all SDK stack temporaries");
+ }
+ {
+  Fixture f;f.floor_z=0.f;f.wall_x=.8f;const auto victim=f.enemy(0,459,{.5f,0,.6f});
+  f.world.observe_frame(f.frame());require(f.world.find_target({0,0,0},0,2.8f)&&f.world.capture(victim),"blocked-front drop fixture captures");
+  f.world.move(victim,{0,0,4},1);f.world.drop(victim);
+  const auto position=f.get<Vec3>(victim.address+0x10);
+  require(position.x>0&&position.x<f.wall_x&&position.z<.4f,"a wall chooses supported ground on Ratchet's side instead of crossing it");
+ }
+ {
+  Fixture f;const auto victim=f.enemy(0,459,{1,0,.6f});const auto origin=f.get<Vec3>(victim.address+0x10);
+  f.world.observe_frame(f.frame());require(f.world.find_target({0,0,0},0,2.8f)&&f.world.capture(victim),"no-floor drop fixture captures");
+  f.world.move(victim,{0,0,4},1);f.world.drop(victim);
+  require(distance(origin,f.get<Vec3>(victim.address+0x10))<.0001f&&!f.world.frozen(victim.address),
+          "a void falls back safely to the capture location rather than inventing ground or a projectile");
+ }
+ {
+  Fixture f;f.floor_z=0.f;const auto victim=f.enemy(0,459,{1,0,.6f});f.world.observe_frame(f.frame());
+  require(f.world.find_target({0,0,0},0,2.8f)&&f.world.capture(victim),"stale-drop fixture captures");
+  f.put(victim.address+0x38,victim.stamp+1);f.put(victim.address+0x94,88u);f.put(victim.address+0x98,77u);
+  const auto before=f.ram;f.world.drop(victim);
+  require(f.ram==before&&!f.world.lease_valid(),"a recycled captive is never moved or re-enabled by drop");
+ }
+ for(unsigned safety=0;safety<4;++safety){
+  Fixture f;const auto victim=f.enemy(0,459,{1,0,.6f});f.world.observe_frame(f.frame());
+  require(f.world.find_target({0,0,0},0,2.8f)&&f.world.capture(victim),"counterstrike safety fixture captures");
+  if(safety==0){auto frame=f.frame();frame.position={10,0,0};f.put(hero+0x80,frame.position);f.world.observe_frame(frame);}
+  if(safety==1)f.api.size=offsetof(openrac_api,moby_slot_of);
+  if(safety==2)f.stack_fail_size=32;
+  if(safety==3)f.put<unsigned short>(body+0xa6,149);
+  f.world.drop(victim);
+  require(f.counterstrikes.empty()&&!f.world.frozen(victim.address)&&f.world.flight_count()==0,
+          "distant fallback, missing SDK prefix, failed LOS stack or another avatar cannot receive a phantom counterstrike");
+ }
  {
   Fixture f;const auto projectile=f.enemy(0,459,{0,0,0});const auto boss=f.enemy(1,1106,{2,0,0});
   const auto crate=f.enemy(2,500,{1,1,0});const auto npc=f.enemy(3,13,{1,0,0});

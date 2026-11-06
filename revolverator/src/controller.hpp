@@ -49,6 +49,10 @@ public:
  virtual std::optional<Vec3> carry_anchor(float angle)=0;
  virtual void move(Target target,Vec3 position,float yaw)=0;
  virtual void release(Target target,bool cancelled)=0;
+ // A deliberate release before the displayed charge bar is full is a drop,
+ // not a launch or safety cancellation. Native adapters place the live actor
+ // on the floor; older adapters retain their safe cancellation restoration.
+ virtual void drop(Target target){release(target,true);}
  virtual std::optional<Contact> sweep(Target target,Vec3 from,Vec3 to)=0;
  virtual void impact(Target target,std::optional<Target> other,float charge)=0;
  // Default seams retain compatibility with adapters which only implement the

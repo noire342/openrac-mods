@@ -32,6 +32,7 @@ struct Fixture {
  int level=1,native_calls=0,previous_xp_calls=0,quick_calls=0,rectangles=0,quads=0,heap_calls=0;
  bool steal_cached_image=false,change_current_bank=false,cache_available=true;
  std::vector<Sprite> sprites;
+ std::vector<std::array<int,4>> drawn_rectangles;
  std::string notified_text;int notifications=0,notified_duration=0;
  template<class T>T get(unsigned at)const{T value{};std::memcpy(&value,ram.data()+at,sizeof value);return value;}
  template<class T>void put(unsigned at,const T& value){std::memcpy(ram.data()+at,&value,sizeof value);}
@@ -107,7 +108,7 @@ struct Fixture {
    if(!std::strcmp(name,"FUN_001ffc30"))return reinterpret_cast<void*>(sprite);
    if(!std::strcmp(name,"FUN_001ff960"))return reinterpret_cast<void*>(find_frame);
    if(!std::strcmp(name,"FUN_001ff288"))return reinterpret_cast<void*>(+[](unsigned)->unsigned{++live->heap_calls;return 0;});
-   if(!std::strcmp(name,"FUN_00200e08"))return reinterpret_cast<void*>(+[](int,int,int,int,std::uint64_t,int){++live->rectangles;});
+   if(!std::strcmp(name,"FUN_00200e08"))return reinterpret_cast<void*>(+[](int x,int y,int right,int bottom,std::uint64_t,int){++live->rectangles;live->drawn_rectangles.push_back({x,y,right-x,bottom-y});});
    if(!std::strcmp(name,"FUN_001f5450"))return reinterpret_cast<void*>(+[](int,int,int,int,int,int,int,int,std::uint64_t,std::uint64_t){++live->quads;});
    if(!std::strcmp(name,"FUN_001f44b8"))return reinterpret_cast<void*>(+[](int)->std::uint64_t{return 7;});
    if(!std::strcmp(name,"FUN_L00_00235a70"))return reinterpret_cast<void*>(+[](unsigned,unsigned,unsigned){return 0;});
@@ -156,9 +157,40 @@ struct IdleWorld final:World {
  void impact(Target,std::optional<Target>,float)override{}
  void animate(Motion)override{}
 };
+struct ChargingWorld final:World {
+ const Target enemy{0x40000,0x80000,459,1};
+ bool begin_attack()override{return true;}
+ std::optional<Target> find_target(Vec3,float,float)override{return enemy;}
+ bool valid(Target target)const override{return target==enemy;}
+ bool capture(Target)override{return true;}
+ std::optional<Vec3> carry_anchor(float)override{return Vec3{};}
+ void move(Target,Vec3,float)override{}
+ void release(Target,bool)override{}
+ std::optional<Contact> sweep(Target,Vec3,Vec3)override{return {};}
+ void impact(Target,std::optional<Target>,float)override{}
+ void animate(Motion)override{}
+};
 }
 
 int main(){
+ for(bool with_xp:{false,true}){
+  Fixture f;Presentation presentation(&f.api,nullptr,&f.arena);
+  presentation.select_identity(true);presentation.frame(true);presentation.set_experience(with_xp,2,.5f,true);
+  ChargingWorld world;Settings settings;settings.full_charge=1.f;Controller controller(world,settings);
+  Frame frame;frame.equipped=frame.playing=frame.alive=frame.grounded=frame.primary=true;
+  for(unsigned i=0;i<30&&controller.attack_phase()!=Phase::Spinning;++i)controller.tick(frame);
+  require(controller.attack_phase()==Phase::Spinning,"charge-bar fixture captures through the real controller");
+  frame.seconds=.0999f;for(unsigned i=0;i<10;++i)controller.tick(frame);
+  require(controller.charge()<1.f&&controller.charge()>.99f,"fixture is just below the actual full-charge threshold");
+  f.drawn_rectangles.clear();presentation.after_hud(Slot,controller);
+  const int maximum=with_xp?35:68;
+  require(!f.drawn_rectangles.empty()&&f.drawn_rectangles.back()[2]==maximum-1,
+          "a partial charge never paints the last pixel, with or without XP");
+  frame.seconds=.01f;controller.tick(frame);
+  f.drawn_rectangles.clear();presentation.after_hud(Slot,controller);
+  require(controller.charge()==1.f&&f.drawn_rectangles.back()[2]==maximum,
+          "the final charge pixel appears at the same threshold that permits throwing");
+ }
  {
   Fixture f;Presentation presentation(&f.api,nullptr,&f.arena);
   f.put<int>(localization::native_language_address,5);

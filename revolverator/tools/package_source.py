@@ -8,6 +8,7 @@ import hashlib
 import json
 from pathlib import Path
 import zipfile
+from authored_audio import snapshot as audio_snapshot, required_for_version
 
 ROOT_FILES = {'CMakeLists.txt', 'openrac-mod.json', 'README.md', 'LICENSE', 'COPYING'}
 ROOT_DIRS = {'src', 'include', 'docs', 'tests', 'tools', 'examples', 'third_party', 'support'}
@@ -41,6 +42,9 @@ def snapshot(source: Path) -> dict[str, bytes]:
     required = {'CMakeLists.txt', 'openrac-mod.json', 'include/revolverator_api.h', 'src/mod.cpp'}
     if not required.issubset(files):
         raise ValueError('The source tree is missing required mod files')
+    version = json.loads(files['openrac-mod.json'])['version']
+    audio_files, _ = audio_snapshot(source, required=required_for_version(version))
+    files.update(audio_files)
     return files
 
 

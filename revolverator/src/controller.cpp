@@ -156,11 +156,22 @@ void Controller::tick(const Frame& f){
   }
   break;
  case Phase::Spinning:{
+  // Decide from the charge the player last saw, before advancing this frame.
+  // A release one tick before full must never become a delayed projectile.
+  if(!f.primary&&charge()<1.f){
+   const auto victim=target_;
+   target_={};phase_=Phase::Recovery;timer_=spin_time_=angle_=0;
+   buffered_=release_recovery_=false;
+   world_.drop(victim);
+   if(generation!=reset_generation_)return;
+   world_.attack_cancelled();world_.animate(Motion::Recover);
+   break;
+  }
   spin_time_+=dt;
   const float power=charge();angle_=std::remainder(angle_+dt*(24.f+power*18.f),6.283185307f);
   point_=world_.carry_anchor(angle_).value_or(f.position+Vec3{0,0,settings_.orbit_height});
   world_.move(target_,point_,angle_);
-  if((!f.primary&&spin_time_>=settings_.minimum_spin)||spin_time_>=settings_.maximum_spin){
+  if(!f.primary||spin_time_>=settings_.maximum_spin){
    auto* flight=free_flight();if(!flight||!world_.can_launch())break;
    const float blast=blast_charge(),speed=13.f+power*9.f;
    *flight={target_,point_,{std::cos(f.yaw)*speed,std::sin(f.yaw)*speed,2.f+power*1.5f},0,power,blast,f.yaw,++sequence_};

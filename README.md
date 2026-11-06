@@ -97,9 +97,16 @@ includes the installable weapon, complete corresponding source, native validatio
 and checksums. Other mods retain their own releases and region requirements.
 See the [weapon README](revolverator/README.md) for the current installation path.
 
+The 0.3.4 development source adds charge-gated throws and an early ground drop
+that restores the enemy's native counterattack. It keeps the original game
+sounds and fixes held Circle input across pause/resume. The local Windows PAL
+candidate passed 38 host test groups and 81 targeted native checks; the
+[receipt](revolverator/docs/validation/native-audio-0.3.4.json) records its exact
+binary and scope. The installable public release remains 0.3.3.
+
 | Component | Current source | Role |
 |---|---|---|
-| [Revolverator](revolverator/README.md) |0.3.3 PAL reference | Additional weapon, Gold upgrade, native contact sparks, API v3 and automatic player-disc asset preparation |
+| [Revolverator](revolverator/README.md) |0.3.4 development, PAL reference | Additional weapon, charge-gated release, Gold upgrade, native sounds, contact sparks and API v3 |
 | [Weapon Experience](weapon-xp/README.md) |0.6.4 | Optional API v4 progression companion with PAL HUD/camera corrections |
 | [Skill Points: RetroAchievements](skill-points-ra/README.md) |0.1.3 | Native menu, offline rules and read-only/event C API v1 |
 | [Cinematic Journeys](cinematic-journeys/README.md) |0.1.1 | Cutscene protection and configurable original flight animation |

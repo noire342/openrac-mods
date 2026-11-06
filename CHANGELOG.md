@@ -1,5 +1,20 @@
 # Changelog
 
+## Rotatore / Revolverator 0.3.4 — development source, 2026-11-06
+
+- Require the displayed charge bar to be full before a manual throw. Early
+  release puts the live enemy on the ground in front of Ratchet, restoring
+  native AI, collision and a nearby counterattack without a projectile or blast.
+- Preserve Circle's physical state across pause/resume, so pausing while
+  holding an enemy cannot manufacture a release.
+- Keep original game sounds. Preserve the procedural audio experiment in
+  source only; the installable local candidate contains no custom WAVs.
+- Retain the Golden charged explosion, automatic maximum-spin throw, native
+  contact sparks and independent weapon saves.
+- Record 38 passing Release host groups and 81 targeted native PAL Base/Golden
+  checks against the local candidate. Public installable release remains 0.3.3.
+- Document the official submission form requested by the catalog maintainer.
+
 ## Rotatore / Revolverator 0.3.2 — 2026-11-02
 
 - Exclude armored Alien Snappers from capture. Keep tanks and Toxic Crabs
