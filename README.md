@@ -148,6 +148,6 @@ The original drill geometry is read from the player's extraction. The authored
 ammunition recipe retains its explicit AI/art provenance. Revolverator derives
 the Golden finish locally and ships no game atlas. The [old engine patch](docs/arsenal-bridge/README.md) is historical.
 
-Implementation code is [GPL-3.0-or-later](LICENSE), Copyright (c) 2026 lorenzogarrone.
+Implementation code is [GPL-3.0-or-later](LICENSE), Copyright (c) 2026 noire342.
 Explicit MIT interoperability files, OpenRAC SDK notices, vendored OpenRAC GPL
 JSON reader and MinHook BSD notices retain their respective licenses.

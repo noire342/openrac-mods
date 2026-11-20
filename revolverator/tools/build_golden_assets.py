@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright (c) 2026 lorenzogarrone
+# Copyright (c) 2026 noire342
 """Add Golden art to a native package; retain every byte of model binary data."""
 import argparse
 import copy

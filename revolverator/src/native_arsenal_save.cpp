@@ -96,10 +96,31 @@ NativeArsenalSave::NativeArsenalSave(const openrac_api* api,openrac_mod* mod,Nat
         if(args[i]==Path("--no-card"))no_card_=true;
         if(args[i]==Path("--cards")&&i+1<args.size())card_root_=args[++i];
     }
+    if(api->data_dir){
+        if(const char* root=api->data_dir(mod);root&&*root)
+            mod_data_=std::filesystem::u8path(root);
+    }
+    migrate_legacy();
 }
 NativeArsenalSave::NativeArsenalSave(const openrac_api* api,openrac_mod* mod,NativeArsenal& arsenal,Paths paths)
-    :Memory(api),arsenal_(arsenal),mod_(mod),card_root_(std::move(paths.card_root)),no_card_(paths.no_card){
+    :Memory(api),arsenal_(arsenal),mod_(mod),card_root_(std::move(paths.card_root)),mod_data_(std::move(paths.mod_data)),no_card_(paths.no_card){
     if(card_root_.empty()&&!no_card_)throw std::invalid_argument("arsenal save: an explicit card root must not be empty");
+    migrate_legacy();
+}
+void NativeArsenalSave::migrate_legacy(){
+    if(no_card_)return;
+    // Run during mod load, before the title menu enumerates the card folder.
+    for(int port=0;port<2;++port){
+        for(int slot=0;slot<5;++slot){
+            const auto native=save_path(port,slot);
+            const auto status=arsenal::migrate_legacy_sidecar(native,arsenal::sidecar_path(native,mod_data_));
+            if(status!=arsenal::StoreStatus::Missing)report("migration",status);
+        }
+    }
+}
+std::filesystem::path NativeArsenalSave::save_path(int port,int slot)const{
+    auto root=card_root_;if(port)root+=Path(".slot2");
+    return root/bindings().card_directory()/("save"+std::to_string(slot)+".bin");
 }
 std::filesystem::path NativeArsenalSave::active_save_path()const{
     if(no_card_)return {};
@@ -110,8 +131,7 @@ std::filesystem::path NativeArsenalSave::active_save_path()const{
     if(read<int>(state+layout.active_card)!=0)return {};
     const int port=read<int>(state+layout.port),slot=read<int>(state+layout.save_index);
     if(port<0||port>1||slot<0||slot>4)return {};
-    auto root=card_root_;if(port)root+=Path(".slot2");
-    return root/bindings().card_directory()/("save"+std::to_string(slot)+".bin");
+    return save_path(port,slot);
 }
 void NativeArsenalSave::report(const char* operation,arsenal::StoreStatus status)const{
     char text[192];std::snprintf(text,sizeof text,"arsenal %s: %s",operation,arsenal::store_status_message(status));
@@ -151,7 +171,8 @@ void NativeArsenalSave::after_io(){
     if(operation>=3||pending>=0)return;
     if(error==0){
         arsenal::StoreStatus status;
-        arsenal::save(pending_path_,*pending_,&status);report("save",status);
+        arsenal::save(pending_path_,arsenal::sidecar_path(pending_path_,mod_data_),*pending_,&status);
+        report("save",status);
     }
     pending_.reset();pending_path_.clear();
 }
@@ -165,7 +186,8 @@ void NativeArsenalSave::after_restore_data(unsigned descriptors){
     if(operation!=13&&operation!=14&&pending!=13&&pending!=14)return;
     auto state=vanilla_snapshot();const auto native_walloper=state.walloper;
     const auto path=active_save_path();arsenal::StoreStatus status=arsenal::StoreStatus::Missing;
-    if(!path.empty()&&arsenal::load(path,state,&status))state.walloper=native_walloper;
+    if(!path.empty()&&arsenal::load(path,arsenal::sidecar_path(path,mod_data_),state,&status))
+        state.walloper=native_walloper;
     if(!arsenal_.registry().restore(state)){
         state=vanilla_snapshot();arsenal_.registry().restore(state);status=arsenal::StoreStatus::InvalidSnapshot;
     }

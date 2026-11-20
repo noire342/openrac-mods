@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright (c) 2026 lorenzogarrone
+# Copyright (c) 2026 noire342
 param(
     [string]$Runtime = '',
     [string]$InstalledData = '',

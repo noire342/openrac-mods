@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright (c) 2026 lorenzogarrone
+# Copyright (c) 2026 noire342
 """Fetch the pinned upstream mod-interface 1.12 SDK for this module's CI job.
 
 Only the MIT SDK directory is unpacked; no game code is copied into the mod.

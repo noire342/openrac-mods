@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright (c) 2026 lorenzogarrone
+# Copyright (c) 2026 noire342
 """Read only the original, manifest-listed audio and its pinned source evidence."""
 from __future__ import annotations
 import hashlib

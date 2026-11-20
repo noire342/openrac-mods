@@ -3,7 +3,7 @@
   "schema": "rotatore-native-charge-release-native-audio-0.3.4-v1",
   "id": "revolverator",
   "version": "0.3.4",
-  "author": "lorenzogarrone",
+  "author": "noire342",
   "pass": true,
   "audio_mode": "native",
   "custom_sound_adapter_linked": false,

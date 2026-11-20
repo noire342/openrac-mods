@@ -32,8 +32,9 @@ extension contract; the current OpenRAC launcher does not implement it.
 
 Runtime consumers use the C ABI below. Offline save tools can reuse the pure
 `arsenal_state` and `arsenal_store` modules from `revolverator_core`: `load`
-validates the native-save fingerprint and sidecar CRC; `save` atomically
-replaces only the `.arsenal` sibling. Preserve unknown records and retain the
+validates the native-save fingerprint and sidecar CRC. Resolve the record with
+`sidecar_path(native_save, mod_data)` using the SDK's mod data directory.
+`save` atomically replaces that record. Preserve unknown records and retain the
 native Walloper state. Never write custom key65554 into native arrays. A future
 editor changing native save bytes must load the matching sidecar first and
 rebind it to the new native prefix, with backup/rollback of both files; a stale

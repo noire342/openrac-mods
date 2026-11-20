@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright (c) 2026 lorenzogarrone
+# Copyright (c) 2026 noire342
 """Build a portable Windows NTSC-U preview ZIP; never install, launch or publish it.
 
 The arsenal-compat plugin and complete mod sources travel with the bundle.
@@ -261,7 +261,7 @@ def main():
         'The normal weapon costs15000 bolts after visiting Hoven. Original level manifests\n'
         'are cloned; linked native files must not be edited through the QA output.\n'
         'SHA256 validation checks included files before preparation. Authored code is\n'
-        'GPL-3.0-or-later, Copyright (c) 2026 lorenzogarrone. Third-party notices remain.\n'
+        'GPL-3.0-or-later, Copyright (c) 2026 noire342. Third-party notices remain.\n'
         'The source directory contains corresponding code; any engine reference is historical\n'
         'documentation, not a client the player must run. Original game artwork is not\n'
         'relicensed by the code license. The ammunition artwork was created with AI assistance.\n\n'

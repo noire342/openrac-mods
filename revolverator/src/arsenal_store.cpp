@@ -204,7 +204,47 @@ bool atomic_write(const std::filesystem::path& target,const Bytes& bytes){
 #endif
 }
 
-std::filesystem::path sidecar_path(const std::filesystem::path& native_save){auto path=native_save;path+=".arsenal";return path;}
+std::filesystem::path sidecar_path(const std::filesystem::path& native_save,
+                                  const std::filesystem::path& mod_data){
+    if(mod_data.empty())return {};
+    std::error_code error;
+    const auto parent=std::filesystem::absolute(native_save.parent_path(),error);
+    if(error)return {};
+    const auto card=std::filesystem::weakly_canonical(parent,error);
+    if(error)return {};
+    const auto identity=card.generic_u8string();
+    const Bytes path_bytes(identity.begin(),identity.end());
+    auto filename=native_save.filename();
+    filename+=".arsenal";
+    return mod_data/"arsenal"/std::to_string(fnv64(path_bytes))/filename;
+}
+StoreStatus migrate_legacy_sidecar(const std::filesystem::path& native_save,
+                                  const std::filesystem::path& sidecar)noexcept {
+    try {
+        auto legacy=native_save;legacy+=".arsenal";
+        std::error_code error;
+        const auto type=std::filesystem::symlink_status(legacy,error).type();
+        if(type==std::filesystem::file_type::not_found)return StoreStatus::Missing;
+        if(error||type!=std::filesystem::file_type::regular||sidecar.empty())return StoreStatus::IoError;
+        const auto size=std::filesystem::file_size(legacy,error);
+        if(error||size>MaximumSidecarBytes)return error?StoreStatus::IoError:StoreStatus::TooLarge;
+        Bytes bytes(static_cast<std::size_t>(size));
+        {
+            std::ifstream file(legacy,std::ios::binary);
+            if(!file||!file.read(reinterpret_cast<char*>(bytes.data()),std::streamsize(bytes.size())))
+                return StoreStatus::IoError;
+        }
+        std::filesystem::create_directories(sidecar.parent_path(),error);
+        if(error)return StoreStatus::IoError;
+        auto target=sidecar;
+        if(std::filesystem::exists(sidecar)){
+            // Preserve both when a newer hotfix write already owns this slot.
+            target+=".legacy-"+std::to_string(fnv64(bytes));
+        }
+        if(!atomic_write(target,bytes))return StoreStatus::IoError;
+        return std::filesystem::remove(legacy,error)&&!error?StoreStatus::Ok:StoreStatus::IoError;
+    }catch(...){return StoreStatus::IoError;}
+}
 const char* store_status_message(StoreStatus status)noexcept {
     switch(status){
     case StoreStatus::Ok:return "Arsenal sidecar saved or loaded successfully";
@@ -219,19 +259,24 @@ const char* store_status_message(StoreStatus status)noexcept {
     }
     return "Unknown Arsenal sidecar status";
 }
-bool save(const std::filesystem::path& native_save,const Snapshot& snapshot,StoreStatus* status)noexcept {
+bool save(const std::filesystem::path& native_save,const std::filesystem::path& sidecar,
+          const Snapshot& snapshot,StoreStatus* status)noexcept {
     try {
         if(!generic_valid(snapshot))return finish(StoreStatus::InvalidSnapshot,status);
         Fingerprint native;const auto checked=native_fingerprint(native_save,native);
         if(checked!=StoreStatus::Ok)return finish(checked,status);
         const auto bytes=encode(snapshot,native);
         if(bytes.size()>MaximumSidecarBytes)return finish(StoreStatus::TooLarge,status);
-        return finish(atomic_write(sidecar_path(native_save),bytes)?StoreStatus::Ok:StoreStatus::IoError,status);
+        if(sidecar.empty())return finish(StoreStatus::IoError,status);
+        std::filesystem::create_directories(sidecar.parent_path());
+        return finish(atomic_write(sidecar,bytes)?StoreStatus::Ok:StoreStatus::IoError,status);
     }catch(...){return finish(StoreStatus::IoError,status);}
 }
-bool load(const std::filesystem::path& native_save,Snapshot& output,StoreStatus* status)noexcept {
+bool load(const std::filesystem::path& native_save,const std::filesystem::path& sidecar,
+          Snapshot& output,StoreStatus* status)noexcept {
     try {
-        Bytes bytes;const auto read=read_sidecar(sidecar_path(native_save),bytes);
+        if(sidecar.empty())return finish(StoreStatus::IoError,status);
+        Bytes bytes;const auto read=read_sidecar(sidecar,bytes);
         if(read!=StoreStatus::Ok)return finish(read,status);
         Snapshot decoded;Fingerprint stored;
         if(!decode(bytes,decoded,stored))return finish(StoreStatus::Corrupt,status);

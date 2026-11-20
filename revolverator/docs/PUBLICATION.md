@@ -4,7 +4,7 @@ The release is prepared for the official [OpenRAC mod publication workflow](http
 
 ## Release
 
-- Set the manifest version and author; use **lorenzogarrone** for display credit.
+- Set the manifest version and author; use **noire342** for display credit.
 - Declare minimum mod interface 1.12, supported regions/platforms and real
   dependencies. Do not pin compatibility to one client release number.
 - Build, run host checks and validate the exact installable package in the

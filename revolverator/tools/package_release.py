@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright (c) 2026 lorenzogarrone
+# Copyright (c) 2026 noire342
 """Create a standard OpenRAC Revolverator ZIP and its corresponding source ZIP.
 
 The native archive has openrac-mod.json at its root. Only the built Windows

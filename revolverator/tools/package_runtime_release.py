@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-or-later
-# Copyright (c) 2026 lorenzogarrone
+# Copyright (c) 2026 noire342
 """Package the tested Windows weapon and its complete corresponding source.
 
 The SDK-generated package manifest is used, never the raw source manifest.
@@ -77,7 +77,7 @@ def main():
     original=document(source/'openrac-mod.json');validation=document(a.validation)
     for key in ('id','version','author','api','games','license'):
         if manifest.get(key)!=original.get(key):raise ValueError(f'Generated/source manifest mismatch: {key}')
-    if manifest.get('format')!=2 or manifest.get('id')!='revolverator' or manifest.get('author')!='lorenzogarrone':
+    if manifest.get('format')!=2 or manifest.get('id')!='revolverator' or manifest.get('author')!='noire342':
         raise ValueError('Expected the authored format-2 Revolverator package')
     major,minor=map(int,manifest['api'].split('.'))
     if major!=1 or minor<12:raise ValueError('The public package requires mod interface 1.12 or newer')
@@ -125,7 +125,7 @@ def main():
     version=manifest['version'];out=a.output.resolve();out.mkdir(exist_ok=True,parents=True)
     if a.commit and (len(a.commit)!=40 or any(c not in '0123456789abcdef' for c in a.commit)):
         raise ValueError('Publication commit must be a full lowercase SHA')
-    meta={'format':1,'id':'revolverator','version':version,'author':'lorenzogarrone',
+    meta={'format':1,'id':'revolverator','version':version,'author':'noire342',
           'minimum_mod_interface':manifest['api'],'source_commit':a.commit,
           'revolverator_sha256':digest(weapon),'overlay_sha256':digest(overlay),
           'game_derived_artwork_included':False,'automatic_player_disc_preparation':True,

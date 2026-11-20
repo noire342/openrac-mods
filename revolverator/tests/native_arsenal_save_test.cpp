@@ -23,7 +23,7 @@ struct Fixture;
 Fixture* live{};
 struct Fixture {
     const RegionBindings& region;
-    fs::path root;
+    fs::path root,storage;
     std::vector<fs::path> files,dirs;
     std::vector<unsigned char> ram=std::vector<unsigned char>(0x2000000);
     openrac_api api{};arsenal::Registry registry;View view;
@@ -34,6 +34,8 @@ struct Fixture {
         const auto tick=std::chrono::steady_clock::now().time_since_epoch().count();
         for(unsigned i=0;i<64;++i){root=temp/("openrac-native-save-test-"+std::to_string(tick)+"-"+std::to_string(i));if(fs::create_directory(root))break;}
         require(fs::is_directory(root),"an isolated owned card root exists");dirs.push_back(root);
+        storage=root/"mod-data";
+        root/="card";
         live=this;api.game="rac1";api.version=version;api.memory=ram.data();
         api.relocate_data=+[](unsigned address){return address;};
         api.relocate_level_data=+[](int,unsigned address){return address;};
@@ -59,16 +61,17 @@ struct Fixture {
         const auto path=native(port,slot);directory(path.parent_path());
         std::array<unsigned char,184> bytes{};bytes[0]=16;bytes[4]=8;bytes[20]=0x5a;
         std::ofstream file(path,std::ios::binary|std::ios::trunc);file.write(reinterpret_cast<const char*>(bytes.data()),bytes.size());require(bool(file),"write isolated native-prefix fixture");
-        files.push_back(path);files.push_back(arsenal::sidecar_path(path));
+        const auto sidecar=arsenal::sidecar_path(path,storage);directory(sidecar.parent_path());
+        files.push_back(path);files.push_back(sidecar);
     }
     void grant(unsigned ammo){require(registry.set_state(arsenal::RevolveratorKey,{true,ammo,39}),"set logical ammo");require(registry.equip(arsenal::RevolveratorKey),"equip logical identity");require(registry.assign_quick(1,arsenal::RevolveratorKey),"assign a logical favourite");}
-    arsenal::Snapshot load(int port=0,int slot=1){arsenal::Snapshot value;arsenal::StoreStatus status;require(arsenal::load(native(port,slot),value,&status)&&status==arsenal::StoreStatus::Ok,"read a matching sidecar");return value;}
+    arsenal::Snapshot load(int port=0,int slot=1){arsenal::Snapshot value;arsenal::StoreStatus status;require(arsenal::load(native(port,slot),arsenal::sidecar_path(native(port,slot),storage),value,&status)&&status==arsenal::StoreStatus::Ok,"read a matching sidecar");return value;}
     static unsigned ammo(const arsenal::Snapshot& snapshot){for(const auto& record:snapshot.records)if(record.key==arsenal::RevolveratorKey)return record.state.ammo;return 0;}
     ~Fixture(){arsenal.reset();std::error_code error;for(auto i=files.rbegin();i!=files.rend();++i)fs::remove(*i,error);for(auto i=dirs.rbegin();i!=dirs.rend();++i)fs::remove(*i,error);}
 };
 void regional_save_checks(const char* version){
     Fixture f(version);f.create_native();const auto original=read_file(f.native());f.grant(7);
-    NativeArsenalSave save(&f.api,nullptr,*f.arsenal,{f.root,false});
+    NativeArsenalSave save(&f.api,nullptr,*f.arsenal,{f.root,f.storage,false});
     save.begin_save();f.state(15,-1,0);save.after_prepare();f.grant(3);
     save.begin_save(); // A duplicate request must not replace the snapshot already queued.
     f.state(0,-1,0);save.after_io();
@@ -97,7 +100,7 @@ void pal_layout_decoys(){
     require(layout.operation==0xdc&&layout.pending_operation==0xe4&&layout.error==0xec,"PAL save observes the independently verified driver layout");
     // NTSC operation is PAL busy; a wrong implementation would refuse capture.
     f.put<int>(mc+0xd4,99);
-    NativeArsenalSave save(&f.api,nullptr,*f.arsenal,{f.root,false});
+    NativeArsenalSave save(&f.api,nullptr,*f.arsenal,{f.root,f.storage,false});
     save.begin_save();f.state(19,-1,0);save.after_prepare();f.state(2,-1,0);save.after_io();
     require(Fixture::ammo(f.load())==7,"PAL busy decoy does not replace the operation state");
     f.grant(3);f.state(2,-1,0);save.begin_save();f.state(19,-1,0);save.after_prepare();
@@ -142,7 +145,7 @@ void native_save_ownership(const char* version) {
     require(read(slot(1)) == 11 && read(hand) == 15, "a changed temporary word is no longer ours to restore");
 
     f.create_native();
-    NativeArsenalSave save(&f.api, nullptr, *f.arsenal, {f.root, false});
+    NativeArsenalSave save(&f.api, nullptr, *f.arsenal, {f.root, f.storage, false});
     require(f.registry.assign_quick(0, 18) && f.registry.assign_quick(2, 11), "retain pre-reset logical quick slots");
     f.put(favourites, std::array<int, 8>{18, 18, 11, 0, 0, 0, 0, 0});
     f.put(hand, 18);
@@ -182,14 +185,14 @@ void native_save_ownership(const char* version) {
 }
 void ports_and_disabling(const char* version){
     Fixture f(version);f.create_native(1,4);f.grant(9);f.put<int>(f.region.data(0x13d290),1);f.put<int>(f.region.data(0x13d290)+0x14,4);
-    NativeArsenalSave save(&f.api,nullptr,*f.arsenal,{f.root,false});save.begin_save();f.state(15,-1,0);save.after_prepare();f.state(0,-1,0);save.after_io();
+    NativeArsenalSave save(&f.api,nullptr,*f.arsenal,{f.root,f.storage,false});save.begin_save();f.state(15,-1,0);save.after_prepare();f.state(0,-1,0);save.after_io();
     require(Fixture::ammo(f.load(1,4))==9,"second memory-card port retains the .slot2 suffix and regional directory");
     require(!fs::exists(f.root/f.region.card_directory()),"second-port save does not create a first-port save folder");
     for(int bad_slot:{-1,5}){f.put<int>(f.region.data(0x13d290)+0x14,bad_slot);save.begin_save();f.state(15,-1,0);save.after_prepare();f.state(0,-1,0);save.after_io();}
     require(Fixture::ammo(f.load(1,4))==9,"invalid save slots leave the valid sidecar intact");
-    NativeArsenalSave disabled(&f.api,nullptr,*f.arsenal,{{},true});disabled.begin_save();f.state(15,-1,0);disabled.after_prepare();f.state(0,-1,0);disabled.after_io();
+    NativeArsenalSave disabled(&f.api,nullptr,*f.arsenal,{{},{},true});disabled.begin_save();f.state(15,-1,0);disabled.after_prepare();f.state(0,-1,0);disabled.after_io();
     require(Fixture::ammo(f.load(1,4))==9,"no-card mode never writes an existing sidecar");
-    bool rejected=false;try{NativeArsenalSave invalid(&f.api,nullptr,*f.arsenal,{{},false});}catch(const std::invalid_argument&){rejected=true;}
+    bool rejected=false;try{NativeArsenalSave invalid(&f.api,nullptr,*f.arsenal,{{},{},false});}catch(const std::invalid_argument&){rejected=true;}
     require(rejected,"an explicit empty card root is rejected");
 }
 }

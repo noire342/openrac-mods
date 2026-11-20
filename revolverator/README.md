@@ -1,19 +1,19 @@
-# Revolverator 0.3.5
+# Revolverator 0.3.6
 
-By **lorenzogarrone**. The Italian in-game name is **Rotatore**.
+By **noire342**. The Italian in-game name is **Rotatore**.
 
 Restores the cut Revolverator as a separate Ratchet & Clank weapon: strike,
 catch, spin and throw enemies. It uses the game's weapon menus, ammunition
 HUD, acquisition presentation and save flow. The original Walloper remains a
 separate weapon.
 
-Version 0.3.5 uses OpenRAC's official Gadgetron icon-strip hook from interface
+Version 0.3.6 uses OpenRAC's official Gadgetron icon-strip hook from interface
 1.20 onward and keeps the adapter for earlier supported interfaces. It also
 scopes equipment changes during acquisition scenes and save operations to
 the mod's own state. Challenge Mode carries over the Rotatore's Golden upgrade,
 ammunition, XP and favourite when the slot is available.
 
-The [release page](https://github.com/noire342/openrac-mods/releases/tag/revolverator-v0.3.5)
+The [release page](https://github.com/noire342/openrac-mods/releases/tag/revolverator-v0.3.6)
 includes the Windows package, corresponding source and validation receipt.
 
 Native metal sparks follow the drill's contact with a spinning enemy. Their
@@ -26,8 +26,8 @@ contains no copied game models, textures or HUD artwork.
 1. Use the official OpenRAC launcher on Windows x64, with **mod interface 1.12
    or newer** and your own extracted PAL or NTSC-U copy of Ratchet & Clank.
 2. In **Mods**, add [this repository](https://github.com/noire342/openrac-mods),
-   choose **Revolverator**, and install or update it to 0.3.5. Alternatively,
-   import `revolverator-0.3.5-windows-x86_64.zip` with **File**.
+   choose **Revolverator**, and install or update it to 0.3.6. Alternatively,
+   import `revolverator-0.3.6-windows-x86_64.zip` with **File**.
 3. Enable the mod and start the game. The first start prepares its local
    graphics cache automatically. No separate Python installation, graphics
    pack, utility mod card or replacement client is required.
@@ -100,11 +100,13 @@ slots can hold Walloper and Revolverator independently.
 | Original Walloper | 18 |
 | Revolverator | 65554 / 0x10012 |
 
-The native save retains the original items. Custom ownership, ammunition,
-Golden upgrade, XP and favorites use an atomic saveN.bin.arsenal sidecar bound
-to the matching native save. Missing, corrupt or mismatched sidecars are not
-applied. PAL and NTSC-U cards are separate; automatic cross-region save
-conversion is not provided.
+The native save retains the original items. The mod stores custom ownership,
+ammunition, the Golden upgrade, XP and favorites in its OpenRAC data folder.
+Each record is bound to the matching native save. At startup, 0.3.6 moves legacy
+`saveN.bin.arsenal` files out of the active card before the game lists its slots.
+Enable 0.3.6 for one launch to recover a card affected by 0.3.5. The migration
+preserves the native save and archives any legacy file that conflicts with an
+existing mod record. PAL and NTSC-U cards keep separate records.
 
 Weapon Experience is optional. A compatible **API v4** provider gives this
 weapon its own XP total and up to ten levels. The original Walloper's progress
@@ -124,7 +126,7 @@ provenance remain in the development source for possible later work. It is not
 connected to the weapon or loaded by the current runtime. No extracted game
 audio is distributed. See [audio status](docs/AUDIO.md).
 
-Authored code is [GPL-3.0-or-later](LICENSE), Copyright (c) 2026 lorenzogarrone.
+Authored code is [GPL-3.0-or-later](LICENSE), Copyright (c) 2026 noire342.
 Third-party code retains its original notices. The code license does not
 relicense Insomniac Games / Sony's game artwork. See
 [runtime assets](docs/RUNTIME_ASSETS.md) and [packaging](docs/PACKAGING.md).

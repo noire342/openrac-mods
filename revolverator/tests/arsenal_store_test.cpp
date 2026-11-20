@@ -55,32 +55,44 @@ struct TempDirectory {
             std::error_code error;if(fs::create_directory(path,error))return;}
         require(false,"reserve a fresh private test directory");}
     ~TempDirectory(){
-        // No recursive delete: cleanup only the individual files of this newly
-        // created, verified private directory. Never enumerate native user data.
+        // Remove only this newly created private fixture.
         if(path.parent_path()!=parent||path.filename().u8string().rfind("openrac-arsenal-store-test-",0)!=0)return;
         std::error_code ignored;
-        for(const auto& entry:fs::directory_iterator(path,ignored))if(!entry.is_directory(ignored))fs::remove(entry.path(),ignored);
-        fs::remove(path,ignored);
+        fs::remove_all(path,ignored);
     }
 };
 }
 int main(){
     require(reference_crc(reinterpret_cast<const std::uint8_t*>("123456789"),9)==0xcbf43926u,"CRC oracle matches the published CRC32 check vector");
-    TempDirectory directory;const auto native=directory.path/"save0.bin",sidecar=sidecar_path(native);
+    TempDirectory directory;const auto native=directory.path/"save0.bin",sidecar=sidecar_path(native,directory.path/"mod-data");
     const Bytes original=native_bytes();const Snapshot expected=snapshot();write(native,original);
     require(sidecar.filename()=="save0.bin.arsenal","our path only appends .arsenal to the exact native filename");
     StoreStatus status{};Snapshot loaded;
-    require(!load(native,loaded,&status)&&status==StoreStatus::Missing,"an absent sidecar has an explicit non-destructive result");
-    require(save(native,expected,&status)&&status==StoreStatus::Ok,"save writes a sidecar for a valid native prefix");
+    require(!load(native,sidecar,loaded,&status)&&status==StoreStatus::Missing,"an absent sidecar has an explicit non-destructive result");
+    require(save(native,sidecar,expected,&status)&&status==StoreStatus::Ok,"save writes a sidecar for a valid native prefix");
     require(read(native)==original,"saving never modifies native save bytes");
-    require(load(native,loaded,&status)&&status==StoreStatus::Ok&&equal(loaded,expected),"codec round trip preserves native flags, both logical favourites and orphan state");
+    require(load(native,sidecar,loaded,&status)&&status==StoreStatus::Ok&&equal(loaded,expected),"codec round trip preserves native flags, both logical favourites and orphan state");
     const Bytes valid_sidecar=read(sidecar);
+    const auto legacy=directory.path/"save0.bin.arsenal";
+    fs::rename(sidecar,legacy);
+    require(migrate_legacy_sidecar(native,sidecar)==StoreStatus::Ok&&!fs::exists(legacy)&&
+            read(sidecar)==valid_sidecar&&read(native)==original,"legacy state moves out of the card byte-for-byte");
+    require(migrate_legacy_sidecar(native,sidecar)==StoreStatus::Missing,"startup migration is idempotent");
+    write(legacy,Bytes{1,2,3});
+    require(migrate_legacy_sidecar(native,{})==StoreStatus::IoError&&read(legacy)==Bytes{1,2,3},
+            "a missing data directory leaves the legacy file in place");
+    require(migrate_legacy_sidecar(native,sidecar)==StoreStatus::Ok&&!fs::exists(legacy)&&read(sidecar)==valid_sidecar,
+            "a conflicting legacy record never overwrites current inventory");
+    bool archived=false;
+    for(const auto& entry:fs::directory_iterator(sidecar.parent_path()))
+        if(entry.path()!=sidecar&&read(entry.path())==Bytes{1,2,3})archived=true;
+    require(archived,"even stale or damaged legacy bytes remain available for recovery");
     require(u32(valid_sidecar,valid_sidecar.size()-4)==reference_crc(valid_sidecar.data(),valid_sidecar.size()-4),"sidecar checksum uses standard CRC32");
     auto invalid=expected;invalid.records[0].state.xp=Registry::MaximumXp+1;
-    require(!save(native,invalid,&status)&&status==StoreStatus::InvalidSnapshot&&read(sidecar)==valid_sidecar&&read(native)==original,
+    require(!save(native,sidecar,invalid,&status)&&status==StoreStatus::InvalidSnapshot&&read(sidecar)==valid_sidecar&&read(native)==original,
             "invalid input cannot overwrite an older valid sidecar or native save");
     const auto reject=[&](Bytes malformed,StoreStatus wanted,const char* reason){write(sidecar,malformed);Snapshot output=expected;
-        require(!load(native,output,&status)&&status==wanted&&equal(output,expected),reason);require(read(native)==original,"corrupt sidecar never writes native input");};
+        require(!load(native,sidecar,output,&status)&&status==wanted&&equal(output,expected),reason);require(read(native)==original,"corrupt sidecar never writes native input");};
     auto bad=valid_sidecar;bad[100]^=0x20;reject(bad,StoreStatus::Corrupt,"CRC mismatch is rejected with unchanged output");
     bad=valid_sidecar;bad[0]^=1;checksum(bad);reject(bad,StoreStatus::Corrupt,"unknown magic is rejected even with a matching CRC");
     bad=valid_sidecar;put32(bad,8,99);checksum(bad);reject(bad,StoreStatus::Corrupt,"unknown format version is rejected");
@@ -94,35 +106,35 @@ int main(){
     bad=valid_sidecar;bad.pop_back();reject(bad,StoreStatus::Corrupt,"truncated checksum fails safely");
     bad=valid_sidecar;bad.resize(MaximumSidecarBytes+1);reject(bad,StoreStatus::TooLarge,"oversized sidecar is rejected before its bytes are loaded");
     write(sidecar,valid_sidecar);bad=original;bad[16]^=1;write(native,bad);loaded=expected;
-    require(!load(native,loaded,&status)&&status==StoreStatus::Stale&&equal(loaded,expected),"a different native prefix cannot receive an older logical inventory");
+    require(!load(native,sidecar,loaded,&status)&&status==StoreStatus::Stale&&equal(loaded,expected),"a different native prefix cannot receive an older logical inventory");
     require(read(native)==bad&&read(sidecar)==valid_sidecar,"stale detection writes neither native nor sidecar files");
-    write(native,original);require(load(native,loaded,&status)&&equal(loaded,expected),"the matching native prefix restores again without rebuilding the sidecar");
+    write(native,original);require(load(native,sidecar,loaded,&status)&&equal(loaded,expected),"the matching native prefix restores again without rebuilding the sidecar");
     bad=original;bad.insert(bad.end(),{'o','l','d','-','t','r','a','i','l','e','r'});write(native,bad);
-    require(load(native,loaded,&status)&&equal(loaded,expected),"an unrelated native trailer is excluded from the digest");
-    require(save(native,expected,&status)&&read(native)==bad,"saving with a native trailer retains the entire original native file");
+    require(load(native,sidecar,loaded,&status)&&equal(loaded,expected),"an unrelated native trailer is excluded from the digest");
+    require(save(native,sidecar,expected,&status)&&read(native)==bad,"saving with a native trailer retains the entire original native file");
     bad.back()='X';bad.insert(bad.end(),2048,0xa5);write(native,bad);
-    require(load(native,loaded,&status)&&equal(loaded,expected),"changing only native trailer length and bytes does not stale the sidecar");
+    require(load(native,sidecar,loaded,&status)&&equal(loaded,expected),"changing only native trailer length and bytes does not stale the sidecar");
     write(native,original);const auto saved=read(sidecar);
     for(const auto sizes:std::array<std::array<std::uint32_t,2>,4>{{{{0,1}},{{1,0}},{{0xffffffffu,1}},{{1,0xffffffffu}}}}){
         Bytes broken(8);put32(broken,0,sizes[0]);put32(broken,4,sizes[1]);write(native,broken);
-        require(!save(native,expected,&status)&&status==StoreStatus::InvalidNative&&read(native)==broken&&read(sidecar)==saved,
+        require(!save(native,sidecar,expected,&status)&&status==StoreStatus::InvalidNative&&read(native)==broken&&read(sidecar)==saved,
                 "invalid native packet sizes never trigger sidecar replacement");}
-    write(native,Bytes{1,2,3});require(!save(native,expected,&status)&&status==StoreStatus::InvalidNative,"short native headers are rejected");
+    write(native,Bytes{1,2,3});require(!save(native,sidecar,expected,&status)&&status==StoreStatus::InvalidNative,"short native headers are rejected");
     write(native,original);fs::remove(native);loaded=expected;
-    require(!load(native,loaded,&status)&&status==StoreStatus::NativeMissing&&equal(loaded,expected),"a sidecar cannot restore without its native save");
-    require(!save(native,expected,&status)&&status==StoreStatus::NativeMissing&&read(sidecar)==saved,"saving never creates a missing native save file");
+    require(!load(native,sidecar,loaded,&status)&&status==StoreStatus::NativeMissing&&equal(loaded,expected),"a sidecar cannot restore without its native save");
+    require(!save(native,sidecar,expected,&status)&&status==StoreStatus::NativeMissing&&read(sidecar)==saved,"saving never creates a missing native save file");
     write(native,original);
     const auto unicode=directory.path/fs::u8path("save_\xc3\xa0_\xe7\x8c\xab.bin");write(unicode,original);
-    require(save(unicode,expected,&status)&&load(unicode,loaded,&status)&&equal(loaded,expected)&&read(unicode)==original,
+    require(save(unicode,sidecar_path(unicode,directory.path/"mod-data"),expected,&status)&&load(unicode,sidecar_path(unicode,directory.path/"mod-data"),loaded,&status)&&equal(loaded,expected)&&read(unicode)==original,
             "native Unicode paths round trip through platform-correct atomic filesystem calls");
-    const auto blocked=directory.path/"blocked.bin";write(blocked,original);fs::create_directory(sidecar_path(blocked));
-    require(!save(blocked,expected,&status)&&status==StoreStatus::IoError&&read(blocked)==original,
+    const auto blocked=directory.path/"blocked.bin";write(blocked,original);fs::create_directory(sidecar_path(blocked,directory.path/"mod-data"));
+    require(!save(blocked,sidecar_path(blocked,directory.path/"mod-data"),expected,&status)&&status==StoreStatus::IoError&&read(blocked)==original,
             "failed atomic replacement leaves the native file untouched and reports I/O failure");
-    fs::remove(sidecar_path(blocked));
+    fs::remove(sidecar_path(blocked,directory.path/"mod-data"));
     std::atomic<unsigned> successful{0};std::vector<std::thread> writers;
-    for(unsigned i=0;i<4;++i)writers.emplace_back([&,i]{auto value=expected;value.records[0].state.ammo=i+1;if(save(native,value))++successful;});
+    for(unsigned i=0;i<4;++i)writers.emplace_back([&,i]{auto value=expected;value.records[0].state.ammo=i+1;if(save(native,sidecar,value))++successful;});
     for(auto& writer:writers)writer.join();
-    require(successful>0&&load(native,loaded,&status)&&loaded.records[0].state.ammo>=1&&loaded.records[0].state.ammo<=4&&read(native)==original,
+    require(successful>0&&load(native,sidecar,loaded,&status)&&loaded.records[0].state.ammo>=1&&loaded.records[0].state.ammo<=4&&read(native)==original,
             "concurrent atomic writers produce one complete valid sidecar without modifying native data");
     bool clean=true;for(const auto& entry:fs::directory_iterator(directory.path))if(entry.path().filename().u8string().find(".tmp.")!=std::string::npos)clean=false;
     require(clean,"successful and failed stores clean up only their own temporary files");

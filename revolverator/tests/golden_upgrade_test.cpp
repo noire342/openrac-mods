@@ -48,17 +48,18 @@ int main(){
  require(absent.snapshot().records[0].state.golden&&absent.register_weapon(definition())&&absent.golden(RevolveratorKey),"reinstallation reactivates Golden without new purchase");
  Directory directory;const auto native=directory.path/"save.bin";
  Bytes native_bytes(8+48+20*12,0x57);put32(native_bytes,0,48);put32(native_bytes,4,12);write(native,native_bytes);
- StoreStatus status{};require(save(native,upgraded,&status),"Golden snapshot writes codec2");
- const auto sidecar=sidecar_path(native);const auto encoded=read(sidecar);
+ const auto sidecar=sidecar_path(native,directory.path/"mod-data");
+ StoreStatus status{};require(save(native,sidecar,upgraded,&status),"Golden snapshot writes codec2");
+ const auto encoded=read(sidecar);
  require(u32(encoded,8)==2&&encoded.at(91)==1,"codec2 uses only the former reserved per-record byte for Golden");
- Snapshot loaded;require(load(native,loaded,&status)&&loaded.records[0].state.golden&&loaded.records[0].state.ammo==7&&loaded.records[0].state.xp==3456,"Golden survives exact sidecar round trip");
+ Snapshot loaded;require(load(native,sidecar,loaded,&status)&&loaded.records[0].state.golden&&loaded.records[0].state.ammo==7&&loaded.records[0].state.xp==3456,"Golden survives exact sidecar round trip");
  require(read(native)==native_bytes,"native save bytes remain unchanged");
  auto legacy=encoded;put32(legacy,8,1);legacy.at(91)=0;crc(legacy);write(sidecar,legacy);
- require(load(native,loaded,&status)&&!loaded.records[0].state.golden&&loaded.records[0].state.ammo==7&&loaded.records[0].state.xp==3456,"real codec1 layout migrates with Golden false and all progress retained");
+ require(load(native,sidecar,loaded,&status)&&!loaded.records[0].state.golden&&loaded.records[0].state.ammo==7&&loaded.records[0].state.xp==3456,"real codec1 layout migrates with Golden false and all progress retained");
  auto unknown=encoded;unknown.at(91)=2;crc(unknown);write(sidecar,unknown);const auto before=loaded;
- require(!load(native,loaded,&status)&&status==StoreStatus::Corrupt&&loaded.records[0].state.golden==before.records[0].state.golden,"unknown flag bits are rejected without mutating loaded state");
+ require(!load(native,sidecar,loaded,&status)&&status==StoreStatus::Corrupt&&loaded.records[0].state.golden==before.records[0].state.golden,"unknown flag bits are rejected without mutating loaded state");
  auto invalid_legacy=encoded;put32(invalid_legacy,8,1);crc(invalid_legacy);write(sidecar,invalid_legacy);
- require(!load(native,loaded,&status)&&status==StoreStatus::Corrupt,"codec1 reserved-byte invariant remains strict");
+ require(!load(native,sidecar,loaded,&status)&&status==StoreStatus::Corrupt,"codec1 reserved-byte invariant remains strict");
  require(read(native)==native_bytes,"all migration and corruption checks preserve original native bytes");
  std::printf("golden upgrade: %d state, purchase and codec migration checks passed\n",checks);
 }

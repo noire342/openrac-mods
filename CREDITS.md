@@ -1,6 +1,6 @@
 # Credits and provenance
 
-Maintained by **lorenzogarrone** ([noire342](https://github.com/noire342)).
+Maintained by **[noire342](https://github.com/noire342)**.
 
 - **OpenRAC contributors:** the native game port, mod SDK, documented interfaces
   and the SDK fetch/packaging tooling used by this project. Upstream:
@@ -42,7 +42,7 @@ The optional local HUD-upscaling workflow uses
 Its runtime/model files and game-derived output are not vendored here.
 
 Source files retain their own SPDX/copyright notices. Mod implementation code
-is GPL-3.0-or-later, Copyright (c) 2026 lorenzogarrone. The Weapon Experience and Arsenal Compatibility interop
+is GPL-3.0-or-later, Copyright (c) 2026 noire342. The Weapon Experience and Arsenal Compatibility interop
 headers and intentionally MIT client examples retain their MIT notices. Downloaded
 OpenRAC SDK files remain MIT. The unchanged upstream `tools/fetch_sdk.py` remains
 GPL-3.0-or-later, Copyright (c) 2026 the OpenRAC contributors. Engine bridge changes
