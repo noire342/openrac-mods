@@ -38,6 +38,10 @@ int level(std::uint32_t xp);
 float progress(std::uint32_t xp);
 int capacity(int base, int weapon_level);
 
+inline constexpr std::uint32_t kQuartersPerXp = 4;
+void add_quarters(std::uint32_t& xp, std::uint8_t& fraction,
+                  std::uint32_t amount, std::uint32_t cap) noexcept;
+
 struct Progression {
     std::array<std::uint32_t, kWeapons.size()> xp{};
     std::array<std::uint8_t, kWeapons.size()> quarters{};

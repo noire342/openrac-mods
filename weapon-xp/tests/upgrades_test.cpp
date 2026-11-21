@@ -78,7 +78,97 @@ void* function(const char* name) {
     return reinterpret_cast<void*>(present);
 }
 
+struct TestNames {
+    NameProviders& names;
+    std::uint32_t token = 0;
+    std::uint32_t calls = 0;
+    const char* candidate = nullptr;
+};
+
+int propose_name(void* opaque, const weapon_xp_name_context_v5* context, char* out,
+                 std::uint32_t capacity) {
+    auto& test = *static_cast<TestNames*>(opaque);
+    CHECK(test.names.dispatching() && context->size == sizeof(*context));
+    if (context->item_id != 10 && !context->custom_id) return 0;
+    ++test.calls;
+    if (!test.candidate) {
+        std::memset(out, 'x', capacity); // Deliberately omit NUL.
+        return 1;
+    }
+    const auto size = std::strlen(test.candidate) + 1;
+    if (size > capacity) return 0;
+    std::memcpy(out, test.candidate, size);
+    return 1;
+}
+
+int level_name(void* opaque, const weapon_xp_name_context_v5* context, char* out,
+               std::uint32_t capacity) {
+    auto& test = *static_cast<TestNames*>(opaque);
+    if (context->item_id != 10) return 0;
+    CHECK(context->custom_id == nullptr && test.names.dispatching());
+    ++test.calls;
+    if (context->language != 5) return 0;
+    if (context->level == 1) {
+        CHECK(std::strcmp(context->default_name, "Guanto Bomba") == 0);
+        test.candidate = "Guanto Sismico";
+    } else if (context->level == 2) {
+        CHECK(std::strcmp(context->default_name, "Guanto Bomba v2") == 0);
+        test.candidate = "Guanto Sismico II";
+    } else {
+        return 0;
+    }
+    const auto size = std::strlen(test.candidate) + 1;
+    CHECK(size <= capacity && capacity == WEAPON_XP_NAME_MAX_BYTES);
+    std::memcpy(out, test.candidate, size);
+    return 1;
+}
+
+void provider_contract() {
+    NameProviders names;
+    TestNames unterminated{names}, control{names, 0, 0, "\tCustom"},
+        first{names, 0, 0, "Valid name"}, next{names, 0, 0, "Next name"};
+    for (auto* test : {&unterminated, &control, &first, &next}) {
+        CHECK(names.subscribe(propose_name, test, &test->token) == WEAPON_XP_OK);
+    }
+    const weapon_xp_name_context_v5 custom{
+        sizeof(weapon_xp_name_context_v5), -1, 2, 5, "Custom v2", "example.custom"
+    };
+    char out[WEAPON_XP_NAME_MAX_BYTES] = "untouched";
+    CHECK(names.resolve(custom, out, sizeof(out)) && std::strcmp(out, "Valid name") == 0);
+    CHECK(unterminated.calls == 1 && control.calls == 1 && first.calls == 1 && next.calls == 0);
+    const auto removed = first.token;
+    CHECK(names.unsubscribe(removed) == WEAPON_XP_OK);
+    CHECK(names.subscribe(propose_name, &first, &first.token) == WEAPON_XP_OK &&
+          first.token != removed);
+    CHECK(names.resolve(custom, out, sizeof(out)) && std::strcmp(out, "Next name") == 0);
+    CHECK(!names.resolve(custom, out, 2) && std::strcmp(out, "Next name") == 0);
+    CHECK(names.unsubscribe(removed) == WEAPON_XP_NOT_FOUND && !names.dispatching());
+
+    NameProviders guarded;
+    TestNames self{guarded};
+    const auto once = +[](void* opaque, const weapon_xp_name_context_v5* context,
+                          char* result, std::uint32_t capacity) -> int {
+        auto& test = *static_cast<TestNames*>(opaque);
+        std::uint32_t token = 100;
+        CHECK(test.names.subscribe(propose_name, nullptr, &token) == WEAPON_XP_BUSY);
+        CHECK(token == 100 && !test.names.resolve(*context, result, capacity));
+        CHECK(test.names.unsubscribe(test.token) == WEAPON_XP_OK);
+        std::memcpy(result, "Expired", 8);
+        return 1;
+    };
+    CHECK(guarded.subscribe(once, &self, &self.token) == WEAPON_XP_OK);
+    CHECK(!guarded.resolve(custom, out, sizeof(out)) && std::strcmp(out, "Next name") == 0);
+    CHECK(guarded.unsubscribe(self.token) == WEAPON_XP_NOT_FOUND);
+    const auto throwing = +[](void*, const weapon_xp_name_context_v5*, char*, std::uint32_t) -> int {
+        throw 1;
+    };
+    CHECK(guarded.subscribe(throwing, nullptr, &self.token) == WEAPON_XP_OK);
+    CHECK(!guarded.resolve(custom, out, sizeof(out)) && std::strcmp(out, "Next name") == 0);
+    CHECK(guarded.unsubscribe(self.token) == WEAPON_XP_NOT_FOUND && !guarded.dispatching());
+}
+
 int main() {
+    provider_contract();
     for (const auto& d : kDiscs) {
         disc = &d;
         scenes.clear();
@@ -256,6 +346,54 @@ int main() {
             CHECK(get<unsigned short>(0x550034) == 0x40);
             CHECK(get<unsigned>(0x500020) == 0x520100 && notifications == notification_count);
             CHECK(state.experience(18) == native_xp && state.weapon_level(18) == 1);
+        }
+        {
+            const auto language = select(0x15EE88, 0x15ED88);
+            put<int>(language, 5);
+            Progression named;
+            NameProviders names;
+            TestNames consumer{names};
+            NativeUpgrades upgrades(&api, d, &names);
+            const auto current_name = [] {
+                return reinterpret_cast<const char*>(memory.data() + get<unsigned>(0x500000));
+            };
+            upgrades.tick(named, false);
+            CHECK(std::strcmp(current_name(), "Guanto Bomba") == 0);
+            CHECK(names.subscribe(level_name, &consumer, &consumer.token) == WEAPON_XP_OK);
+            upgrades.tick(named, false);
+            CHECK(std::strcmp(current_name(), "Guanto Sismico") == 0 && consumer.calls == 1);
+            upgrades.tick(named, false);
+            CHECK(consumer.calls == 1); // No mod callbacks in an unchanged frame.
+            named.award(10, kThresholds[1]);
+            upgrades.tick(named, false);
+            CHECK(std::strcmp(current_name(), "Guanto Sismico II") == 0 && consumer.calls == 2);
+            upgrades.tick(named, false, false);
+            CHECK(get<unsigned>(0x500000) == 0x510000 && consumer.calls == 2);
+            upgrades.tick(named, false, true);
+            CHECK(std::strcmp(current_name(), "Guanto Sismico II") == 0);
+            named.award(10, kThresholds[2] - kThresholds[1]);
+            upgrades.enqueue(10, 1, 2);
+            upgrades.tick(named, true);
+            CHECK(std::strcmp(current_name(), "Guanto Bomba v3") == 0);
+            upgrades.tick(named, true);
+            upgrades.tick(named, true);
+            CHECK(upgrades.active() && std::strcmp(current_name(), "Guanto Sismico II") == 0);
+            put<int>(d.mode, 0);
+            upgrades.tick(named, true);
+            upgrades.tick(named, true);
+            upgrades.tick(named, false);
+            CHECK(!upgrades.active() && std::strcmp(current_name(), "Guanto Bomba v3") == 0);
+            put<int>(language, 1);
+            std::memcpy(memory.data() + 0x510000, "Bomb Glove", 11);
+            upgrades.tick(named, false);
+            CHECK(std::strcmp(current_name(), "Bomb Glove v3") == 0);
+            CHECK(names.unsubscribe(consumer.token) == WEAPON_XP_OK);
+            upgrades.tick(named, false);
+            CHECK(std::strcmp(current_name(), "Bomb Glove v3") == 0);
+            // Preserve another owner changing the entry while our name was active.
+            put<unsigned>(0x500000, 0x520000);
+            upgrades.tick(named, false, false);
+            CHECK(get<unsigned>(0x500000) == 0x520000);
         }
     }
     std::puts(

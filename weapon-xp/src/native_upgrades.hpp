@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "discs.hpp"
+#include "name_providers.hpp"
 #include "openrac/openrac_mod.h"
 #include "progression.hpp"
 
@@ -15,7 +16,7 @@ namespace weaponxp {
 // It never calls Item_Give, debits bolts, grants ammo or changes inventory ownership.
 class NativeUpgrades {
 public:
-    NativeUpgrades(const openrac_api* api, const Disc& disc);
+    NativeUpgrades(const openrac_api* api, const Disc& disc, NameProviders* names = nullptr);
     ~NativeUpgrades();
     void enqueue(int item, int before, int after);
     bool supports_presentation(int item) const;
@@ -34,6 +35,7 @@ public:
 private:
     const openrac_api* m_api;
     const Disc& m_disc;
+    NameProviders* m_name_providers;
     using Allocate = std::uint32_t (*)(int);
     using Present = void (*)(std::uint32_t, int);
     using Place = void (*)(std::uint32_t, std::uint32_t, int, int);
@@ -44,11 +46,16 @@ private:
     Notify m_notify;
     std::uint32_t m_buffer = 0;
     std::uint32_t m_bank = 0;
+    int m_language = -1;
 
     struct Binding {
         std::uint32_t entry, original, replacement;
-        int item, level;
+        int item;
         std::string name;
+        int level = 0;
+        int language = -1;
+        std::uint64_t name_revision = 0;
+        bool projected = false;
     };
 
     std::vector<Binding> m_bindings;
@@ -74,9 +81,9 @@ private:
     std::uint32_t global(std::uint32_t pal, std::uint32_t ntsc) const;
     std::uint32_t vendor() const;
     void names(const Progression& state, bool enabled);
-    void rename(Binding& binding, int level);
+    void rename(Binding& binding, int level, bool enabled);
     void align_scene(const std::array<float, 3>& camera);
-    void notify(int item, int level);
+    void notify(int item, int level, bool versioned_names);
     void hide_player();
     void restore_player();
 };

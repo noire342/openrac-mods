@@ -95,19 +95,21 @@ int Progression::award(int item, std::uint32_t amount) {
     return weapon_level(item);
 }
 
+void add_quarters(std::uint32_t& xp, std::uint8_t& fraction,
+                  std::uint32_t amount, std::uint32_t cap) noexcept {
+    if (xp >= cap) {
+        return;
+    }
+    const auto total = std::uint64_t(fraction) + amount;
+    xp += std::min(std::uint32_t(total / kQuartersPerXp), cap - xp);
+    fraction = xp == cap ? 0 : static_cast<std::uint8_t>(total % kQuartersPerXp);
+}
+
 int Progression::award_quarters(int item, std::uint32_t amount) {
     const int index = weapon_index(item);
-    if (index < 0) {
-        return 0;
-    }
-    if (xp[index] >= rules[index].thresholds.back()) {
-        return weapon_level(item);
-    }
-    const auto total = std::uint64_t(quarters[index]) + amount;
-    const int result = award(item, static_cast<std::uint32_t>(total / 4));
-    quarters[index] =
-        xp[index] == rules[index].thresholds.back() ? 0 : static_cast<std::uint8_t>(total % 4);
-    return result;
+    if (index < 0) return 0;
+    add_quarters(xp[index], quarters[index], amount, rules[index].thresholds.back());
+    return weapon_level(item);
 }
 
 int Progression::weapon_level(int item) const {

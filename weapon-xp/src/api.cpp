@@ -51,7 +51,7 @@ int Runtime::get_stats(int item, weapon_xp_stats_v1* out) {
 }
 
 int Runtime::award_xp(int item, std::uint32_t amount) {
-    if (m_events.dispatching() || m_filters.dispatching()) {
+    if (callback_busy()) {
         return WEAPON_XP_BUSY;
     }
     if (weapon_index(item) < 0) {
@@ -90,7 +90,7 @@ bool Runtime::external_context(const weapon_xp_external_hit_v2* c, bool require_
 }
 
 int Runtime::begin_external_scope(std::uint64_t session) {
-    if (m_events.dispatching() || m_filters.dispatching() || m_external_processing) {
+    if (callback_busy()) {
         return WEAPON_XP_BUSY;
     }
     if (session == m_external_scope) {
@@ -107,7 +107,7 @@ int Runtime::begin_external_scope(std::uint64_t session) {
 }
 
 int Runtime::prepare_local_hit(const weapon_xp_external_hit_v2* c, weapon_xp_prepared_hit_v2* out) {
-    if (m_events.dispatching() || m_filters.dispatching() || m_external_processing) {
+    if (callback_busy()) {
         return WEAPON_XP_BUSY;
     }
     if (!out || out->size < sizeof(*out) || !external_context(c, false)) {
@@ -188,7 +188,7 @@ int Runtime::prepare_local_hit(const weapon_xp_external_hit_v2* c, weapon_xp_pre
 }
 
 int Runtime::mark_replicated_hit(const weapon_xp_external_hit_v2* c) {
-    if (m_events.dispatching() || m_filters.dispatching() || m_external_processing) {
+    if (callback_busy()) {
         return WEAPON_XP_BUSY;
     }
     if (!external_context(c, true)) {
@@ -206,7 +206,7 @@ int Runtime::mark_replicated_hit(const weapon_xp_external_hit_v2* c) {
 }
 
 int Runtime::confirm_external_death(const weapon_xp_external_hit_v2* c) {
-    if (m_events.dispatching() || m_filters.dispatching() || m_external_processing) {
+    if (callback_busy()) {
         return WEAPON_XP_BUSY;
     }
     if (!external_context(c, false)) {
@@ -245,7 +245,7 @@ int Runtime::confirm_external_death(const weapon_xp_external_hit_v2* c) {
 }
 
 const weapon_xp_api_v1* Runtime::query(std::uint32_t abi) {
-    if (abi != WEAPON_XP_ABI_V1 && abi != WEAPON_XP_ABI_V2 && abi != WEAPON_XP_ABI_V3 && abi != WEAPON_XP_ABI_V4) {
+    if (abi < WEAPON_XP_ABI_V1 || abi > WEAPON_XP_ABI_V5) {
         return nullptr;
     }
     static const weapon_xp_api_v1 service{
@@ -264,9 +264,10 @@ const weapon_xp_api_v1* Runtime::query(std::uint32_t abi) {
                                                      : WEAPON_XP_NOT_READY;
         },
         +[](weapon_xp_listener_v1 fn, void* user, std::uint32_t* token) -> std::int32_t {
-            return s_instance && s_instance->m_ready
-                       ? s_instance->m_events.subscribe(fn, user, token)
-                       : WEAPON_XP_NOT_READY;
+            if (!s_instance || !s_instance->m_ready) return WEAPON_XP_NOT_READY;
+            if (s_instance->callback_busy())
+                return WEAPON_XP_BUSY;
+            return s_instance->m_events.subscribe(fn, user, token);
         },
         +[](std::uint32_t token) -> std::int32_t {
             return s_instance && s_instance->m_ready ? s_instance->m_events.unsubscribe(token)
@@ -363,7 +364,7 @@ const weapon_xp_api_v1* Runtime::query(std::uint32_t abi) {
             if (!s_instance || !s_instance->m_ready) {
                 return WEAPON_XP_NOT_READY;
             }
-            if (s_instance->m_events.dispatching() || s_instance->m_filters.dispatching() || s_instance->m_external_processing) {
+            if (s_instance->callback_busy()) {
                 return WEAPON_XP_BUSY;
             }
             s_instance->save();
@@ -395,7 +396,7 @@ const weapon_xp_api_v1* Runtime::query(std::uint32_t abi) {
         table.v3.v2.base.size=sizeof(table);table.v3.v2.base.abi_version=WEAPON_XP_ABI_V4;
         table.register_hit_filter=+[](weapon_xp_hit_filter_v4 filter,void* user,std::uint32_t* token)->std::int32_t{
             if(!s_instance||!s_instance->m_ready)return WEAPON_XP_NOT_READY;
-            if(s_instance->m_events.dispatching()||s_instance->m_filters.dispatching()||s_instance->m_external_processing)return WEAPON_XP_BUSY;
+            if(s_instance->callback_busy())return WEAPON_XP_BUSY;
             return s_instance->m_filters.subscribe(filter,user,token);
         };
         table.unregister_hit_filter=+[](std::uint32_t token)->std::int32_t{
@@ -404,7 +405,7 @@ const weapon_xp_api_v1* Runtime::query(std::uint32_t abi) {
         table.request_acquisition_presentation=+[](std::int32_t item)->std::int32_t {
             if(!s_instance||!s_instance->m_ready)return WEAPON_XP_NOT_READY;
             auto& runtime=*s_instance;
-            if(runtime.m_events.dispatching()||runtime.m_filters.dispatching()||runtime.m_external_processing)
+            if(runtime.callback_busy())
                 return WEAPON_XP_BUSY;
             if(weapon_index(item)<0)return WEAPON_XP_INVALID_ARGUMENT;
             if(!runtime.m_settings.animations)return WEAPON_XP_DISABLED;
@@ -419,7 +420,56 @@ const weapon_xp_api_v1* Runtime::query(std::uint32_t abi) {
         };
         return table;
     }();
-    return &ownership.v3.v2.base;
+    if (abi == WEAPON_XP_ABI_V4) return &ownership.v3.v2.base;
+    static const weapon_xp_api_v5 progression = [] {
+        weapon_xp_api_v5 table{};
+        table.v4 = ownership;
+        table.v4.v3.v2.base.size = sizeof(table);
+        table.v4.v3.v2.base.abi_version = WEAPON_XP_ABI_V5;
+        table.subscribe_filtered = +[](std::uint32_t mask, std::int32_t item,
+                                       weapon_xp_listener_v1 fn, void* user,
+                                       std::uint32_t* token) -> std::int32_t {
+            if (!s_instance || !s_instance->m_ready) return WEAPON_XP_NOT_READY;
+            if (s_instance->callback_busy())
+                return WEAPON_XP_BUSY;
+            return s_instance->m_events.subscribe_filtered(mask, item, fn, user, token);
+        };
+        table.get_progress = +[](std::int32_t item, weapon_xp_progress_v5* out) -> std::int32_t {
+            return s_instance && s_instance->m_ready
+                ? s_instance->get_progress(item, out) : WEAPON_XP_NOT_READY;
+        };
+        table.get_native_reward = +[](std::uint32_t moby, std::uint32_t* bolts) -> std::int32_t {
+            return s_instance && s_instance->m_ready
+                ? s_instance->get_native_reward(moby, bolts) : WEAPON_XP_NOT_READY;
+        };
+        table.evaluate_progress = +[](const weapon_xp_rules_v3* rules,
+                                       const weapon_xp_balance_v5* balance, std::uint32_t bolts,
+                                       weapon_xp_progress_v5* out) -> std::int32_t {
+            if (!s_instance || !s_instance->m_ready) return WEAPON_XP_NOT_READY;
+            try {
+                return s_instance->evaluate_progress(rules, balance, bolts, out);
+            } catch (...) {
+                return WEAPON_XP_IO_ERROR;
+            }
+        };
+        table.register_name_provider = +[](weapon_xp_name_provider_v5 provider, void* user,
+                                            std::uint32_t* token) -> std::int32_t {
+            if (!s_instance || !s_instance->m_ready) return WEAPON_XP_NOT_READY;
+            if (s_instance->callback_busy()) return WEAPON_XP_BUSY;
+            return s_instance->m_name_providers.subscribe(provider, user, token);
+        };
+        table.unregister_name_provider = +[](std::uint32_t token) -> std::int32_t {
+            return s_instance && s_instance->m_ready
+                ? s_instance->m_name_providers.unsubscribe(token) : WEAPON_XP_NOT_READY;
+        };
+        table.format_custom_name = +[](const weapon_xp_name_context_v5* context, char* out,
+                                       std::uint32_t capacity) -> std::int32_t {
+            return s_instance && s_instance->m_ready
+                ? s_instance->format_custom_name(context, out, capacity) : WEAPON_XP_NOT_READY;
+        };
+        return table;
+    }();
+    return &progression.v4.v3.v2.base;
 }
 
 }  // namespace weaponxp

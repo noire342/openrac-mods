@@ -712,6 +712,67 @@ void extension_contract(
     );
 }
 
+void recycled_hit_contract(const openrac_api& api, openrac_mod* handle,
+                           openrac_mod_load_fn load, void (*unload)()) {
+    test_profile = std::string("recycled-hit-") + disc->version;
+    scale_damage = true;
+    scale_capacity = false;
+    test_xp_rate = 1;
+    CHECK(load(&api, handle) == 0);
+    put<float>(exe(disc->tick_seconds), 1.f / 60);
+    frame(nullptr);
+
+    constexpr int walloper = 18, bomb_glove = 10;
+    CHECK(service->award_xp(walloper, kThresholds[1]) == WEAPON_XP_OK);
+    CHECK(service->award_xp(bomb_glove, kThresholds[1]) == WEAPON_XP_OK);
+    std::uint32_t listener = 0;
+    CHECK(service->subscribe(observer, nullptr, &listener) == WEAPON_XP_OK);
+    const auto hit = reinterpret_cast<std::uint32_t (*)(std::uint32_t, int, int)>(
+        hooks["rac1.combat.get_hit"]);
+    const auto death = reinterpret_cast<void (*)(std::uint32_t, int, int)>(
+        hooks["rac1.moby.record_death"]);
+    constexpr unsigned enemy = 0x390000, first_source = 0x492000, next_source = 0x493000;
+    constexpr unsigned moby_class = 0xA6, bolt_group = 0xB1, base_bolts = 0xB4, bolt_budget = 0xB6;
+    constexpr unsigned hit_source = 0x20, hit_flags = 0x24, hit_damage = 0x2C, hit_target = 0x34;
+    constexpr unsigned contact_mask = 0x10000;
+    constexpr float first_damage = 4;
+    hit_address = ov(disc->hit_ring);
+    std::memset(ram.data() + hit_address, 0, 64);
+    put<short>(enemy + moby_class, 133);
+    put<unsigned char>(enemy + bolt_group, 0xFF);
+    put<short>(enemy + base_bolts, 10);
+    put<short>(enemy + bolt_budget, 10);
+    put<short>(first_source + moby_class, 180); // Walloper.
+    put<short>(next_source + moby_class, 192);  // Bomb Glove.
+    put<unsigned>(hit_address + hit_source, first_source);
+    put<unsigned>(hit_address + hit_flags, contact_mask);
+    put<unsigned>(hit_address + hit_target, enemy);
+    put<float>(hit_address + hit_damage, first_damage);
+
+    const auto hits_before = hits;
+    CHECK(hit(enemy, contact_mask, 1) == hit_address);
+    const auto first_scaled = get<float>(hit_address + hit_damage);
+    CHECK(first_scaled > first_damage && hits == hits_before + 1);
+    CHECK(hit(enemy, contact_mask, 1) == hit_address);
+    CHECK(get<float>(hit_address + hit_damage) == first_scaled && hits == hits_before + 1);
+
+    // A different source wraps into the same ring slot, with the same target
+    // and a nominal damage equal to the earlier hit's scaled damage.
+    put<unsigned>(hit_address + hit_source, next_source);
+    CHECK(hit(enemy, contact_mask, 1) == hit_address);
+    const auto second_scaled = get<float>(hit_address + hit_damage);
+    CHECK(second_scaled > first_scaled && hits == hits_before + 2);
+    death(enemy, 0, 0);
+    CHECK(stats(bomb_glove).xp == kThresholds[1] + 10 && stats(walloper).xp == kThresholds[1]);
+
+    // A pending replacement must not be rolled back using the old packet's damage.
+    put<unsigned>(hit_address + hit_source, first_source);
+    frame(nullptr);
+    CHECK(get<float>(hit_address + hit_damage) == second_scaled);
+    CHECK(service->unsubscribe(listener) == WEAPON_XP_OK);
+    unload();
+}
+
 void ownership_contract(
     weapon_xp_query_fn query,const openrac_api& api,openrac_mod* handle,
     openrac_mod_load_fn load,void(*unload)()
@@ -720,7 +781,7 @@ void ownership_contract(
     scale_damage=true;scale_capacity=false;test_xp_rate=1;
     CHECK(load(&api,handle)==0);
     const auto* raw=query(4);
-    CHECK(raw&&raw->size==sizeof(weapon_xp_api_v4)&&raw->abi_version==4&&query(5)==nullptr);
+    CHECK(raw&&raw->size==sizeof(weapon_xp_api_v4)&&raw->abi_version==4&&query(6)==nullptr);
     CHECK(query(1)->size==sizeof(weapon_xp_api_v1)&&query(1)->abi_version==1);
     CHECK(query(2)->size==sizeof(weapon_xp_api_v2)&&query(2)->abi_version==2);
     CHECK(query(3)->size==sizeof(weapon_xp_api_v3)&&query(3)->abi_version==3);
@@ -845,6 +906,99 @@ void presentation_contract(weapon_xp_query_fn query,const openrac_api& api,openr
     CHECK(stats(18).xp==before.xp && stats(18).level==before.level);
     unload();
     std::puts("XP v4 optional presentation tail: C ABI, settings, queue, lifecycle and unchanged native progression: ok");
+}
+
+void v5_contract(weapon_xp_query_fn query, const openrac_api& api, openrac_mod* handle,
+                 openrac_mod_load_fn load, void(*unload)()) {
+    const auto* legacy = reinterpret_cast<const weapon_xp_api_v4*>(query(4));
+    const auto* raw = query(WEAPON_XP_ABI_V5);
+    CHECK(raw && raw->abi_version == 5 && raw->size == sizeof(weapon_xp_api_v5));
+    const auto* v5 = reinterpret_cast<const weapon_xp_api_v5*>(raw);
+    CHECK(v5->v4.v3.v2.base.award_xp == legacy->v3.v2.base.award_xp);
+    CHECK(v5->v4.register_hit_filter == legacy->register_hit_filter);
+    CHECK(v5->v4.request_acquisition_presentation == legacy->request_acquisition_presentation);
+    weapon_xp_progress_v5 out{};
+    out.size = sizeof(out);
+    CHECK(v5->get_progress(16, &out) == WEAPON_XP_NOT_READY);
+
+    test_profile = std::string("v5-contract-") + disc->version;
+    test_xp_rate = .25;
+    CHECK(load(&api,handle) == 0);
+    const auto& common = v5->v4.v3.v2.base;
+    weapon_xp_balance_v5 balance{sizeof(balance), 399, 3};
+    CHECK(v5->evaluate_progress(nullptr, &balance, 1, &out) == WEAPON_XP_OK);
+    CHECK(out.old_level == 1 && out.level == 2 && out.xp == 400 &&
+          out.xp_quarters == 0 && out.progress == 0 && balance.xp == 399);
+    CHECK(v5->get_progress(16, &out) == WEAPON_XP_OK && out.xp == 0 && out.xp_quarters == 0);
+    CHECK(v5->get_progress(0x10012, &out) == WEAPON_XP_INVALID_ARGUMENT);
+    weapon_xp_rules_v3 rules{};
+    rules.size = sizeof(rules);
+    CHECK(v5->v4.v3.get_rules(16, &rules) == WEAPON_XP_OK);
+    rules.item_id = -1;
+    rules.thresholds[9] = kMaxExperience;
+    balance.xp = kMaxExperience - 1;
+    CHECK(v5->evaluate_progress(&rules, &balance, 0, &out) == WEAPON_XP_OK);
+    CHECK(out.level == 9 && out.progress < 1 && out.xp_quarters == 3);
+    rules.thresholds[9] = kThresholds.back();
+    CHECK(v5->evaluate_progress(&rules, &balance, UINT32_MAX, &out) == WEAPON_XP_OK);
+    CHECK(out.level == 10 && out.xp == balance.xp && out.xp_quarters == 3);
+    balance.xp_quarters = 4;
+    CHECK(v5->evaluate_progress(nullptr, &balance, 0, &out) == WEAPON_XP_INVALID_ARGUMENT);
+    CHECK(out.level == 10);  // Invalid inputs leave the output untouched.
+
+    put<int>(ov(disc->mode), 0);
+    put<int>(exe(disc->hero) + 0x22a8, 4);
+    constexpr unsigned target = 0x390000;
+    put<short>(target + 0xa6, 133);
+    put<unsigned char>(target + 0xb1, 0xff);
+    put<short>(target + 0xb2, 1);
+    put<short>(target + 0xb4, 10);
+    unsigned bolts = 99;
+    CHECK(v5->get_native_reward(0, &bolts) == WEAPON_XP_NOT_FOUND && bolts == 99);
+    CHECK(v5->get_native_reward(target, &bolts) == WEAPON_XP_OK && bolts == 10);
+    constexpr unsigned hero_vehicle_mode = 0x20a4;
+    put<std::uint8_t>(exe(disc->hero) + hero_vehicle_mode, 1);
+    CHECK(v5->get_native_reward(target, &bolts) == WEAPON_XP_OK && bolts == 10);
+    put<std::uint8_t>(exe(disc->hero) + hero_vehicle_mode, 0);
+    put<int>(ov(disc->mode), 5);
+    CHECK(v5->get_native_reward(target, &bolts) == WEAPON_XP_NOT_READY && bolts == 10);
+    put<int>(ov(disc->mode), 0);
+    put<unsigned char>(target + 0xb1, 0xfe);
+    CHECK(v5->get_native_reward(target, &bolts) == WEAPON_XP_OK && bolts == 0);
+
+    unsigned token = 0, events = 0;
+    const auto listener = +[](void* user, const weapon_xp_event_v1* event) {
+        CHECK(event->kind == WEAPON_XP_LEVEL_UP && event->item_id == 16);
+        ++*static_cast<unsigned*>(user);
+    };
+    CHECK(v5->subscribe_filtered(WEAPON_XP_EVENT_MASK(WEAPON_XP_LEVEL_UP), 16, listener,
+                                 &events, &token) == WEAPON_XP_OK);
+    CHECK(common.award_xp(18, kThresholds[1]) == WEAPON_XP_OK && events == 0);
+    CHECK(common.award_xp(16, kThresholds[1]) == WEAPON_XP_OK && events == 1);
+    CHECK(common.unsubscribe(token) == WEAPON_XP_OK);
+
+    struct NamingClient { const weapon_xp_api_v5* api; unsigned calls = 0; } naming{v5};
+    const auto name = +[](void* user, const weapon_xp_name_context_v5* context,
+                          char* text, std::uint32_t capacity) -> std::int32_t {
+        auto& client = *static_cast<NamingClient*>(user);
+        if (!context->custom_id || std::strcmp(context->custom_id, "example.custom-weapon")) return 0;
+        constexpr char replacement[] = "Example Blarg";
+        if (capacity < sizeof(replacement)) return 0;
+        CHECK(client.api->v4.v3.v2.base.award_xp(16, 1) == WEAPON_XP_BUSY);
+        ++client.calls;
+        std::memcpy(text, replacement, sizeof(replacement));
+        return 1;
+    };
+    CHECK(v5->register_name_provider(name, &naming, &token) == WEAPON_XP_OK);
+    weapon_xp_name_context_v5 context{sizeof(context), -1, 10, 1, "Example v10", "example.custom-weapon"};
+    char text[WEAPON_XP_NAME_MAX_BYTES]{};
+    CHECK(v5->format_custom_name(&context, text, sizeof(text)) == WEAPON_XP_OK);
+    CHECK(std::strcmp(text, "Example Blarg") == 0 && naming.calls == 1);
+    CHECK(v5->unregister_name_provider(token) == WEAPON_XP_OK);
+    CHECK(v5->format_custom_name(&context, text, sizeof(text)) == WEAPON_XP_NOT_FOUND);
+    unload();
+    test_xp_rate = 1;
+    std::puts("XP v5: filtered subscriptions, native reward, private progression and names: ok");
 }
 
 void loading_contract(const openrac_api& api,openrac_mod* handle,
@@ -1235,8 +1389,10 @@ int main(int argc, char** argv) {
         loaded = 0;
         auto api = make_api(selected);
         extension_contract(query, api, handle, load, unload);
+        recycled_hit_contract(api,handle,load,unload);
         ownership_contract(query,api,handle,load,unload);
         presentation_contract(query,api,handle,load,unload);
+        v5_contract(query,api,handle,load,unload);
         loading_contract(api,handle,load,unload);
         unload_loading_contract(api,handle,load,unload);
         resident_cleanup_contract(api,handle,load,unload);

@@ -73,7 +73,7 @@ void Runtime::load() {
     m_painter = std::make_unique<NativeHud>(api, *m_disc);
     m_morph_model = std::make_unique<NativeMorphModel>(api, *m_disc);
     m_native_damage = std::make_unique<NativeDamage>(api, *m_disc);
-    m_upgrades = std::make_unique<NativeUpgrades>(api, *m_disc);
+    m_upgrades = std::make_unique<NativeUpgrades>(api, *m_disc, &m_name_providers);
     m_hud = reinterpret_cast<Hud>(api->function(m_disc->weapon_draw));
     m_gauge_hud = reinterpret_cast<Hud>(api->function(m_disc->gauge_draw));
     void* relay_function = api->function(m_disc->relay);
@@ -191,9 +191,14 @@ std::uint32_t Runtime::hero() {
     return Runtime::resident(m_disc->hero);
 }
 
+bool Runtime::gameplay_active() {
+    constexpr int gameplay_mode = 0;
+    return m_api->loaded_level() >= 0 && read<std::int32_t>(overlay(m_disc->mode)) == gameplay_mode;
+}
+
 bool Runtime::playing() {
-    return m_api->loaded_level() >= 0 && read<std::int32_t>(overlay(m_disc->mode)) == 0
-           && read<std::uint8_t>(hero() + 0x20A4) == 0;
+    constexpr unsigned hero_vehicle_mode = 0x20A4;
+    return gameplay_active() && read<std::uint8_t>(hero() + hero_vehicle_mode) == 0;
 }
 
 void Runtime::log(int severity, const std::string& message) {
@@ -227,10 +232,9 @@ void Runtime::restore_hits() {
     }
     const bool restore_level=!native_level_loading(m_api,*m_disc);
     for (auto& edit : m_edits) {
-        if (restore_level && edit.hit && edit.raw != edit.scaled
-            && read<std::uint32_t>(edit.hit + 0x34) == edit.owner
-            && read<float>(edit.hit + 0x2C) == edit.scaled) {
-            write(edit.hit + 0x2C, edit.raw);
+        if (restore_level && edit.damage_changed && valid(edit.hit, kHitPacketSize)
+            && edit.matches(edit.hit, m_api->memory + edit.hit)) {
+            write(edit.hit + kHitDamageOffset, edit.raw_damage);
         }
         edit = {};
     }
@@ -345,7 +349,7 @@ std::uint32_t Runtime::process_hit(std::uint32_t moby, std::uint32_t hit,bool* e
                   << source_item(hit) << " attacker-class="
                   << read<std::int16_t>(read<unsigned>(hit + 0x20) + kMobyClass)
                   << " stamp=" << read<std::uint16_t>(hit + 0x2A)
-                  << " tag=" << read<float>(hit + 0x1C) << " damage=" << read<float>(hit + 0x2C)
+                  << " tag=" << read<float>(hit + 0x1C) << " damage=" << read<float>(hit + kHitDamageOffset)
                   << " playing=" << playing();
             log(OPENRAC_LOG_INFO, trace.str());
         }
@@ -353,17 +357,20 @@ std::uint32_t Runtime::process_hit(std::uint32_t moby, std::uint32_t hit,bool* e
             return hit;
         }
         const auto ring = overlay(m_disc->hit_ring);
-        if (hit < ring || (hit - ring) % 0x40 != 0 || (hit - ring) / 0x40 >= 64 || !valid(hit, 0x40)
+        if (hit < ring || (hit - ring) % kHitPacketSize != 0
+            || (hit - ring) / kHitPacketSize >= m_edits.size() || !valid(hit, kHitPacketSize)
             || read<std::uint32_t>(hit + 0x34) != moby) {
             return hit;
         }
-        const auto& replicated = m_external_replicated[(hit - ring) / 0x40];
+        const auto slot = (hit - ring) / kHitPacketSize;
+        const auto* packet = m_api->memory + hit;
+        const auto& replicated = m_external_replicated[slot];
         if (replicated.key.session == m_external_scope && m_external_scope != 0
             && replicated.moby == moby && replicated.hit == hit
-            && std::memcmp(replicated.payload.data(), m_api->memory + hit, 64) == 0) {
+            && std::memcmp(replicated.payload.data(), packet, kHitPacketSize) == 0) {
             m_combat.forget(moby);
             if (m_tick - replicated.at > 8) {
-                if (read<unsigned char>(moby + 0xA4) == (hit - ring) / 64) {
+                if (read<unsigned char>(moby + 0xA4) == slot) {
                     write<unsigned char>(moby + 0xA4, 0xFF);
                 }
                 return 0;
@@ -374,8 +381,11 @@ std::uint32_t Runtime::process_hit(std::uint32_t moby, std::uint32_t hit,bool* e
             || enemy_reward(read<short>(moby + kMobyClass)) == 0) {
             return hit;
         }
-        auto& edit = m_edits[(hit - ring) / 0x40];
-        const float damage = read<float>(hit + 0x2C);
+        auto& edit = m_edits[slot];
+        // The ring can reuse a packet in the same frame. Compare its contents
+        // before deduplicating a hit or restoring an edit owned by this mod.
+        const bool observed = edit.matches(hit, packet);
+        const float damage = read<float>(hit + kHitDamageOffset);
         const int item = source_item(hit);
         if(!std::isfinite(damage)||damage<=0||damage>1000000)return hit;
         weapon_xp_hit_context_v4 context{};
@@ -385,24 +395,21 @@ std::uint32_t Runtime::process_hit(std::uint32_t moby, std::uint32_t hit,bool* e
         context.attacker_class=valid(context.attacker_moby,0x100)?read<std::int16_t>(context.attacker_moby+kMobyClass):-1;
         context.native_item=item;
         context.origin_class=read<float>(hit+0x1c)==5627.9248046875f?read<std::uint16_t>(hit+0x2a):-1;
-        context.raw_damage=edit.hit==hit&&edit.owner==moby&&edit.scaled==damage?edit.raw:damage;
+        context.raw_damage=observed?edit.raw_damage:damage;
         context.flags=read<unsigned>(hit+0x24);context.tick=m_tick;context.level_epoch=m_level_epoch;
         for(unsigned axis=0;axis<3;++axis)context.target_position[axis]=read<float>(moby+0x10+axis*4);
         if(m_filters.external(context)){
             if(external)*external=true;
             // Undo only an edit still owned by this module when a filter was
             // registered after an earlier observation of the same packet.
-            if(edit.hit==hit&&edit.owner==moby&&edit.scaled==damage&&edit.raw!=edit.scaled)
-                write(hit+0x2c,edit.raw);
+            if (edit.damage_changed && edit.matches(hit, packet))
+                write(hit + kHitDamageOffset, edit.raw_damage);
             edit={};m_combat.forget(moby);return hit;
         }
         if (m_settings.scale_damage && item == 15) {
             m_native_damage->prepare(m_state.rule(item).damage[m_state.weapon_level(item) - 1]);
         }
-        if (edit.hit == hit && edit.owner == moby && edit.scaled == damage) {
-            return hit;
-        }
-        if (!std::isfinite(damage) || damage <= 0 || damage > 1000000) {
+        if (observed) {
             return hit;
         }
         if (weapon_index(item) < 0) {
@@ -410,10 +417,11 @@ std::uint32_t Runtime::process_hit(std::uint32_t moby, std::uint32_t hit,bool* e
             return hit;
         }
         const float scaled = m_combat.hit(moby, item, damage, m_tick);
-        edit = {hit, moby, damage, scaled};
-        if (scaled != damage) {
-            write(hit + 0x2C, scaled);
+        edit = {hit, damage, scaled != damage};
+        if (edit.damage_changed) {
+            write(hit + kHitDamageOffset, scaled);
         }
+        std::memcpy(edit.packet.data(), packet, edit.packet.size());
         weapon_xp_event_v1 event{};
         event.size = sizeof event;
         event.kind = WEAPON_XP_HIT;

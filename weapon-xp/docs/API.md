@@ -1,4 +1,4 @@
-# Weapon Experience native C API (v1, v2, v3)
+# Weapon Experience native C API
 
 The MIT header `include/weapon_xp_api.h` is the authoritative plain-C contract. Resolve
 `openrac_weapon_xp_query` from the already loaded provider; never load a second instance.
@@ -6,8 +6,10 @@ Declare `requires: [{"id":"weapon-xp","version":">=0.6.0"}]` for a v3 consumer.
 The Windows observer demonstrates GetModuleHandle/GetProcAddress discovery. Other platforms
 must use their platform's loader handle. Sandboxed Luau cannot call this native service.
 
-`query(1)`, `query(2)` and `query(3)` return their own exact table sizes/versions; unsupported
-versions return null. v3 contains unchanged v2 and v1 prefixes. Check both version and size.
+`query(1)` through `query(5)` return their own sizes and version numbers.
+Each table contains the earlier function pointers in the same order.
+Unsupported versions return null. Check the requested version and size before
+reading a function pointer.
 Initialize each input/output struct's `size`. Calls and callbacks use the game thread.
 Do not retain a service after STOPPING/provider unload; unsubscribe when the consumer unloads.
 
@@ -23,7 +25,7 @@ Do not retain a service after STOPPING/provider unload; unsubscribe when the con
   callbacks; awards, subscriptions and configuration mutations return BUSY. Exceptions from
   a listener disconnect it. No nested dispatch is performed.
 
-CHANGED precedes LEVEL_UP for crossed thresholds. HIT is outgoing hit-record observation,
+CHANGED precedes one aggregate LEVEL_UP when an award crosses thresholds. HIT is outgoing hit-record observation,
 not proof a target accepted damage. A pending hit can be observed again on a later tick.
 LEVEL_LOADED and STOPPING have item -1. Legacy V5_EFFECT=6 stays reserved and is never emitted.
 CONFIGURATION_CHANGED=7 has item -1; query v3 for its new revision. Existing XP is unchanged.
@@ -71,11 +73,11 @@ The consumer owns its override: retain a snapshot and restore on unload only if 
 still belong to it. A rules-file reload explicitly replaces API overrides with file/default values.
 See `examples/rules_client.c`, compiled as C in the test build, for a minimal independent client.
 
-## Custom hit ownership (v4, 0.6.3-arsenal preview)
+## Custom hit ownership (v4)
 
 `query(WEAPON_XP_ABI_V4)` returns `weapon_xp_api_v4`. Its complete v1/v2/v3 prefix is unchanged;
 the returned base reports ABI 4 and the full v4 size. Querying an earlier ABI still returns its
-original version and size. This preview is an isolated companion build for the additive arsenal.
+original version and size. The filters and presentation helpers ship in 0.6.4.
 
 `register_hit_filter(callback, user, &token)` installs one of at most 16 synchronous ownership
 filters. The copied 64-byte context includes target/source classes, candidate native item,
@@ -119,6 +121,86 @@ returns 1 while that external request is queued, preparing, playing or waiting f
 actors to retire, then 0. It does not report unrelated native XP presentations. Both calls return
 NOT_READY when the provider runtime is absent. The existing quiet-input phase, player-body
 visibility guard and two-frame actor retirement are shared with native level-up scenes.
+
+## Level effects and names (v5)
+
+Declare `requires: [{"id":"weapon-xp","version":">=0.7.0"}]` if the feature needs
+v5 to work. For an optional dependency, resolve the provider from the existing
+module on a normal game frame and fall back when the query or runtime is
+unavailable. Use `load.after` when a consumer has its own outer hit hook that
+needs to run after the provider's inner classification. Revolverator declares
+this ordering and keeps support for providers with the v4 contract.
+
+### Subscribe to game events
+
+- `subscribe_filtered(mask, item, listener, user, &token)` subscribes to v1
+  events without consuming v1 listener slots. Combine defined event kinds
+  using `WEAPON_XP_EVENT_MASK(kind)` and bitwise OR. Reserved event kinds
+  and unknown bits are rejected. Use a supported native item ID, `-1` for
+  session events, or `WEAPON_XP_ANY_ITEM` for both.
+- Use the v1 `unsubscribe` function for either subscription. Filtered listeners
+  get up to 16 slots and receive only matching events. If you retain provider
+  pointers, subscribe to STOPPING using the session or any-item filter and
+  clear those pointers when notified.
+- For a level-specific effect, inspect `event->new_level` and `event->item_id`.
+  Enqueue the effect with copied data, such as `target_position`, and run it
+  on your mod's next game-thread frame. HIT is an outgoing native observation.
+  For effects that require confirmed damage, use your own accepted-damage
+  hook. A HIT can be repeated across native frames and excludes packets owned
+  by a v4 filter. External weapon owners can use their own combat events
+  alongside the shared progression calculation.
+- For an effect attached when a weapon fires, use the relevant OpenRAC
+  weapon or projectile hook and read `get_progress(item)` there. An effect
+  may want the level at firing time even if the projectile lands later.
+
+### Supply a localized name
+
+Use `register_name_provider` to replace the title for selected weapons and
+levels. The context supplies the native item ID, current level, game language
+ID and localized default label. For custom weapons it supplies item ID `-1`
+and a stable `custom_id`. Return 0 to leave the name to the next provider.
+Return 1 with a NUL-terminated printable ASCII title to propose a replacement.
+Leave enough space for the terminator within the supplied capacity.
+The first valid proposal wins. At most 16 providers can be installed.
+Invalid proposals and throwing callbacks leave the default name available.
+
+Keep the callback deterministic for the same item, level, locale and default
+name. Native presentations cache the result until these inputs or the
+provider list change. The `versioned_names` setting controls this feature.
+When disabled, the game shows its stock names. Providers may unregister
+during callbacks. Calls that mutate XP, configuration or registrations return
+BUSY during dispatch. Unregister a provider before its consumer unloads.
+
+An updated custom-weapon mod can use `format_custom_name` when drawing its
+own menus and acquisition text. Pass a lower-case stable identity such as
+`noire342.revolverator` and the localized fallback name. Supported ID bytes
+are `a-z`, `0-9`, period, dash and underscore, up to 127 bytes excluding the
+terminator. Keep the fallback for any non-OK result. The display title never
+changes the weapon ID or its saved progress.
+
+The compiled [level-10 Pyrocitor example](../examples/level_effect.c) proposes
+**Pyrocitor Blarg** or **Inceneritore Blarg** in Italian and queues a cosmetic
+effect using the hit position. Its consuming mod supplies the effect renderer.
+Other items and levels keep their own localized titles.
+
+### Use shared XP arithmetic for a custom weapon
+
+Use `get_progress` for a native weapon's exact total, quarter-XP remainder,
+thresholds, bar progress and effective multipliers. For a custom weapon, keep
+its current `weapon_xp_balance_v5` in your own state. Use
+`get_native_reward` just before a confirmed enemy death updates depletion.
+It returns OK with a zero payout for eligible enemies whose payout is zero,
+and NOT_FOUND for unsupported targets.
+
+Call `evaluate_progress` with that payout, the current balance and optionally
+the weapon's own validated rule set. Null rules uses the default curve.
+The provider applies the shared kill cap, XP-rate rounding and bonus settings,
+and returns the new balance plus old and new levels. With a zero payout it
+reports the current level and multipliers. A reduced cap preserves earned XP.
+Persist the whole XP and remainder together for new custom weapons.
+Deduplicate your own confirmed kills and commit the returned state in the
+consumer's save. Evaluation writes no XP, emits no native events and changes
+neither inventory nor ammunition.
 
 Limits are documented in CONFIGURATION.md. New fields require an ABI revision or an explicitly
 compatible appended tail; never alter existing v1/v2 layouts. The API exposes policies and events,

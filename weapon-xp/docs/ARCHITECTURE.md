@@ -7,7 +7,7 @@ depend on another mod's C++ classes, game-memory layout or renderer implementati
 flowchart LR
     Launcher --> Settings
     File[rules.ini] --> Parser[Rules parser / validation]
-    API[Public C ABI v1/v2/v3] --> Session[Session coordinator]
+    API[Public C ABI v1–v5] --> Session[Session coordinator]
     Parser --> Rules
     Settings --> Combat
     Rules --> Progression
@@ -17,6 +17,8 @@ flowchart LR
     Session --> Store[Atomic XP store]
     Session --> Native[Native hit / HUD / acquisition adapters]
     Events --> Consumers[Other native mods]
+    Consumers --> Names[Name providers]
+    Names --> Native
 ```
 
 - `rules` owns defaults, curve/reward policies and pure parsing/validation. `rules_file`
@@ -32,8 +34,15 @@ flowchart LR
 - `native_morph_model` owns the optional pre-update held-model roll and guarded
   restoration. The native update samples its muzzle joint from that pose, keeping
   the rendered barrel, native beam origin, light and sparks aligned.
-- `runtime` coordinates session/SDK lifetime. `api` implements progression/co-op contracts;
-  `configuration_api` validates and commits extensions before emitting one config event.
+- `runtime` coordinates session and SDK lifetime. `api` exposes the versioned
+  C tables and v2 co-op contract. `configuration_api` validates and commits
+  session changes before emitting one config event. `progression_api` uses
+  the same reward and rounding helpers for copied native stats and calculations
+  on balances owned by companion mods.
+- `events` dispatches bounded, synchronous native notifications. `hit_filters`
+  classifies custom ownership before native scaling. `name_providers` resolves
+  display names through bounded copy-only callbacks, while `native_upgrades`
+  owns the game's text bindings and acquisition presentation.
 - `store` owns locking, checksums, backups and atomic XP replacement.
 
 To add a configuration field, extend the appropriate data policy, validate it, expose a

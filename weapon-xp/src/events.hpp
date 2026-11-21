@@ -12,6 +12,8 @@ namespace weaponxp {
 class Events {
 public:
     int subscribe(weapon_xp_listener_v1 fn, void* user, std::uint32_t* token);
+    int subscribe_filtered(std::uint32_t mask, int item, weapon_xp_listener_v1 fn,
+                           void* user, std::uint32_t* token);
     int unsubscribe(std::uint32_t token);
     void emit(const weapon_xp_event_v1& event) noexcept;
 
@@ -22,9 +24,15 @@ private:
         weapon_xp_listener_v1 fn = nullptr;
         void* user = nullptr;
         std::uint32_t token = 0;
+        std::uint32_t mask = 0;
+        int item = WEAPON_XP_ANY_ITEM;
     };
 
-    std::array<Listener, 16> m_listeners{};
+    static constexpr std::size_t kCapacity = 16;
+    using Listeners = std::array<Listener, kCapacity>;
+    int subscribe(Listeners& bank, Listener listener, std::uint32_t* token);
+    Listeners m_listeners{};
+    Listeners m_filtered{};
     std::uint32_t m_next = 1;
     bool m_dispatching = false;
 };

@@ -45,6 +45,7 @@ private:
     Combat m_combat;
     Events m_events;
     HitFilters m_filters;
+    NameProviders m_name_providers;
     std::uint32_t m_level_epoch=0;
     bool m_ready = false;
     std::uint64_t m_revision = 1;
@@ -76,9 +77,17 @@ private:
     void (*m_pad_report)(unsigned, unsigned, int) = nullptr;
     void (*m_relay_original)(std::uint32_t) = nullptr;
 
+    static constexpr std::uint32_t kHitPacketSize = 0x40;
+    static constexpr std::uint32_t kHitDamageOffset = 0x2C;
     struct DamageEdit {
-        std::uint32_t hit = 0, owner = 0;
-        float raw = 0, scaled = 0;
+        std::uint32_t hit = 0;
+        float raw_damage = 0;
+        bool damage_changed = false;
+        std::array<std::uint8_t, kHitPacketSize> packet{};
+
+        bool matches(std::uint32_t address, const std::uint8_t* bytes) const noexcept {
+            return address == hit && std::memcmp(packet.data(), bytes, packet.size()) == 0;
+        }
     };
 
     std::array<DamageEdit, 64> m_edits{};
@@ -134,6 +143,7 @@ private:
     std::uint32_t resident(std::uint32_t address);
     std::uint32_t overlay(std::uint32_t address);
     std::uint32_t hero();
+    bool gameplay_active();
     bool playing();
     void log(int severity, const std::string& message);
     void save() noexcept;
@@ -160,6 +170,15 @@ private:
     void hook(const char* name, const char* signature, void* callback, void** original);
     void accept_award(const Award& award);
     int get_stats(int item, weapon_xp_stats_v1* out);
+    int get_progress(int item, weapon_xp_progress_v5* out) const;
+    int get_native_reward(std::uint32_t moby, std::uint32_t* nominal_bolts);
+    int evaluate_progress(const weapon_xp_rules_v3* rules, const weapon_xp_balance_v5* balance,
+                          std::uint32_t nominal_bolts, weapon_xp_progress_v5* out) const;
+    int format_custom_name(const weapon_xp_name_context_v5*, char*, std::uint32_t capacity);
+    bool callback_busy() const noexcept {
+        return m_events.dispatching() || m_filters.dispatching() ||
+               m_name_providers.dispatching() || m_external_processing;
+    }
     int award_xp(int item, std::uint32_t amount);
     int get_configuration(weapon_xp_configuration_v3* out);
     int set_configuration(const weapon_xp_configuration_v3* in, std::uint64_t revision);

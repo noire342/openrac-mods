@@ -47,5 +47,28 @@ int main() {
         CHECK(hub.subscribe(+[](void*, const weapon_xp_event_v1*) {}, nullptr, &token) == 0);
     }
     CHECK(hub.subscribe(once, &state, &token) == WEAPON_XP_FULL);
+    unsigned filtered = 0;
+    const auto count = +[](void* user, const weapon_xp_event_v1*) {
+        ++*static_cast<unsigned*>(user);
+    };
+    constexpr auto level_mask = WEAPON_XP_EVENT_MASK(WEAPON_XP_LEVEL_UP);
+    CHECK(hub.subscribe_filtered(0, 16, count, &filtered, &token) == WEAPON_XP_INVALID_ARGUMENT);
+    CHECK(hub.subscribe_filtered(WEAPON_XP_EVENT_MASK(WEAPON_XP_V5_EFFECT), 16, count,
+                                 &filtered, &token) == WEAPON_XP_INVALID_ARGUMENT);
+    CHECK(hub.subscribe_filtered(level_mask, 37, count, &filtered, &token) == WEAPON_XP_INVALID_ARGUMENT);
+    CHECK(hub.subscribe_filtered(level_mask, 16, count, &filtered, &token) == WEAPON_XP_OK);
+    event.kind = WEAPON_XP_CHANGED;
+    event.item_id = 16;
+    hub.emit(event);
+    event.kind = WEAPON_XP_LEVEL_UP;
+    event.item_id = 18;
+    hub.emit(event);
+    CHECK(filtered == 0);
+    event.item_id = 16;
+    hub.emit(event);
+    CHECK(filtered == 1);
+    CHECK(hub.unsubscribe(token) == WEAPON_XP_OK);
+    hub.emit(event);
+    CHECK(filtered == 1);
     std::puts("versioned event subscriptions and reentrancy: ok");
 }

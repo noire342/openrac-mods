@@ -15,6 +15,7 @@ bool valid(std::uint32_t at, unsigned size) {
 }
 
 constexpr unsigned kNameSize = 128, kBufferSize = 0x100 + unsigned(kWeapons.size()) * kNameSize;
+constexpr unsigned kLanguagePal = 0x15EE88, kLanguageNtsc = 0x15ED88;
 }  // namespace
 
 template <class T>
@@ -33,9 +34,10 @@ void NativeUpgrades::write(std::uint32_t at, T value) {
     }
 }
 
-NativeUpgrades::NativeUpgrades(const openrac_api* api, const Disc& disc)
+NativeUpgrades::NativeUpgrades(const openrac_api* api, const Disc& disc, NameProviders* names)
     : m_api(api),
-      m_disc(disc) {
+      m_disc(disc),
+      m_name_providers(names) {
     const bool pal = std::strcmp(disc.version, "pal") == 0;
     m_allocate = reinterpret_cast<Allocate>(api->function(pal ? "func_001FFAB8" : "FUN_001ff288"));
     m_present =
@@ -85,18 +87,42 @@ bool NativeUpgrades::request_presentation(int item) {
     return true;
 }
 
-void NativeUpgrades::rename(Binding& b, int level) {
-    if (b.level == level
-        || read<unsigned>(b.entry) != (b.level == 1 ? b.original : b.replacement)) {
-        return;
+void NativeUpgrades::rename(Binding& b, int level, bool enabled) {
+    const auto revision = m_name_providers ? m_name_providers->revision() : 0;
+    const int displayed_level = enabled ? level : 0;
+    if ((b.level == displayed_level && b.name_revision == revision && b.language == m_language) ||
+        read<unsigned>(b.entry) != (b.projected ? b.replacement : b.original)) return;
+
+    if (b.language != m_language && valid(b.original, kNameSize)) {
+        // A language change can update the original string inside the same bank.
+        const auto* text = reinterpret_cast<const char*>(m_api->memory + b.original);
+        const auto* end = static_cast<const char*>(std::memchr(text, 0, kNameSize - 5));
+        if (end && end != text) b.name.assign(text, end);
     }
-    const auto name = b.name + " v" + std::to_string(level);
-    if (name.size() >= kNameSize) {
-        return;
+    std::string name = displayed_level > 1 ? b.name + " v" + std::to_string(level) : b.name;
+    bool project = displayed_level > 1;
+    if (enabled && m_name_providers) {
+        const weapon_xp_name_context_v5 context{
+            sizeof(weapon_xp_name_context_v5), b.item, std::uint32_t(level), m_language,
+            name.c_str(), nullptr
+        };
+        std::array<char, WEAPON_XP_NAME_MAX_BYTES> custom{};
+        if (m_name_providers->resolve(context, custom.data(), std::uint32_t(custom.size()))) {
+            name = custom.data();
+            project = name != b.name;
+        }
     }
-    std::memcpy(m_api->memory + b.replacement, name.c_str(), name.size() + 1);
-    write(b.entry, level == 1 ? b.original : b.replacement);
-    b.level = level;
+    project = project && name.size() < kNameSize;
+    if (project) {
+        std::memcpy(m_api->memory + b.replacement, name.c_str(), name.size() + 1);
+        write(b.entry, b.replacement);
+    } else if (b.projected) {
+        write(b.entry, b.original);
+    }
+    b.level = displayed_level;
+    b.language = m_language;
+    b.name_revision = revision;
+    b.projected = project;
 }
 
 void NativeUpgrades::names(const Progression& state, bool enabled) {
@@ -109,6 +135,7 @@ void NativeUpgrades::names(const Progression& state, bool enabled) {
         reset();
     }
     m_bank = bank;
+    m_language = read<int>(global(kLanguagePal, kLanguageNtsc));
     if (m_bindings.empty()) {
         if (!m_buffer) {
             m_buffer = m_allocate(kBufferSize);
@@ -139,8 +166,9 @@ void NativeUpgrades::names(const Progression& state, bool enabled) {
                      original,
                      m_buffer + 0x100 + unsigned(weapon_index(weapon.item)) * kNameSize,
                      weapon.item,
-                     1,
-                     std::string(text, end)}
+                     std::string(text, end),
+                     0,
+                     m_language}
                 );
                 break;
             }
@@ -151,7 +179,7 @@ void NativeUpgrades::names(const Progression& state, bool enabled) {
         const int target = m_active && !m_queue.empty() && m_queue.front().item == b.item
                                ? m_queue.front().level
                                : state.weapon_level(b.item);
-        rename(b, enabled ? target : 1);
+        rename(b, target, enabled);
     }
 }
 
@@ -181,7 +209,9 @@ void NativeUpgrades::tick(const Progression& state, bool safe, bool versioned_na
         restore_player();
         write(hero + 0x20B8, m_previous_item);
         std::memcpy(m_api->memory + vendor(), m_vendor.data(), m_vendor.size());
-        if (!m_queue.front().presentation_only) notify(m_queue.front().item, m_queue.front().level);
+        if (!m_queue.front().presentation_only) {
+            notify(m_queue.front().item, m_queue.front().level, versioned_names);
+        }
         m_active = false;
         m_queue.pop_front();
         m_delay = 180;
@@ -224,7 +254,7 @@ void NativeUpgrades::tick(const Progression& state, bool safe, bool versioned_na
     if (read<int>(scenes + next.item * 4) < 0) {
         // RYNO is awarded by the shady salesman and has no retail vendor acquisition scene.
         // Preserve its native acquisition-message path rather than indexing an invalid archive.
-        if (!next.presentation_only) notify(next.item, next.level);
+        if (!next.presentation_only) notify(next.item, next.level, versioned_names);
         m_queue.pop_front();
         m_preparing = false;
         m_delay = 180;
@@ -241,7 +271,7 @@ void NativeUpgrades::tick(const Progression& state, bool safe, bool versioned_na
     m_completed = 0;
     for (auto& b : m_bindings) {
         if (b.item == next.item && !next.presentation_only) {
-            rename(b, next.level);
+            rename(b, next.level, versioned_names);
         }
     }
     const auto game_camera = m_api->relocate_level_data(0, pal ? 0x166D80 : 0x166C80);
@@ -308,12 +338,12 @@ void NativeUpgrades::restore_player() {
     m_hidden_body = 0;
 }
 
-void NativeUpgrades::notify(int item, int level) {
+void NativeUpgrades::notify(int item, int level, bool versioned_names) {
     for (auto& binding : m_bindings) {
         if (binding.item != item) {
             continue;
         }
-        rename(binding, level);
+        rename(binding, level, versioned_names);
         m_notify(read<int>(binding.entry + 4), 180);
         break;
     }

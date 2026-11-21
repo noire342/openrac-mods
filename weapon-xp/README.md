@@ -1,8 +1,9 @@
-# Weapon Experience 0.6.4
+# Weapon Experience 0.7.0
 
-PAL Europe v2.00 on official OpenRAC 0.10 for Windows is the reference region;
-the NTSC-U adapter remains supported. Regional HUD/camera corrections and scoped
-native gameplay evidence are described in [PAL validation](docs/PAL.md).
+PAL Europe v2.00 is the reference disc. Weapon Experience 0.7 also supports
+NTSC-U. The v5 integration was tested in-game on both with official OpenRAC
+1.1.1 for Windows. Earlier regional checks are described in
+[PAL validation](docs/PAL.md).
 
 Twelve weapons gain ten persistent levels. The default is progression only: original
 damage, ammo capacity, projectiles, aiming, colors, particles and weapon behavior.
@@ -14,7 +15,7 @@ gauge. Localized names use v2 through v10. Level increases retain the native acq
 presentation. RYNO has no short retail acquisition scene and uses its native banner.
 The mod does not unlock weapons or refill ammunition.
 
-## Extensible rules and APIs v3/v4
+## Mod integration
 
 Rules are data, independent of game-memory adapters. Every weapon can have its own
 ten XP thresholds, ten damage/ammo multipliers and integer XP weight (0 pauses awards).
@@ -30,14 +31,20 @@ API edits are session-only, work on the game thread and preserve earned XP. Rule
 mutations wait until acquisition and active co-op scopes end. See [API](docs/API.md)
 and the compiled plain-C [consumer example](examples/rules_client.c).
 
-## Additive arsenal companion
+Weapon Experience 0.7 adds API v5. Companion mods can subscribe to selected
+weapon or session events, read fractional XP and effective bonuses, calculate
+progression for their own weapons, and supply names by level and language.
+The [Pyrocitor Blarg example](examples/level_effect.c) shows how a companion
+can give the level-10 Pyrocitor a title and queue a cosmetic effect. Default
+gameplay and names use the original settings until a companion registers a
+hook. See the [integration guide](docs/API.md#level-effects-and-names-v5).
 
 API v4 exposes hit-ownership filters and acquisition presentation helpers for
-Revolverator. It excludes accepted custom hits from
-native Walloper XP; Revolverator stores its independent progress in its own
-sidecar. Existing ABI v1/v2/v3 prefixes remain compatible. Install the companion
-separately when using both mods; their weapon progress stays independent.
-See `docs/API.md` and `examples/hit_owner.c`.
+Revolverator. Those filters keep custom hits out of native Walloper XP.
+The companion stores its own progress. API v5 lets updated custom weapons
+reuse the same reward arithmetic and delegate their display names while
+retaining responsibility for inventory, combat and saves. Existing v1–v4
+consumers use their original API tables. See [hit ownership](docs/API.md#custom-hit-ownership-v4).
 
 ## Settings
 
