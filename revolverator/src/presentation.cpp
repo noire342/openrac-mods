@@ -2,6 +2,7 @@
 // Copyright (c) 2026 noire342
 #include "presentation.hpp"
 #include "hud_table_scope.hpp"
+#include "native_ammunition.hpp"
 #include "native_icon_variants.hpp"
 #include "localization.hpp"
 #include "ammunition_icon_data.hpp"
@@ -14,9 +15,21 @@
 #endif
 namespace revolverator {
 namespace {
+using namespace native_hud;
+
+constexpr int walloper_hud_bank=weapon_hud_bank_base+NativeAmmunition::item_id;
+constexpr unsigned weapon_tile_text_color=ammo_fade_frames+0x10;
+constexpr unsigned pal_mode_address=0x15ed80;
+constexpr int ammo_tile_pal_y=10;
+constexpr int ammo_tile_ntsc_y=18;
+constexpr unsigned color_rgb_mask=0x00ffffff;
+constexpr unsigned color_alpha_shift=24;
+
 // Canonical resident relay addresses, checked against the running function table.
 // Source: OpenRAC's NTSC-U bindings; the same callback technique as Weapon XP.
-constexpr std::array<unsigned,19> relays{{0x2a5dd8,0x2bb758,0x2a5d10,0x296298,0x297fe0,0x2cfce0,0x2b2dc8,0x2ceee8,0x2ae8b8,0x2c3fe8,0x296cc0,0x2c9cc0,0x2bd798,0x2b2038,0x2afe30,0x293c18,0x29ec40,0x29df30,0x2a5878}};
+constexpr std::array<unsigned,native_arsenal_layout::last_campaign_level+1> relays{{
+ 0x2a5dd8,0x2bb758,0x2a5d10,0x296298,0x297fe0,0x2cfce0,0x2b2dc8,0x2ceee8,0x2ae8b8,0x2c3fe8,
+ 0x296cc0,0x2c9cc0,0x2bd798,0x2b2038,0x2afe30,0x293c18,0x29ec40,0x29df30,0x2a5878}};
 }
 Presentation::Presentation(const openrac_api* a,openrac_mod* m,GuestArena* arena,bool hud_fallback):Memory(a,arena),hd_(a,arena,hud_fallback),
  hud_(function<Hud>("FUN_L00_0023a7a8")),
@@ -100,74 +113,86 @@ void Presentation::apply_identity(){
   write(binding.entry,revolverator_identity_?binding.replacement:binding.original);
  }
 }
-void Presentation::frame(bool equipped){
+void Presentation::frame(bool equipped,bool alive){
  if(level_transitioning())return;
- names();const int current=api_->loaded_level();if(current<0||current>=19)return;
+ if(!alive){reset_icons(true);return;}
+ names();const int current=api_->loaded_level();if(current<0||unsigned(current)>=relays.size())return;
  bind_icon();
  hd_.frame();
  // NativeAmmunition owns the native ammo price/capacity fields and enables the
  // game's own ammo HUD. Presentation never overwrites those economy values.
- const auto slot=global(0x199b60);
+ const auto slot=global(channel_slots);
  // Native ammo HUD requests60000+item, independently of the item-definition
  // icon. Keep its scheduler's18 identity and scope the render-only bank below.
- if(!equipped||!icon_copy_||!Memory::valid(slot,0x90)||read<int>(slot+0x20)!=60018||
-    (read<int>(slot+0x68)!=0&&read<int>(slot)!=60018)){
-  if(slot_&&old_callback_&&read<unsigned>(slot_+0x18)==callback_)write(slot_+0x18,old_callback_);
+ if(!equipped||!icon_copy_||!Memory::valid(slot,channel_size)||read<int>(slot+channel_next_id)!=walloper_hud_bank||
+     (read<int>(slot+channel_pending)!=0&&read<int>(slot+channel_current_id)!=walloper_hud_bank)){
+  if(slot_&&old_callback_&&read<unsigned>(slot_+channel_callback)==callback_)write(slot_+channel_callback,old_callback_);
   slot_=old_callback_=callback_=0;
   return;
  }
- const auto callback=read<unsigned>(slot+0x18),relay=guest_callback(unsigned(current),relays[unsigned(current)]);
+ const auto callback=read<unsigned>(slot+channel_callback),relay=guest_callback(unsigned(current),relays[unsigned(current)]);
  if(!relay||!relay_||api_->function_at(relay)!=relay_)return;
  if(callback==relay){slot_=slot;callback_=relay;return;}
  if(api_->function_at(callback)!=reinterpret_cast<void*>(hud_))return;
- slot_=slot;old_callback_=callback;callback_=relay;write(slot+0x18,relay);
+ slot_=slot;old_callback_=callback;callback_=relay;write(slot+channel_callback,relay);
 }
 void Presentation::bind_icon(){
- const auto state=global(0x19a3e8),defs=read<unsigned>(state+0x1c),refs=read<unsigned>(state+0x20);
- if(icon_copy_||!Memory::valid(defs,8)||!Memory::valid(refs,4))return;
- unsigned count=0,definitions=0,drill_icon_def=0;bool terminated=false;
- for(unsigned i=0;i<1024;++i){
-  const auto entry=defs+i*8;if(!Memory::valid(entry,8))return;
-  const auto id=read<unsigned short>(entry);if(id==custom_icon_bank)return;
-  if(id==0xffff){definitions=i;terminated=true;break;}
-  const unsigned end=read<unsigned short>(entry+4)+unsigned(read<unsigned short>(entry+2));
+ const auto state=global(resident_state);
+ const auto defs=read<unsigned>(state+animation_definitions),refs=read<unsigned>(state+frame_references);
+ if(icon_copy_||!Memory::valid(defs,animation_entry_bytes)||!Memory::valid(refs,frame_reference_bytes))return;
+ unsigned count=0,definitions=0;bool terminated=false;
+ AnimationDefinition drill{};
+ for(unsigned i=0;i<max_animation_definitions;++i){
+  const auto entry=defs+i*animation_entry_bytes;if(!Memory::valid(entry,animation_entry_bytes))return;
+  const auto animation=read<AnimationDefinition>(entry);
+  if(animation.id==custom_icon_bank)return;
+  if(animation.id==animation_terminator){definitions=i;terminated=true;break;}
+  const unsigned end=unsigned(animation.start)+animation.count;
   count=std::max(count,end);
-  if(id==59901)drill_icon_def=entry;
+  if(animation.id==drill_icon_bank)drill=animation;
  }
- if(!terminated||!definitions||!drill_icon_def||count==0||count>16000||!Memory::valid(refs,count*4))return;
- const auto copy=allocate_guest((count+5)*4);if(!Memory::valid(copy,(count+5)*4))return;
- const auto definitions_copy=allocate_guest((definitions+2)*8);if(!Memory::valid(definitions_copy,(definitions+2)*8))return;
- std::memcpy(api_->memory+copy,api_->memory+refs,count*4);
+ const unsigned original_reference_bytes=count*frame_reference_bytes;
+ if(!terminated||!definitions||drill.count<=drill_icon_frame||count==0||count>max_frame_references||
+    !Memory::valid(refs,original_reference_bytes))return;
+ const unsigned reference_bytes=original_reference_bytes+custom_icon_frame_count*frame_reference_bytes;
+ const unsigned original_definition_bytes=definitions*animation_entry_bytes;
+ // Reserve one entry for the custom animation and one for its terminator.
+ const unsigned definition_bytes=original_definition_bytes+2*animation_entry_bytes;
+ const unsigned size=reference_bytes+definition_bytes;
+ const bool reuse=guest_arena_&&size<=spare_icon_capacity_&&guest_arena_->owns(spare_icons_,spare_icon_capacity_);
+ const auto copy=reuse?spare_icons_:allocate_guest(size);if(!Memory::valid(copy,size))return;
+ const auto definitions_copy=copy+reference_bytes;
+ std::memcpy(api_->memory+copy,api_->memory+refs,original_reference_bytes);
  icon_baseline_.resize(count);
- std::memcpy(icon_baseline_.data(),api_->memory+refs,count*4);
+ std::memcpy(icon_baseline_.data(),api_->memory+refs,original_reference_bytes);
  // Append a separate icon definition. Walloper's bank and its two original
  // frames remain intact; HUD, quick select and gold/locked menu views can
  // request frame4 as well as the ordinary ammo frame3.
- const bool has_drill=drill_icon_def&&read<unsigned short>(drill_icon_def+2)>13;
- if(!has_drill)return;
- const auto source=unsigned(read<unsigned short>(drill_icon_def+4))+13;
- for(unsigned i=0;i<5;++i){
+ const auto source=unsigned(drill.start)+drill_icon_frame;
+ const auto drill_reference=read<unsigned>(refs+source*frame_reference_bytes);
+ for(unsigned i=0;i<custom_icon_frame_count;++i){
   // Exact native atlas glyph selected by the user, checked at full resolution:
   // bank 59901, frame 13 (the highlighted white spiral/cone symbol).
-  write(copy+(count+i)*4,read<unsigned>(refs+source*4));
+  write(copy+(count+i)*frame_reference_bytes,drill_reference);
  }
- std::memcpy(api_->memory+definitions_copy,api_->memory+defs,definitions*8);
+ std::memcpy(api_->memory+definitions_copy,api_->memory+defs,original_definition_bytes);
  icon_definitions_baseline_.resize(definitions);
- std::memcpy(icon_definitions_baseline_.data(),api_->memory+defs,definitions*8);
- const auto extra=definitions_copy+definitions*8;
- write<unsigned short>(extra,custom_icon_bank);write<unsigned short>(extra+2,5);
- write<unsigned short>(extra+4,static_cast<unsigned short>(count));write<unsigned short>(extra+6,0);
- write<std::uint64_t>(extra+8,0xffff);
+ std::memcpy(icon_definitions_baseline_.data(),api_->memory+defs,original_definition_bytes);
+ const auto extra=definitions_copy+original_definition_bytes;
+ write(extra,AnimationDefinition{custom_icon_bank,custom_icon_frame_count,static_cast<std::uint16_t>(count),0,0});
+ write(extra+animation_entry_bytes,AnimationDefinition{animation_terminator,0,0,0,0});
  icon_state_=state;icon_defs_=defs;icon_refs_=refs;icon_copy_=copy;
+ icon_capacity_=reuse?spare_icon_capacity_:size;spare_icons_=spare_icon_capacity_=0;
  icon_defs_copy_=definitions_copy;icon_defs_count_=definitions;
- write(state+0x1c,definitions_copy);
- write(state+0x20,copy);
+ write(state+animation_definitions,definitions_copy);
+ write(state+frame_references,copy);
  const auto ammunition=generated::ammunition_icon_data();
  const auto install=[&](const HdIconData& normal){
   NativeIconVariants variants;
   const bool complete=variants.build(*this,normal);
   const auto clean=variants.normal(),vendor_ammo=variants.ammo(),golden=variants.golden();
-  return hd_.install(count,5,complete?clean:normal,&ammunition,complete?&vendor_ammo:nullptr,complete?&golden:nullptr);
+  return hd_.install(count,custom_icon_frame_count,complete?clean:normal,&ammunition,
+                     complete?&vendor_ammo:nullptr,complete?&golden:nullptr);
  };
  bool installed=false;
 #ifdef REVOLVERATOR_HD_ICON
@@ -175,32 +200,38 @@ void Presentation::bind_icon(){
 #endif
  // Source-only builds keep the player's original 32px weapon glyph. The
  // ammunition tile is original authored art and ships with the source.
- const auto frame=read<unsigned>(refs+source*4),images=read<unsigned>(state+0x24),palettes=read<unsigned>(state+0x28);
- const auto page=images+(frame>>16)*8,palette=palettes+(frame&0xffffu)*8;
- const auto pixels=read<unsigned>(page),clut=read<unsigned>(palette);
- if(!installed&&Memory::valid(pixels,1024)&&Memory::valid(clut,1024)&&read<unsigned short>(page+6)==0x0505){
-  const HdIconData drill{api_->memory+pixels,1024,api_->memory+clut,1024};
-  install(drill);
+ const auto frame=read<FrameReference>(refs+source*frame_reference_bytes);
+ const auto images=read<unsigned>(state+image_pages),palettes=read<unsigned>(state+palette_pages);
+ const auto page=read<TexturePage>(images+std::uint16_t(frame.image_index)*texture_page_bytes);
+ const auto clut=read<unsigned>(palettes+std::uint16_t(frame.palette_index)*texture_page_bytes);
+ constexpr unsigned native_pixel_bytes=HdIcon::logical_size*HdIcon::logical_size;
+ if(!installed&&Memory::valid(page.source_address,native_pixel_bytes)&&Memory::valid(clut,palette_bytes)&&
+    page.width_log2==native_texture_log2&&page.height_log2==native_texture_log2){
+  const HdIconData icon{api_->memory+page.source_address,native_pixel_bytes,api_->memory+clut,palette_bytes};
+  install(icon);
  }
 }
-bool Presentation::owns(unsigned e)const{return slot_==e&&callback_&&api_->loaded_level()==level_&&read<unsigned>(e+0x18)==callback_&&read<int>(e+0x20)==60018;}
+bool Presentation::owns(unsigned e)const{
+ return slot_==e&&callback_&&api_->loaded_level()==level_&&
+        read<unsigned>(e+channel_callback)==callback_&&read<int>(e+channel_next_id)==walloper_hud_bank;
+}
 void Presentation::draw_base(unsigned e,void(*previous_relay)(unsigned),std::optional<unsigned> vendor_ammo){
  (void)previous_relay;
  HudTableScope tables(*this);
- const int before=read<int>(e);
+ const int before=read<int>(e+channel_current_id);
  // The stock bank can have no suitable HUD frame. The selector and callback
  // own this draw even if native initialization resolved the active ID to FFFF.
- const bool custom=owns(e)||before==60018;
- if(custom)write<int>(e,custom_icon_bank);
- const int previous_ammo=read<int>(e+0x74);
+ const bool custom=owns(e)||before==walloper_hud_bank;
+ if(custom)write<int>(e+channel_current_id,custom_icon_bank);
+ const int previous_ammo=read<int>(e+channel_ammunition);
  // During the vendor fade the cursor can already have selected a stock item.
  // The counter still represents the custom purchase until its native draw ends.
- if(custom&&vendor_ammo)write<int>(e+0x74,int(*vendor_ammo));
+ if(custom&&vendor_ammo)write<int>(e+channel_ammunition,int(*vendor_ammo));
  // The shared relay may already belong to native Walloper XP decorations.
  // Custom progression owns its own decorations, so draw the native base once.
  hud_(e);
- if(custom&&vendor_ammo&&read<int>(e+0x74)==int(*vendor_ammo))write(e+0x74,previous_ammo);
- if(custom&&read<int>(e)==int(custom_icon_bank))write<int>(e,before);
+ if(custom&&vendor_ammo&&read<int>(e+channel_ammunition)==int(*vendor_ammo))write(e+channel_ammunition,previous_ammo);
+ if(custom&&read<int>(e+channel_current_id)==int(custom_icon_bank))write(e+channel_current_id,before);
 }
 int Presentation::draw_quick_selector(unsigned e,int(*original)(unsigned),const std::array<arsenal::WeaponKey,8>& bindings){
  if(!original)return 0;
@@ -209,9 +240,9 @@ int Presentation::draw_quick_selector(unsigned e,int(*original)(unsigned),const 
  const bool hidden=hd_.before_base();const int result=original(e);hd_.after_base();
  if(!hidden)return result;
  const int timer=read<int>(level(0x15f780));if(timer<=0)return result;
- const float open=std::clamp(read<unsigned char>(e+0x70)/float(timer),0.f,1.f);
- const int alpha=int(open*128);if(alpha<=0)return result;
- int x=read<int>(e+0x50),y=read<int>(e+0x54);unsigned saved=0;
+ const float open=std::clamp(read<unsigned char>(e+channel_visibility)/float(timer),0.f,1.f);
+ const int alpha=int(open*max_alpha);if(alpha<=0)return result;
+ int x=read<int>(e+channel_x),y=read<int>(e+channel_y);unsigned saved=0;
  const auto stack=api_->stack_push(16,&saved);
  if(stack){
   std::memcpy(api_->memory+stack,&x,4);std::memcpy(api_->memory+stack+4,&y,4);
@@ -243,59 +274,76 @@ void Presentation::text(int x,int y,const char* s,unsigned color,int pixels)cons
  }
 }
 void Presentation::after_hud(unsigned e,const Controller& c){
- if(format_changed_){write(level(0x15f7c8),format_);format_changed_=false;}
+ if(format_changed_){write(level(ammo_format),format_);format_changed_=false;}
  if(!owns(e))return;
- const int timer=read<int>(level(0x15f91c));if(timer<=0)return;
- const float visibility=std::clamp(read<unsigned char>(e+0x70)/float(timer),0.f,1.f);
- const unsigned alpha=unsigned(visibility*128);if(!alpha)return;
- const int x=read<int>(e+0x50),y=read<int>(global(0x15ed80))?10:18;
- const unsigned rgb=read<unsigned>(level(0x15f91c+16))&0xffffff;
- const unsigned color=rgb|(alpha<<24);
+ const int timer=read<int>(level(ammo_fade_frames));if(timer<=0)return;
+ const float visibility=std::clamp(read<unsigned char>(e+channel_visibility)/float(timer),0.f,1.f);
+ const unsigned alpha=unsigned(visibility*max_alpha);if(!alpha)return;
+ const int x=read<int>(e+channel_x),y=read<int>(global(pal_mode_address))?ammo_tile_pal_y:ammo_tile_ntsc_y;
+ const unsigned rgb=read<unsigned>(level(weapon_tile_text_color))&color_rgb_mask;
+ const unsigned color=rgb|(alpha<<color_alpha_shift);
  // Native frame3 is the separate32px cartridge icon. The weapon glyph is
  // reserved for inventory and quick select; native HUD draws ammunition.
  if(experience_enabled_){
   char label[16];std::snprintf(label,sizeof label,"LV %u",experience_level_);
-  text(x+35,y+22,label,(alpha*3/4)<<24,10);text(x+34,y+21,label,color,10);
+  text(x+35,y+22,label,(alpha*3/4)<<color_alpha_shift,10);text(x+34,y+21,label,color,10);
   const int left=x+68,width=37;
-  rect(left+1,y+24,width-2,1,rgb|((alpha/3)<<24));
-  rect(left,y+25,width,3,rgb|((alpha/3)<<24));
-  rect(left+1,y+28,width-2,1,rgb|((alpha/5)<<24));
-  rect(left+1,y+25,width-2,3,(alpha*3/4)<<24);
+  rect(left+1,y+24,width-2,1,rgb|((alpha/3)<<color_alpha_shift));
+  rect(left,y+25,width,3,rgb|((alpha/3)<<color_alpha_shift));
+  rect(left+1,y+28,width-2,1,rgb|((alpha/5)<<color_alpha_shift));
+  rect(left+1,y+25,width-2,3,(alpha*3/4)<<color_alpha_shift);
   rect(left+1,y+25,int(std::round((width-2)*experience_progress_)),3,color);
  }
- if(!enabled_||read<int>(level(0x15f5c4))!=0||c.phase()!=Phase::Spinning)return;
+ if(!enabled_||read<int>(level(native_arsenal_layout::game_mode))!=native_arsenal_layout::gameplay_mode||
+    c.phase()!=Phase::Spinning)return;
  const int left=x+(experience_enabled_?68:35),width=experience_enabled_?37:70;
  // A fine charge channel inside the original tile, below the native ammo
  // number and above Weapon XP's existing bottom channel. No added panel.
  const int height=experience_enabled_?2:4;
- rect(left,y+21,width,height,rgb|((alpha/3)<<24));rect(left+1,y+22,width-2,height-1,(alpha*3/4)<<24);
+ rect(left,y+21,width,height,rgb|((alpha/3)<<color_alpha_shift));
+ rect(left+1,y+22,width-2,height-1,(alpha*3/4)<<color_alpha_shift);
  // The last pixel is a gameplay promise: show it only when a release can
  // actually throw. Rounding a partial charge made the bar look full early.
  const float charge=c.charge();const int maximum_fill=width-2;
  const int fill=charge>=1.f?maximum_fill:std::clamp(int(maximum_fill*charge),0,maximum_fill-1);
  rect(left+1,y+22,fill,height-1,color);
 }
-void Presentation::reset(){
- hd_.reset();
- if(format_changed_&&api_->loaded_level()==level_)write(level(0x15f7c8),format_);
+void Presentation::reset_icons(bool reuse_storage){
+ hd_.reset(reuse_storage);
+ if(!reuse_storage)spare_icons_=spare_icon_capacity_=0;
  if(api_->loaded_level()==level_){
-  if(icon_copy_&&read<unsigned>(icon_state_+0x20)==icon_copy_&&read<unsigned>(icon_state_+0x1c)==icon_defs_copy_){
+  if(icon_copy_&&read<unsigned>(icon_state_+native_hud::frame_references)==icon_copy_&&read<unsigned>(icon_state_+native_hud::animation_definitions)==icon_defs_copy_){
    for(unsigned i=0;i<icon_baseline_.size();++i){
-    const unsigned at=icon_refs_+i*4;
-    if(read<unsigned>(at)==icon_baseline_[i])write(at,read<unsigned>(icon_copy_+i*4));
+    const unsigned offset=i*frame_reference_bytes;
+    const unsigned at=icon_refs_+offset;
+    if(read<unsigned>(at)==icon_baseline_[i])write(at,read<unsigned>(icon_copy_+offset));
    }
    for(unsigned i=0;i<icon_defs_count_;++i){
-    const auto at=icon_defs_+i*8;
-    if(read<std::uint64_t>(at)==icon_definitions_baseline_[i])write(at,read<std::uint64_t>(icon_defs_copy_+i*8));
+    const unsigned offset=i*animation_entry_bytes;
+    const auto at=icon_defs_+offset;
+    if(read<std::uint64_t>(at)==icon_definitions_baseline_[i])write(at,read<std::uint64_t>(icon_defs_copy_+offset));
    }
-   write(icon_state_+0x20,icon_refs_);write(icon_state_+0x1c,icon_defs_);
+   write(icon_state_+native_hud::frame_references,icon_refs_);write(icon_state_+native_hud::animation_definitions,icon_defs_);
+   restore_cached_hud_pointer(*this,native_hud::frame_references,icon_copy_,icon_refs_);
+   restore_cached_hud_pointer(*this,native_hud::animation_definitions,icon_defs_copy_,icon_defs_);
+   if(reuse_storage&&guest_arena_&&guest_arena_->owns(icon_copy_,icon_capacity_)){
+    spare_icons_=icon_copy_;spare_icon_capacity_=icon_capacity_;
+   }
   }
-  if(slot_&&old_callback_&&read<unsigned>(slot_+0x18)==callback_)write(slot_+0x18,old_callback_);
+  if(slot_&&old_callback_&&read<unsigned>(slot_+channel_callback)==callback_)write(slot_+channel_callback,old_callback_);
+ }
+ slot_=old_callback_=callback_=0;
+ icon_state_=icon_defs_=icon_refs_=icon_copy_=icon_defs_copy_=icon_defs_count_=0;
+ icon_capacity_=0;
+ icon_baseline_.clear();icon_definitions_baseline_.clear();
+}
+void Presentation::reset(){
+ reset_icons(false);
+ if(format_changed_&&api_->loaded_level()==level_)write(level(ammo_format),format_);
+ if(api_->loaded_level()==level_){
   if(table_&&read<unsigned short>(table_+8)==1)write(table_+8,old_hud_flag_);
   for(const auto& b:bindings_)if(read<unsigned>(b.entry)==b.replacement)write(b.entry,b.original);
  }
  bindings_.clear();slot_=old_callback_=callback_=arena_=bank_=table_=0;level_=-1;format_changed_=false;
- icon_state_=icon_defs_=icon_refs_=icon_copy_=icon_defs_copy_=icon_defs_count_=0;
- icon_baseline_.clear();icon_definitions_baseline_.clear();
 }
 }

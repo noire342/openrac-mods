@@ -2,27 +2,37 @@
 // Copyright (c) 2026 noire342
 #pragma once
 #include "memory.hpp"
+#include "native_hud_layout.hpp"
 #include <array>
 
 namespace revolverator {
+inline void restore_cached_hud_pointer(const Memory& memory,unsigned offset,unsigned copy,unsigned original) {
+    const auto overlay=memory.level(native_hud::level_state);
+    if(overlay&&memory.read<unsigned>(overlay+offset)==copy)memory.write(overlay+offset,original);
+}
+
 // Draw helpers read both the resident HUD tables and the loaded overlay's
 // cached pointers. Appended icon references must address the same pages in both.
 class HudTableScope final {
     const Memory& memory_;
     unsigned overlay_{};
-    std::array<unsigned,5> before_{},applied_{};
+    static constexpr unsigned table_bytes=native_hud::table_end-native_hud::bank_header;
+    std::array<unsigned,table_bytes/sizeof(unsigned)> before_{},applied_{};
 public:
-    explicit HudTableScope(const Memory& memory):memory_(memory),overlay_(memory.level(0x17e4d8)) {
-        const auto resident=memory.global(0x19a3e8);
-        if(!Memory::valid(overlay_+0x18,20)||!Memory::valid(resident+0x18,20)){overlay_=0;return;}
-        before_=memory.read<decltype(before_)>(overlay_+0x18);
-        applied_=memory.read<decltype(applied_)>(resident+0x18);
-        memory.write(overlay_+0x18,applied_);
+    explicit HudTableScope(const Memory& memory):memory_(memory),overlay_(memory.level(native_hud::level_state)) {
+        const auto resident=memory.global(native_hud::resident_state);
+        if(!Memory::valid(overlay_,native_hud::table_end)||!Memory::valid(resident,native_hud::table_end)){
+            overlay_=0;return;
+        }
+        before_=memory.read<decltype(before_)>(overlay_+native_hud::bank_header);
+        applied_=memory.read<decltype(applied_)>(resident+native_hud::bank_header);
+        memory.write(overlay_+native_hud::bank_header,applied_);
     }
     ~HudTableScope(){
-        if(overlay_)for(unsigned i=0;i<before_.size();++i)
-            if(memory_.read<unsigned>(overlay_+0x18+i*4)==applied_[i])
-                memory_.write(overlay_+0x18+i*4,before_[i]);
+        if(overlay_)for(unsigned i=0;i<before_.size();++i){
+            const unsigned field=overlay_+native_hud::bank_header+i*unsigned(sizeof(std::uint32_t));
+            if(memory_.read<unsigned>(field)==applied_[i])memory_.write(field,before_[i]);
+        }
     }
     HudTableScope(const HudTableScope&)=delete;
     HudTableScope& operator=(const HudTableScope&)=delete;

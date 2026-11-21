@@ -1,21 +1,24 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #include "native_arsenal.hpp"
+#include "native_arsenal_layout.hpp"
 #include <algorithm>
 #include <cstring>
 
 namespace revolverator {
 namespace {
-constexpr unsigned item=18;
-constexpr unsigned owned=0x13d4c0,acquired=0x13d4e8;
-constexpr unsigned ammo=0x13d428,variant=0x13e520,favourites=0x141ea0;
-constexpr unsigned vendor_stock=0x15edd0,hero_address=0x13f350,pending_hand=0x20b8;
+using namespace native_arsenal_layout;
+constexpr unsigned item = arsenal::NativeWalloperKey;
+constexpr unsigned required_moby_class_bytes = 0x4c;
+
 std::size_t field_width(std::size_t size,std::size_t at){
     // Keep native scalar ownership indivisible. Restoring separate changed
     // bytes of a price or class ID could splice two owners' values together.
-    if(size==76&&at>=0x34&&at<0x44)return 2;
-    if(size==24&&at>=8&&at<20)return 2;
-    return std::min<std::size_t>(4,size-at);
+    if(size==item_definition_size&&at>=pickup_plural_text&&at<item_definition_halfwords_end)
+        return sizeof(std::uint16_t);
+    if(size==vendor_item_info_size&&at>=ammo_unit_price&&at<initial_ammo+sizeof(std::uint16_t))
+        return sizeof(std::uint16_t);
+    return std::min(sizeof(std::uint32_t),size-at);
 }
 bool field_owned(const std::vector<unsigned char>& mask,std::size_t at,std::size_t width){
     return std::any_of(mask.begin()+at,mask.begin()+at+width,[](unsigned char byte){return byte!=0;});
@@ -25,17 +28,18 @@ NativeArsenal::NativeArsenal(const openrac_api* api,arsenal::Registry& registry,
     :Memory(api),registry_(registry),presentation_(presentation){}
 
 arsenal::WalloperNativeState NativeArsenal::native_walloper()const {
-    return {read<unsigned char>(global(owned)+item)!=0,
-        0,read<unsigned char>(global(acquired)+item),
-        read<int>(global(ammo)+item*4),read<unsigned char>(global(variant)+item)};
+    return {read<unsigned char>(global(items_owned)+item)!=0,
+        0,read<unsigned char>(global(items_acquired)+item),
+        read<int>(global(weapon_ammo_counts)+item*sizeof(int)),read<unsigned char>(global(item_text_variant)+item)};
 }
 void NativeArsenal::write_walloper(const arsenal::WalloperNativeState& state){
-    write<unsigned char>(global(owned)+item,state.owned?1:0);
+    write<unsigned char>(global(items_owned)+item,state.owned?1:0);
     // The legacy codec's "unlocked" byte never represented weapon state:
     // canonical 0x13d408 is the skill-point table. Do not read, project or
     // restore it, including when loading a sidecar from an earlier mod build.
-    write(global(acquired)+item,state.acquired);
-    write(global(ammo)+item*4,state.ammo);write(global(variant)+item,state.text_variant);
+    write(global(items_acquired)+item,state.acquired);
+    write(global(weapon_ammo_counts)+item*sizeof(int),state.ammo);
+    write(global(item_text_variant)+item,state.text_variant);
 }
 void NativeArsenal::capture_table(unsigned address,unsigned size){
     if(!valid(address,size))return;
@@ -48,31 +52,29 @@ void NativeArsenal::capture_table(unsigned address,unsigned size){
 void NativeArsenal::import_native_inventory(){
     registry_.set_walloper(native_walloper());
     if(initialized_)return;
-    for(unsigned slot=0;slot<8;++slot){
-        const int key=read<int>(global(favourites)+slot*4);
+    for(unsigned slot=0;slot<quick_slot_count;++slot){
+        const int key=read<int>(global(quick_slots)+slot*sizeof(int));
         if(key>=0&&key<=int(arsenal::Registry::MaximumNativeKey))registry_.assign_quick(slot,unsigned(key));
     }
-    const int held=read<int>(global(0x13f350)+0x10b8);
+    const int held=read<int>(global(hero)+held_item);
     if(held>=0&&held<=int(arsenal::Registry::MaximumNativeKey))registry_.equip(unsigned(held));
     initialized_=true;
 }
 void NativeArsenal::begin_level(){
     reset();level_=api_->loaded_level();
-    if(level_<0||level_>=19)return;
+    if(level_<0||level_>last_campaign_level)return;
     import_native_inventory();
-    capture_table(global(0x1863d0)+item*76,76);
-    capture_table(level(0x179ac0)+item*76,76);
-    capture_table(level(0x1c40b0)+item*24,24);
-    capture_table(level(0x1c8ff0)+item*64,64);
+    capture_table(global(resident_item_definitions)+item*item_definition_size,item_definition_size);
+    capture_table(level(level_item_definitions)+item*item_definition_size,item_definition_size);
+    capture_table(level(vendor_item_info)+item*vendor_item_info_size,vendor_item_info_size);
+    capture_table(level(vendor_item_slots)+item*vendor_item_slot_size,vendor_item_slot_size);
 }
 void NativeArsenal::finish_level(){
     if(level_!=api_->loaded_level()||tables_.empty())return;
     for(auto& table:tables_){
         std::memcpy(table.custom.data(),api_->memory+table.address,table.custom.size());
-        if(table.custom.size()==76){
-            const auto icon=static_cast<unsigned short>(60037);
-            std::memcpy(table.custom.data()+0x38,&icon,2);
-        }
+        if(table.custom.size()==item_definition_size)
+            std::memcpy(table.custom.data()+item_icon_bank,&revolverator_icon_bank,sizeof(revolverator_icon_bank));
         for(std::size_t i=0;i<table.original.size();++i)table.mask[i]=table.custom[i]!=table.original[i];
         table.last=table.custom;
     }
@@ -86,8 +88,8 @@ void NativeArsenal::commit(){
     if(const auto* descriptor=registry_.descriptor(projected_);descriptor&&descriptor->carrier==item){
         const auto* state=registry_.custom_state(projected_);if(!state)return;
         auto next=*state;
-        next.owned=read<unsigned char>(global(owned)+item)!=0;
-        const int count=read<int>(global(ammo)+item*4);
+        next.owned=read<unsigned char>(global(items_owned)+item)!=0;
+        const int count=read<int>(global(weapon_ammo_counts)+item*sizeof(int));
         next.ammo=unsigned(std::clamp(count,0,int(descriptor->capacity)));
         registry_.set_state(projected_,next);
     }else registry_.set_walloper(native_walloper());
@@ -167,9 +169,10 @@ bool NativeArsenal::request_equipped(){
     if(!ready_||level_!=api_->loaded_level())return false;
     const auto key=registry_.equipped();const auto* definition=registry_.descriptor(key);
     const auto native=definition?definition->carrier:key;
-    const auto hero=global(0x13f350),selected=global(0x141660);
-    if(!native||native>arsenal::Registry::MaximumNativeKey||!valid(hero,0x20bc)||!valid(selected,4))return false;
-    write<int>(selected,int(native));write<int>(hero+0x20b8,int(native));return true;
+    const auto hero_address=global(hero),selected=global(hand_selection);
+    if(!native||native>arsenal::Registry::MaximumNativeKey||
+       !valid(hero_address,pending_hand+sizeof(int))||!valid(selected,sizeof(int)))return false;
+    write<int>(selected,int(native));write<int>(hero_address+pending_hand,int(native));return true;
 }
 void NativeArsenal::give_item(int native_item, int equip, bool custom_grant, GiveItem original) {
     if (!ready_ || level_ != api_->loaded_level()) {
@@ -177,13 +180,13 @@ void NativeArsenal::give_item(int native_item, int equip, bool custom_grant, Giv
         return;
     }
 
-    const auto quick_address = global(favourites);
+    const auto quick_address = global(quick_slots);
     const int grant_level = level_;
-    using Quick = std::array<int, 8>;
+    using Quick = std::array<int, quick_slot_count>;
     const auto quick_before = read<Quick>(quick_address);
     const bool carrier = native_item == int(arsenal::NativeWalloperKey);
     const bool revolverator = carrier && custom_grant;
-    using Stock = std::array<unsigned char, 12>;
+    using Stock = std::array<unsigned char, vendor_stock_size>;
     unsigned stock_address = 0;
     Stock stock_before{};
     bool first_native_walloper = false;
@@ -212,12 +215,12 @@ void NativeArsenal::give_item(int native_item, int equip, bool custom_grant, Giv
     }
 
     if (!carrier) return;
-    const auto hero = global(hero_address);
+    const auto hero_address = global(hero);
     if (!revolverator) {
         // Observe the native first-acquisition hand request. The engine owns
         // every native equipment slot and decides whether a grant equips it.
-        if (first_native_walloper && equip && valid(hero, pending_hand + sizeof(int)) &&
-            read<int>(hero + pending_hand) == native_item) {
+        if (first_native_walloper && equip && valid(hero_address, pending_hand + sizeof(int)) &&
+            read<int>(hero_address + pending_hand) == native_item) {
             registry_.equip(arsenal::NativeWalloperKey);
         }
         return;
@@ -225,7 +228,7 @@ void NativeArsenal::give_item(int native_item, int equip, bool custom_grant, Giv
 
     const auto stock_after = read<Stock>(stock_address);
     for (std::size_t slot = 0; slot < stock_after.size(); ++slot) {
-        if (stock_after[slot] != stock_before[slot] && (stock_after[slot] & 0x3f) == item) {
+        if (stock_after[slot] != stock_before[slot] && (stock_after[slot] & vendor_stock_item_mask) == item) {
             write<unsigned char>(stock_address + unsigned(slot), stock_before[slot]);
         }
     }
@@ -236,8 +239,8 @@ void NativeArsenal::give_item(int native_item, int equip, bool custom_grant, Giv
         if (empty != quick.end()) registry_.assign_quick(std::size_t(empty - quick.begin()), arsenal::RevolveratorKey);
     }
     // Explicit custom re-equip may reuse an already-owned native carrier.
-    if (equip && valid(hero, pending_hand + sizeof(int)) && registry_.equip(arsenal::RevolveratorKey)) {
-        write<int>(hero + pending_hand, native_item);
+    if (equip && valid(hero_address, pending_hand + sizeof(int)) && registry_.equip(arsenal::RevolveratorKey)) {
+        write<int>(hero_address + pending_hand, native_item);
     }
     project_quick_slots();
 }
@@ -251,7 +254,7 @@ bool NativeArsenal::native_owned(arsenal::WeaponKey key,bool& owned)const{
 }
 bool NativeArsenal::equipped_revolverator()const{return registry_.equipped()==arsenal::RevolveratorKey;}
 bool NativeArsenal::revolverator_active()const{
-    return ready_&&equipped_revolverator()&&read<int>(global(0x13f350)+0x10b8)==int(item);
+    return ready_&&equipped_revolverator()&&read<int>(global(hero)+held_item)==int(item);
 }
 void NativeArsenal::mark_snapshot_restored(){
     initialized_=true;
@@ -261,8 +264,8 @@ void NativeArsenal::mark_snapshot_restored(){
 void NativeArsenal::observe_equipped(){
     if(!ready_||level_!=api_->loaded_level())return;
     if(restored_selection_&&registry_.equipped()!=restored_selection_)restored_selection_=0;
-    if(read<int>(level(0x15f5c4))!=0)return;
-    const auto hero=global(0x13f350);
+    if(read<int>(level(game_mode))!=gameplay_mode)return;
+    const auto hero_address=global(hero);
     if(restored_selection_){
         const auto* descriptor=registry_.descriptor(restored_selection_);
         if(!descriptor||!registry_.owned(restored_selection_))restored_selection_=0;
@@ -270,17 +273,29 @@ void NativeArsenal::observe_equipped(){
             // A native-compatible save deliberately stores the wrench instead
             // of a custom transport selection. Restore it once after the actual
             // player is ready, before observing that fallback as a user switch.
-            const auto body=read<unsigned>(hero+0x2080);const int state=read<int>(hero+0x2084);
-            if(!valid(hero,0x22ac)||read<int>(hero+0x22a8)<=0||state==0x3d||state==0x82||state==0x77||
-               !valid(body,256)||read<unsigned short>(body+0xa6)!=0||read<unsigned char>(body+0x20)>=0x80||
-               !valid(read<unsigned>(body+0x24),0x4c))return;
-            write<int>(global(0x141660),int(descriptor->carrier));
-            write<int>(hero+0x20b8,int(descriptor->carrier));
+            const auto body=read<unsigned>(hero_address+hero_moby);
+            const int state=read<int>(hero_address+hero_state);
+            if(!valid(hero_address,hero_health+sizeof(int))||read<int>(hero_address+hero_health)<=0||
+               state==hero_dying||state==hero_dying_zero_health||state==hero_fatal_fall||
+               !valid(body,moby_size)||read<std::uint16_t>(body+moby_class)!=ratchet_class||
+               read<std::uint8_t>(body+moby_state)>=moby_unavailable_state||
+               !valid(read<unsigned>(body+moby_class_pointer),required_moby_class_bytes))return;
+            const int carrier=int(descriptor->carrier);
+            if(restored_selection_==arsenal::RevolveratorKey){
+                const int held=read<int>(hero_address+held_item);
+                const auto selected=hero_address+hero_selected_item;
+                // The native switch discards a request matching the cached hand
+                // selection, even if a checkpoint restored a different held item.
+                if((held==int(arsenal::NativeWrenchKey)||held==empty_hand_item)&&read<int>(selected)==carrier)
+                    write<int>(selected,held);
+            }
+            write<int>(global(hand_selection),carrier);
+            write<int>(hero_address+pending_hand,carrier);
             project_quick_slots();restored_selection_=0;return;
         }
     }
-    const int held=read<int>(hero+0x10b8);
-    const int pending=read<int>(hero+0x20b8),equipped=read<int>(global(0x141660));
+    const int held=read<int>(hero_address+held_item);
+    const int pending=read<int>(hero_address+pending_hand),equipped=read<int>(global(hand_selection));
     // The native switch consumes pending before the old held actor is retired.
     // Keep a logical custom selection until the held and persisted native IDs
     // agree; otherwise that transient old weapon erases the logical identity.
@@ -292,7 +307,7 @@ void NativeArsenal::observe_equipped(){
 void NativeArsenal::project_quick_slots(bool native_save){
     auto slots=registry_.native_slots();
     if(native_save)for(unsigned i=0;i<slots.size();++i)if(registry_.quick()[i]>=arsenal::Registry::FirstCustomKey)slots[i]=0;
-    write(global(favourites),slots);
+    write(global(quick_slots),slots);
 }
 void NativeArsenal::reset(){
     restored_selection_=0;

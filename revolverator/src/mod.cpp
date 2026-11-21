@@ -31,12 +31,19 @@
 namespace {
 using namespace revolverator;
 int grant(unsigned key,int equip);
+enum class CheckpointRestore {
+ None,
+ NativeSelection,
+ RevolveratorSelection,
+};
 struct Session {
  const openrac_api* api;openrac_mod* mod;GuestArena arena,core_arena;arsenal::Registry registry;
  NativeAmmunition ammunition;NativeAmmoAlias alias;NativeWeaponVisual visuals;NativeVendor vendor;NativeVendorIcons vendor_icons;NativeEquipAudio equip_audio;NativeWorld world;Controller controller;Presentation presentation;
  NativeArsenal arsenal;NativeWeaponMenu menu;NativeArsenalSave saves;NativeArsenalXP xp;
  NativeGoldVendor gold_vendor;NativeAcquisition acquisition;NativeAcquisitionHand acquisition_hand;
  bool primary=false;unsigned epoch=0;int level=-1;
+ CheckpointRestore checkpoint=CheckpointRestore::None;
+ bool restore_checkpoint_tables=false;
  PrimaryButton primary_button;
  bool golden()const{const auto* state=registry.state(arsenal::RevolveratorKey);return state&&state->owned&&state->golden;}
  unsigned grant_override=0,native_save_depth=0;bool new_game_plus=false;
@@ -53,6 +60,8 @@ struct Session {
  }
  ~Session(){before_load();}
  void before_load(){
+  checkpoint=CheckpointRestore::None;
+  restore_checkpoint_tables=false;
   primary_button.reset();
   acquisition_hand.reset();acquisition.reset();gold_vendor.reset();
   controller.cancel();visuals.reset();world.reset();menu.reset();arsenal.reset();presentation.reset();vendor.reset();alias.reset();ammunition.reset();core_arena.reset();arena.reset();xp.reset();animations.clear();events.clear();
@@ -111,8 +120,21 @@ struct Session {
   if(world.level_transitioning())return;
   const int current=api->loaded_level();
   if(current!=level){before_load();level=current;++epoch;primary=false;}
-  if(current<0||current>18)return;
-  if(!arsenal.ready())prepare_level();
+  if(current<0||current>native_arsenal_layout::last_campaign_level)return;
+  if(restore_checkpoint_tables){
+   const auto player=world.snapshot(false,epoch);
+   if(!player.playing||!player.alive)return;
+   if(checkpoint==CheckpointRestore::RevolveratorSelection&&registry.owned(arsenal::RevolveratorKey))
+    registry.equip(arsenal::RevolveratorKey);
+   // The native checkpoint restores the equipment tables after LoadGameplay.
+   // Rebuild only the inventory projection against those final tables.
+   arsenal.reset();
+   ammunition.reset();
+   prepare_level();
+   arsenal.mark_snapshot_restored();
+   checkpoint=CheckpointRestore::None;
+   restore_checkpoint_tables=false;
+  }else if(!arsenal.ready())prepare_level();
   visuals.begin_native_frame();arsenal.commit();arsenal.observe_equipped();restore_context();unlock_starting_weapon();progression();
   gold_vendor.frame();
   if(gold_vendor.poll_purchase()){
@@ -126,6 +148,11 @@ struct Session {
   world.set_active(arsenal.revolverator_active());
   world.set_golden(golden());presentation.set_golden(golden());
   auto f=world.snapshot(primary,epoch);
+  if(!f.alive&&checkpoint==CheckpointRestore::None){
+   checkpoint=arsenal.equipped_revolverator()?CheckpointRestore::RevolveratorSelection:CheckpointRestore::NativeSelection;
+  }else if(f.alive&&f.playing){
+   checkpoint=CheckpointRestore::None;
+  }
   const bool safe=f.playing&&!f.paused&&f.alive&&f.grounded&&controller.attack_phase()==Phase::Idle&&
    !controller.flight_count()&&!world.release_recoil_active()&&world.attack_input_ready();
   acquisition.frame(safe,xp.acquisition_presentation_active()>0);
@@ -149,7 +176,8 @@ struct Session {
   world.set_drill_head_scale(visuals.controller().radial_scale(),visuals.controller().axial_scale());
   arsenal.commit();
   const int mode=world.read<int>(world.mode());
-  presentation.frame(mode==5?vendor.showing_custom_ammo():arsenal.revolverator_active());
+  presentation.frame(mode==native_arsenal_layout::gadgetron_mode?
+                     vendor.showing_custom_ammo():arsenal.revolverator_active(),f.alive);
  }
 };
 std::unique_ptr<NativeAssetBundle> weapon_assets;
@@ -314,6 +342,8 @@ U32 load(int full){
  // A real gameplay-load argument is a small flag; forward foreign guest
  // callback arguments without destroying this mod's level-owned state.
  if(unsigned(full)>18u)return load_original(full);
+ const int prior_level=session?session->level:-1;
+ const auto checkpoint=session?session->checkpoint:CheckpointRestore::None;
  if(session)session->before_load();
  const auto out=load_original(full);
  auto end=out;
@@ -329,7 +359,11 @@ U32 load(int full){
    char message[128];std::snprintf(message,sizeof message,"arena level=%d begin=%08x end=%08x",session->api->loaded_level(),session->arena.begin(),end);
    session->api->log(session->mod,OPENRAC_LOG_INFO,message);
   }
-  session->level=session->api->loaded_level();++session->epoch;session->primary=false;session->prepare_level();
+  session->level=session->api->loaded_level();
+  if(session->level==prior_level)session->checkpoint=checkpoint;
+  ++session->epoch;session->primary=false;
+  session->restore_checkpoint_tables=session->checkpoint!=CheckpointRestore::None;
+  session->prepare_level();
  }
  return end;
 }

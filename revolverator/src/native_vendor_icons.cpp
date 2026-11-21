@@ -3,10 +3,22 @@
 #include "native_vendor_icons.hpp"
 #include "native_vendor.hpp"
 #include "hud_table_scope.hpp"
+#include "native_arsenal_layout.hpp"
 #include <array>
 #include <cstring>
 
 namespace revolverator {
+namespace {
+constexpr unsigned vendor_menu=0x1ca4c0;
+constexpr unsigned row_count=0x210;
+constexpr unsigned selected_row=0x58;
+constexpr unsigned scroll_offset=0x4c;
+constexpr unsigned display_rows=0xd0;
+constexpr unsigned display_row_bytes=20;
+constexpr unsigned display_row_is_ammo=sizeof(std::int32_t);
+constexpr int max_vendor_rows=16;
+}
+
 NativeVendorIcons::NativeVendorIcons(const openrac_api* api,NativeVendor& vendor)
     :Memory(api),vendor_(vendor){
     if(!api||!api->function)return;
@@ -19,25 +31,26 @@ bool NativeVendorIcons::draw(){
        !api_->relocate_data||!api_->relocate_level_data||!rectangle_||!frame_||!sprite_||
        std::strcmp(api_->game,"rac1")||RegionBindings::for_version(api_->version)!=&bindings())return false;
     const int loaded=api_->loaded_level();
-    if(loaded<0||loaded>18)return false;
-    const auto mode=level(0x15f5c4),menu=level(0x1ca4c0);
-    const auto overlay_hud=level(0x17e4d8),resident_hud=global(0x19a3e8);
-    if(!valid(mode,4)||read<int>(mode)!=5||!valid(menu,0x214)||
-       !valid(overlay_hud,0x2c)||!valid(resident_hud,0x2c))return false;
-    const int count=read<int>(menu+0x210),selected=read<int>(menu+0x58);
-    if(count<=0||count>16||selected<0||selected>=count)return false;
+    if(loaded<0||loaded>native_arsenal_layout::last_campaign_level)return false;
+    const auto mode=level(native_arsenal_layout::game_mode),menu=level(vendor_menu);
+    const auto overlay_hud=level(native_hud::level_state),resident_hud=global(native_hud::resident_state);
+    if(!valid(mode,sizeof(std::int32_t))||read<int>(mode)!=native_arsenal_layout::gadgetron_mode||!valid(menu,row_count+sizeof(std::int32_t))||
+       !valid(overlay_hud,native_hud::table_end)||!valid(resident_hud,native_hud::table_end))return false;
+    const int count=read<int>(menu+row_count),selected=read<int>(menu+selected_row);
+    if(count<=0||count>max_vendor_rows||selected<0||selected>=count)return false;
     if (!vendor_.has_custom_rows()) return false;
-    const int scroll=read<int>(menu+0x4c);
+    const int scroll=read<int>(menu+scroll_offset);
     // Retail moves by at most one slot (56px). Reject corrupt coordinates
     // before a signed subtraction or a native fixed-point draw can overflow.
     if(count>=8&&(scroll<-4096||scroll>4096))return false;
-    std::array<std::uint16_t,16> banks{};
-    std::array<int,16> frames{};
+    std::array<std::uint16_t,max_vendor_rows> banks{};
+    std::array<int,max_vendor_rows> frames{};
     for(int i=0;i<count;++i){
         const auto bank=vendor_.icon_bank_for_row(unsigned(i));
-        if(!bank||bank>0xffffu)return false;
+        if(!bank||bank>native_hud::animation_terminator)return false;
         banks[unsigned(i)]=static_cast<std::uint16_t>(bank);
-        frames[unsigned(i)]=read<int>(menu+0xd0+unsigned(i)*20+4)==1?2:0;
+        const auto row=menu+display_rows+unsigned(i)*display_row_bytes;
+        frames[unsigned(i)]=read<int>(row+display_row_is_ammo)==1?native_hud::vendor_ammunition_frame:0;
     }
     // Resolve every logical bank before emitting packets, so a refused pass
     // cannot leave a partially drawn strip for the caller's native fallback.
@@ -53,13 +66,13 @@ bool NativeVendorIcons::draw(){
     if(count<8){
         highlight(selected*56+8);
         for(int i=0;i<count;++i)
-            sprite_(frame_(banks[unsigned(i)],frames[unsigned(i)]),12+i*56,6,48,48,128);
+            sprite_(frame_(banks[unsigned(i)],frames[unsigned(i)]),12+i*56,6,48,48,native_hud::max_alpha);
     }else{
         int offset=scroll;
         if(offset<0)offset+=4;
         else if(offset>0)offset-=4;
         else highlight(176);
-        if(offset!=scroll)write(menu+0x4c,offset);
+        if(offset!=scroll)write(menu+scroll_offset,offset);
         std::int32_t alpha{};
         const std::uint32_t alpha_bits=0x80808080u;
         std::memcpy(&alpha,&alpha_bits,sizeof alpha);

@@ -2,6 +2,7 @@
 // Copyright (c) 2026 noire342
 #pragma once
 
+#include "arsenal_state.hpp"
 #include "memory.hpp"
 #include <array>
 #include <cstdint>
@@ -14,7 +15,7 @@ namespace revolverator {
 // ammunition. No inventory counters are rewritten when a level is entered.
 class NativeAmmunition final : public Memory {
 public:
-    static constexpr int item_id = 18;
+    static constexpr int item_id = arsenal::NativeWalloperKey;
     static constexpr int capacity = 20;
     static constexpr int pickup = 2;
     static constexpr int unit_price = 25;
@@ -58,10 +59,11 @@ private:
     };
     std::vector<Pickup> pickups_;
 
+    using TextRecord = std::array<std::uint32_t,4>;
     struct TextBank {
         unsigned original = 0, copy = 0;
         int count = 0;
-        std::vector<std::array<std::uint32_t,4>> snapshot;
+        std::vector<TextRecord> snapshot;
     } text_bank_;
 
     bool in_level() const;

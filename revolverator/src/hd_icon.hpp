@@ -2,6 +2,7 @@
 // Copyright (c) 2026 noire342
 #pragma once
 #include "memory.hpp"
+#include "native_hud_layout.hpp"
 #include <array>
 #include <vector>
 
@@ -39,8 +40,9 @@ public:
  void after_base();
  // Same native HUD sprite renderer, full 128x128 sampling, logical 32x32.
  bool draw(int x,int y,int alpha);
- void reset();
- static constexpr unsigned texture_size=128,logical_size=32;
+ void reset(bool reuse_storage=false);
+ static constexpr unsigned texture_log2=7;
+ static constexpr unsigned texture_size=1u<<texture_log2,logical_size=1u<<native_hud::native_texture_log2;
 private:
  using Draw=void(*)(int,int,int,int,int,int);
  Draw draw_;
@@ -48,7 +50,8 @@ private:
  unsigned state_{},refs_{},first_{},count_{};
  unsigned images_{},palettes_{},image_copy_{},palette_copy_{};
  unsigned header_{},header_copy_{};
- std::array<std::uint32_t,45> old_header_{};
+ unsigned allocation_capacity_{},spare_{},spare_capacity_{};
+ std::array<std::uint32_t,native_hud::bank_header_words> old_header_{};
  unsigned image_count_{},palette_count_{},hd_page_{},blank_page_{},palette_page_{};
  unsigned appended_images_{},appended_palettes_{};
  unsigned hd_ref_{},blank_ref_{};
@@ -57,7 +60,7 @@ private:
  bool vendor_ammunition_enabled_{},golden_enabled_{},golden_selected_{};
  bool hidden_{};
  bool compact_hud_fallback_{};
- std::array<unsigned,5> old_refs_{};
+ std::array<unsigned,native_hud::custom_icon_frame_count> old_refs_{};
  std::vector<std::uint64_t> old_images_,old_palettes_;
  bool owns_tables()const;
  bool owns_refs()const;

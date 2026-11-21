@@ -3,6 +3,7 @@
 #pragma once
 #include <openrac/openrac_mod.h>
 #include "native_arena.hpp"
+#include "native_arsenal_layout.hpp"
 #include "region_bindings.hpp"
 #include <cstring>
 #include <cstdint>
@@ -21,7 +22,8 @@ public:
  bool level_transitioning()const{
   if(!api_||!api_->memory||!api_->loaded_level||!api_->relocate_level_data)return true;
   const int current=api_->loaded_level();
-  return current<0||current>18||read<int>(level(0x15f5c4))==6;
+  return current<0||current>native_arsenal_layout::last_campaign_level||
+         read<int>(level(native_arsenal_layout::game_mode))==native_arsenal_layout::loading_mode;
  }
  std::uint32_t global(std::uint32_t at)const{return api_->relocate_data(bindings().data(at));}
  std::uint32_t level(std::uint32_t at)const{return level(0,at);}

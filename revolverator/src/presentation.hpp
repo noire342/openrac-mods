@@ -6,6 +6,7 @@
 #include "hd_icon.hpp"
 #include "arsenal_identity_view.hpp"
 #include "arsenal_state.hpp"
+#include "native_arsenal_layout.hpp"
 #include <array>
 #include <optional>
 #include <vector>
@@ -20,8 +21,8 @@ public:
  // Uses the game's existing acquisition subtitle; level0 selects current XP.
  bool notify_acquisition(unsigned level=0);
  void set_golden(bool golden){golden_identity_=golden;if(level_transitioning())return;hd_.set_golden(golden);apply_identity();}
- static constexpr unsigned custom_icon_bank=60037;
- void frame(bool equipped);
+ static constexpr unsigned custom_icon_bank=native_arsenal_layout::revolverator_icon_bank;
+ void frame(bool equipped,bool alive=true);
  bool owns(unsigned element)const;
  void draw_base(unsigned element,void(*previous_relay)(unsigned),std::optional<unsigned> vendor_ammo={});
  void after_hud(unsigned element,const Controller& controller);
@@ -44,11 +45,13 @@ private:
  char format_{};bool format_changed_{};
  struct Binding{unsigned entry,original,replacement;};std::vector<Binding> bindings_;
  unsigned icon_state_{},icon_defs_{},icon_refs_{},icon_copy_{};
+ unsigned icon_capacity_{},spare_icons_{},spare_icon_capacity_{};
  std::vector<unsigned> icon_baseline_;
  unsigned icon_defs_copy_{},icon_defs_count_{};
  std::vector<std::uint64_t> icon_definitions_baseline_;
  void apply_identity();
  void bind_icon();
+ void reset_icons(bool reuse_storage);
  void rect(int x,int y,int w,int h,unsigned color)const;
  void text(int x,int y,const char* s,unsigned color,int pixels=10)const;
 };
