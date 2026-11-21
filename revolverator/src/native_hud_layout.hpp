@@ -59,6 +59,7 @@ inline constexpr unsigned native_texture_log2 = 5;
 inline constexpr unsigned channel_slots = 0x199b60;
 inline constexpr unsigned channel_size = 0x90;
 inline constexpr unsigned channel_current_id = 0x00;
+inline constexpr unsigned channel_ammo_capacity = 0x08;
 inline constexpr unsigned channel_callback = 0x18;
 inline constexpr unsigned channel_next_id = 0x20;
 inline constexpr unsigned channel_x = 0x50;

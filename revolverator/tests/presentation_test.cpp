@@ -53,8 +53,10 @@ constexpr unsigned text_description_field = 0x40;
 constexpr int name_id = 20037;
 constexpr int description_id = 20345;
 constexpr int native_counter_ammo = 20;
-constexpr int vendor_counter_ammo = 20;
+constexpr unsigned vendor_counter_ammo = 3;
+constexpr unsigned vendor_ammo_capacity = 20;
 constexpr int vendor_idle_ammo = 0;
+constexpr int cached_walloper_capacity = 0;
 constexpr int quick_ring_draw_result = 8;
 constexpr int quick_ring_mode = 8;
 constexpr unsigned quick_ring_type = 0x15fa90;
@@ -73,7 +75,7 @@ struct Fixture {
  openrac_api api{};GuestArena arena;
  HudTables cached_original{{0x450000,0x451000,0x452000,0x453000,0x454000}};
  int level=1,native_calls=0,previous_xp_calls=0,quick_calls=0,rectangles=0,quads=0,heap_calls=0;
- int drawn_ammo=0;
+ int drawn_ammo=0,drawn_capacity=0;
  bool steal_cached_image=false,change_current_bank=false,cache_available=true;
  std::vector<Sprite> sprites;
  std::vector<std::array<int,4>> drawn_rectangles;
@@ -101,6 +103,7 @@ struct Fixture {
  static int native_hud(unsigned element){
   auto& f=*live;++f.native_calls;verify_cache();
   f.drawn_ammo=f.get<int>(element+hud::channel_ammunition);
+  f.drawn_capacity=f.get<int>(element+hud::channel_ammo_capacity);
   require(f.get<int>(element+hud::channel_current_id)==int(Presentation::custom_icon_bank),"only the current native draw uses the custom icon bank");
   require(f.get<int>(element+hud::channel_next_id)==walloper_hud_bank,"the native next-item scheduler remains Walloper transport18");
   // The retail HUD requests bank(60000 + item), frame3. A native Walloper
@@ -199,7 +202,8 @@ struct Fixture {
   std::memcpy(ram.data()+ForeignName,"Another mod's Walloper v6",25);
   put<int>(Definition+text_name_field,name_id);put<short>(Definition+text_description_field,description_id);put(Definition+item::item_icon_bank,item::revolverator_icon_bank);
   put<int>(Slot,walloper_hud_bank);put<int>(Slot+hud::channel_next_id,walloper_hud_bank);put(Slot+hud::channel_callback,NativeCode);
-  put<int>(Slot+8,20);put<int>(Slot+hud::channel_ammunition,native_counter_ammo);put<int>(Slot+hud::channel_x,20);
+  put<int>(Slot+hud::channel_ammo_capacity,int(vendor_ammo_capacity));
+  put<int>(Slot+hud::channel_ammunition,native_counter_ammo);put<int>(Slot+hud::channel_x,20);
   put<unsigned char>(Slot+hud::channel_visibility,fully_visible);put<int>(hud::ammo_fade_frames,fully_visible);put<unsigned>(0x15f92c,0x00ffffff);
   for(unsigned i=32;i<128;++i)put<signed char>(0x1df3f0+i*4+3,8);
  }
@@ -336,9 +340,13 @@ int main(){
           "quick-select hiding restores drill references without modifying ammunition");
   require(f.get<HudTables>(Cached+hud::bank_header)==f.cached_original,"quick-select cached HUD views restore after drawing");
   f.put<int>(Slot+hud::channel_ammunition,vendor_idle_ammo);
-  presentation.draw_base(Slot,Fixture::previous_xp,vendor_counter_ammo);
-  require(f.drawn_ammo==vendor_counter_ammo&&f.get<int>(Slot+hud::channel_ammunition)==vendor_idle_ammo,
-          "the vendor counter reads its own ammo as the cursor moves, without altering native state");
+  f.put<int>(Slot+hud::channel_ammo_capacity,cached_walloper_capacity);
+  presentation.draw_base(Slot,Fixture::previous_xp,Presentation::AmmoCounter{vendor_counter_ammo,vendor_ammo_capacity});
+  require(f.drawn_ammo==int(vendor_counter_ammo)&&f.drawn_capacity==int(vendor_ammo_capacity),
+          "the vendor draws the custom 3/20 counter even when the native channel cached a zero capacity");
+  require(f.get<int>(Slot+hud::channel_ammunition)==vendor_idle_ammo&&
+          f.get<int>(Slot+hud::channel_ammo_capacity)==cached_walloper_capacity,
+          "the scoped draw restores both native counter fields");
   presentation.reset();
   require(f.get<HudTables>(State+hud::bank_header)==stock_tables,"owned header and HUD tables restore together");
   require(f.get<unsigned>(Slot+hud::channel_callback)==NativeCode&&f.get<unsigned>(TextBank)==Name&&f.get<unsigned>(TextBank+text_entry_size)==Description,"native callback and localized entries restore on teardown");

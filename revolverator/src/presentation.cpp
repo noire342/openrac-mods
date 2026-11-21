@@ -235,7 +235,7 @@ bool Presentation::owns(unsigned e)const{
         read<unsigned>(e+channel_callback)==callback_&&read<int>(e+channel_next_id)==walloper_hud_bank&&
         active_ammo_tile(read<int>(e+channel_current_id));
 }
-void Presentation::draw_base(unsigned e,void(*previous_relay)(unsigned),std::optional<unsigned> vendor_ammo){
+void Presentation::draw_base(unsigned e,void(*previous_relay)(unsigned),std::optional<AmmoCounter> vendor_ammo){
  (void)previous_relay;
  // EQS can upload another wheel's atlas before the ammunition HUD draws.
  if(eqs_probe::installed())hd_.frame();
@@ -245,14 +245,22 @@ void Presentation::draw_base(unsigned e,void(*previous_relay)(unsigned),std::opt
  // own this draw even if native initialization resolved the active ID to FFFF.
  const bool custom=owns(e)||before==walloper_hud_bank;
  if(custom)write<int>(e+channel_current_id,custom_icon_bank);
+ const bool custom_vendor_counter=custom&&vendor_ammo.has_value();
  const int previous_ammo=read<int>(e+channel_ammunition);
- // During the vendor fade the cursor can already have selected a stock item.
- // The counter still represents the custom purchase until its native draw ends.
- if(custom&&vendor_ammo)write<int>(e+channel_ammunition,int(*vendor_ammo));
+ const int previous_capacity=read<int>(e+channel_ammo_capacity);
+ // The native counter caches capacity when it is scheduled. Its draw may
+ // still represent the custom purchase after the cursor changes projections.
+ if(custom_vendor_counter){
+  write<int>(e+channel_ammunition,int(vendor_ammo->rounds));
+  write<int>(e+channel_ammo_capacity,int(vendor_ammo->capacity));
+ }
  // The shared relay may already belong to native Walloper XP decorations.
  // Custom progression owns its own decorations, so draw the native base once.
  hud_(e);
- if(custom&&vendor_ammo&&read<int>(e+channel_ammunition)==int(*vendor_ammo))write(e+channel_ammunition,previous_ammo);
+ if(custom_vendor_counter){
+  if(read<int>(e+channel_ammunition)==int(vendor_ammo->rounds))write(e+channel_ammunition,previous_ammo);
+  if(read<int>(e+channel_ammo_capacity)==int(vendor_ammo->capacity))write(e+channel_ammo_capacity,previous_capacity);
+ }
  if(custom&&read<int>(e+channel_current_id)==int(custom_icon_bank))write(e+channel_current_id,before);
 }
 int Presentation::draw_quick_selector(unsigned e,int(*original)(unsigned),const std::array<arsenal::WeaponKey,8>& bindings){

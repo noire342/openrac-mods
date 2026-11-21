@@ -295,8 +295,13 @@ void pad(U32 address,U32 report,int size){
 void relay(U32 element){
  if(session&&session->presentation.owns(element)){
   auto& s=*session;
-  const auto* state=s.vendor.showing_custom_ammo()?s.registry.custom_state(arsenal::RevolveratorKey):nullptr;
-  s.presentation.draw_base(element,relay_original,state?std::optional<unsigned>{state->ammo}:std::nullopt);
+  std::optional<Presentation::AmmoCounter> counter;
+  if(s.vendor.showing_custom_ammo()){
+   const auto* state=s.registry.custom_state(arsenal::RevolveratorKey);
+   const auto* weapon=s.registry.descriptor(arsenal::RevolveratorKey);
+   if(state&&weapon&&state->owned)counter=Presentation::AmmoCounter{state->ammo,weapon->capacity};
+  }
+  s.presentation.draw_base(element,relay_original,counter);
   s.presentation.after_hud(element,s.controller);
  }else relay_original(element);
 }

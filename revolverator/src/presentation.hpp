@@ -29,7 +29,11 @@ public:
  static constexpr unsigned custom_icon_bank=native_arsenal_layout::revolverator_icon_bank;
  void frame(bool equipped,bool alive=true);
  bool owns(unsigned element)const;
- void draw_base(unsigned element,void(*previous_relay)(unsigned),std::optional<unsigned> vendor_ammo={});
+ struct AmmoCounter {
+  unsigned rounds;
+  unsigned capacity;
+ };
+ void draw_base(unsigned element,void(*previous_relay)(unsigned),std::optional<AmmoCounter> vendor_ammo={});
  void after_hud(unsigned element,const Controller& controller);
  int draw_quick_selector(unsigned element,int(*original)(unsigned),const std::array<arsenal::WeaponKey,8>& bindings);
  void reset();
