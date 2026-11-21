@@ -2,6 +2,7 @@
 // Copyright (c) 2026 noire342
 #include "native_world.hpp"
 #include "damage_targets.hpp"
+#include "native_weapon_alias.hpp"
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
@@ -38,7 +39,7 @@ NativeWorld::NativeWorld(const openrac_api* api,openrac_mod* mod,NativeAmmunitio
   +[](const void* scene,Vec3 from,Vec3 to){
    const auto& world=*static_cast<const NativeWorld*>(scene);
    return world.ray(from,to,world.body());
-  }),
+  }),empty_weapon_sound_(api,mod),
  allocate_(function<Allocate>("FUN_001ff288")),post_hit_(function<Hit>("FUN_L00_00259a88")),
  ray_(function<Ray>("FUN_001efa68")),basis_(function<Basis>("FUN_001fa030")),
  state_(function<State>("FUN_L00_002223f8")),scale_ticks_(reinterpret_cast<ScaleTicks>(find_function("FUN_001f96f8"))),
@@ -55,6 +56,18 @@ Target NativeWorld::token(unsigned m)const{
 bool NativeWorld::identity_valid(Target t)const{
  return t&&api_->loaded_level()==level_&&Memory::valid(t.address,256)&&token(t.address)==t
   &&read<unsigned char>(t.address+0x20)<0x80;
+}
+bool NativeWorld::begin_attack(){
+ if(!active_)return false;
+ const auto result=ammunition_.begin_attack();
+ if(result==NativeAmmunition::AttackResult::Empty)play_empty_weapon_sound();
+ return result==NativeAmmunition::AttackResult::Spent;
+}
+void NativeWorld::play_empty_weapon_sound(){
+ const auto emitter=token(weapon());
+ if(!identity_valid(emitter)||(emitter.klass!=NativeWeaponAlias::source_class&&
+      emitter.klass!=NativeWeaponAlias::native_class&&emitter.klass!=NativeWeaponAlias::golden_class))return;
+ empty_weapon_sound_.play(emitter.address);
 }
 bool NativeWorld::capturable_enemy(Target t)const{
  if(capture_excluded_class(t.klass)||t.address==body())return false;

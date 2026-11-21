@@ -21,6 +21,7 @@ public:
     static constexpr int unit_price = 25;
     static constexpr unsigned native_pickup_class = 225;
     static constexpr unsigned visual_class = 32000;
+    enum class AttackResult { Blocked, Spent, Empty };
 
     explicit NativeAmmunition(const openrac_api* api,GuestArena* arena=nullptr,bool hud_fallback=false);
     ~NativeAmmunition();
@@ -31,7 +32,7 @@ public:
     // frame. reset() belongs before native level unload, after Presentation.reset.
     void frame();
     void reset();
-    bool begin_attack();
+    AttackResult begin_attack();
     int count() const;
     int maximum() const;
 

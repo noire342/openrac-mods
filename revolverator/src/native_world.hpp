@@ -13,6 +13,7 @@
 #include "native_crates.hpp"
 #include "native_capture_gag.hpp"
 #include "native_gag_camera.hpp"
+#include "native_empty_weapon_sound.hpp"
 #include "weapon_audio.hpp"
 #include <array>
 namespace revolverator {
@@ -21,7 +22,7 @@ public:
  NativeWorld(const openrac_api* api,openrac_mod* mod,NativeAmmunition& ammunition,NativeRotor& rotor,GuestArena& arena);
  ~NativeWorld()override;
  bool attack_input_ready()const override;
- bool begin_attack()override{return ammunition_.begin_attack();}
+ bool begin_attack()override;
  bool try_capture_gag(const Frame&)override;
  std::optional<Target> find_target(Vec3 origin,float yaw,float reach)override;
  bool valid(Target target)const override;
@@ -94,6 +95,7 @@ private:
  NativeCrates crates_;
  NativeCaptureGag gag_;
  NativeGagCamera gag_camera_;
+ NativeEmptyWeaponSound empty_weapon_sound_;
  WeaponAudioSink* audio_{};
  struct GroundContact {Target target{};unsigned updates{};} ground_contact_;
  std::optional<Vec3> contact_tip_;
@@ -109,6 +111,7 @@ private:
  Allocate allocate_; Hit post_hit_;Ray ray_;Basis basis_;State state_;ScaleTicks scale_ticks_;Burst burst_;
  GreenBurst green_burst_;
  SphereVisible sphere_visible_;
+ void play_empty_weapon_sound();
  openrac_mod* mod_; bool trace_;
  bool active_=true;
  bool golden_=false;

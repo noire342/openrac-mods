@@ -134,14 +134,15 @@ void NativeAmmunition::frame() {
     if(!metadata_ready_) metadata_ready_ = patch_metadata();
 }
 
-bool NativeAmmunition::begin_attack() {
+NativeAmmunition::AttackResult NativeAmmunition::begin_attack() {
     frame();
-    if(!in_level() || !metadata_ready_) return false;
+    if(!in_level() || !metadata_ready_) return AttackResult::Blocked;
     const unsigned hero_address = global(hero);
     if(read<int>(hero_address+held_item) != item_id ||
        read<int>(hero_address+held_item_state) != held_item_ready ||
-       read<int>(hero_address+hero_health) <= 0 || read<int>(level(game_mode)) != gameplay_mode) return false;
-    return take_ammo_(item_id,1) != 0;
+       read<int>(hero_address+hero_health) <= 0 || read<int>(level(game_mode)) != gameplay_mode) return AttackResult::Blocked;
+    if(take_ammo_(item_id,1)) return AttackResult::Spent;
+    return count()==0 ? AttackResult::Empty : AttackResult::Blocked;
 }
 
 int NativeAmmunition::count() const {

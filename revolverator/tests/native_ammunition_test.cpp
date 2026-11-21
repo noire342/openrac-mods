@@ -9,6 +9,7 @@
 #include <vector>
 
 using revolverator::NativeAmmunition;
+using AttackResult=NativeAmmunition::AttackResult;
 using TextRecord=std::array<unsigned,4>;
 using TextSnapshot=std::array<TextRecord,3>;
 using VendorSnapshot=std::array<unsigned char,24>;
@@ -80,12 +81,12 @@ int main(){
         CHECK(f.get<int>(copy+3*16+4)==f.get<std::uint16_t>(definition+0x34));
         CHECK(f.get<int>(copy+4*16+4)==f.get<std::uint16_t>(definition+0x36));
         for(int i=0;i<100;++i)ammunition.frame();CHECK(f.allocations==1);
-        f.put(ammo_at,20);CHECK(ammunition.begin_attack());
+        f.put(ammo_at,20);CHECK(ammunition.begin_attack()==AttackResult::Spent);
         CHECK(f.last_item==18&&f.last_amount==1&&f.takes==1&&ammunition.count()==19);
-        f.put(0x15f5c4,3);CHECK(!ammunition.begin_attack()&&f.takes==1);
-        f.put(0x15f5c4,0);f.put(hero+0x10b8,10);CHECK(!ammunition.begin_attack()&&f.takes==1);
-        f.put(hero+0x10b8,18);f.put(hero+0x22a8,0);CHECK(!ammunition.begin_attack()&&f.takes==1);
-        f.put(hero+0x22a8,4);f.put(ammo_at,0);CHECK(!ammunition.begin_attack()&&f.takes==2);
+        f.put(0x15f5c4,3);CHECK(ammunition.begin_attack()==AttackResult::Blocked&&f.takes==1);
+        f.put(0x15f5c4,0);f.put(hero+0x10b8,10);CHECK(ammunition.begin_attack()==AttackResult::Blocked&&f.takes==1);
+        f.put(hero+0x10b8,18);f.put(hero+0x22a8,0);CHECK(ammunition.begin_attack()==AttackResult::Blocked&&f.takes==1);
+        f.put(hero+0x22a8,4);f.put(ammo_at,0);CHECK(ammunition.begin_attack()==AttackResult::Empty&&f.takes==2);
         CHECK(ammunition.count()==0);
         // Preserve a different mod's edit to a pre-existing record in our clone.
         f.put(copy+16,0x320000u);
@@ -137,7 +138,7 @@ int main(){
         CHECK(f.get<std::uint16_t>(definition+0x3a)==225&&f.get<std::uint16_t>(resident+0x3a)==225);
         CHECK(f.get<std::uint16_t>(definition+0x34)==321&&f.get<std::uint16_t>(definition+0x36)==322);
         CHECK(f.get<std::uint16_t>(resident+0x34)==621&&f.get<std::uint16_t>(resident+0x36)==622);
-        CHECK(ammunition.begin_attack()&&f.takes==1&&f.last_item==18&&f.last_amount==1&&ammunition.count()==2);
+        CHECK(ammunition.begin_attack()==AttackResult::Spent&&f.takes==1&&f.last_item==18&&f.last_amount==1&&ammunition.count()==2);
         // Optional labels do not force another allocation or disable later shots.
         f.fail_allocate=false;ammunition.frame();CHECK(f.allocations==1&&ammunition.maximum()==20);
         CHECK(f.get<unsigned>(text_ptr)==bank&&f.get<int>(text_count)==3);
@@ -164,7 +165,7 @@ int main(){
         CHECK(f.get<std::uint16_t>(definition+0x34)==401&&f.get<std::uint16_t>(definition+0x36)==402);
         CHECK(f.get<std::uint16_t>(resident+0x34)==701&&f.get<std::uint16_t>(resident+0x36)==702);
         CHECK(f.get<unsigned>(text_ptr)==bank&&f.get<int>(text_count)==3&&f.get<TextSnapshot>(bank)==original_text);
-        CHECK(ammunition.begin_attack()&&f.takes==1&&ammunition.count()==2&&f.allocations==0);
+        CHECK(ammunition.begin_attack()==AttackResult::Spent&&f.takes==1&&ammunition.count()==2&&f.allocations==0);
         const auto pickup=f.pickup(0x400000,0x410000);
         ammunition.before_update(pickup);ammunition.after_update(pickup);
         CHECK(f.get<std::uint16_t>(pickup+0xa6)==32000);

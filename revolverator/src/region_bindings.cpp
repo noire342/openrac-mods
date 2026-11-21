@@ -95,6 +95,7 @@ constexpr FunctionName functions[] = {
     {"FUN_L01_002aea70","func_L01_002AFD00"},
     {"FUN_L07_003120d8","func_L07_003134B8"}, // Umbris's native boss impact shake.
     {"FUN_L00_0028dc90","func_L00_0028EF68"}, // Play a stock sound on another class's emitter.
+    {"FUN_0012e308","func_0012E448"}, // Play a one-shot from the loaded 989snd bank.
 };
 } // namespace
 
@@ -153,6 +154,7 @@ unsigned RegionBindings::data(unsigned canonical) const {
     case 0x00141ea0u:return 0x00141fa0u;
     case 0x0014d590u:return 0x0014d690u;
     case 0x0015ed7cu:return 0x0015ee7cu;
+    case 0x0015ed5cu:return 0x0015ee5cu; // Live level sound bank handle.
     case 0x0015ed80u:return 0x0015ee80u;
     case 0x0015ed84u:return 0x0015ee84u;
     case 0x0015ed88u:return 0x0015ee88u;
@@ -210,6 +212,10 @@ unsigned RegionBindings::level(unsigned overlay,unsigned canonical) const {
         case 0x0017dac0u:return 0x0017dbc0u;
         case 0x0017e4d8u:return 0x0017e5d8u;
         case 0x0017e530u:return 0x0017e630u;
+        case 0x00160008u:return 0x001600c8u; // Switchable class count.
+        case 0x00197300u:return 0x00197680u; // Moby class header table.
+        case 0x001afbc0u:return 0x001aff40u; // Switchable class IDs.
+        case 0x001afe60u:return 0x001b01e0u; // Switchable class sound bank entry IDs.
         case 0x001b0340u:return 0x001b06c0u;
         case 0x001c2108u:return 0x001c2488u;
         case 0x001c40b0u:return 0x001c43b0u;

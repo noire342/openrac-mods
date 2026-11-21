@@ -39,6 +39,9 @@ struct Fixture {
  NativeWorld& world;
  std::vector<Packet> packets;
  std::vector<openrac_hit> counterstrikes;
+ std::vector<std::array<unsigned,4>> class_sounds;
+ std::vector<std::array<int,3>> bank_sounds;
+ bool native_ammo_spent=true;
  std::vector<float> burst_sizes;
  unsigned stack_cursor=stack_base,stack_fail_size{},burst_calls{},allocations{},ray_calls{},crate_breaks{},crate_drops{};
  float burst_scale{},burst_flash{},wall_x=10000;
@@ -60,7 +63,15 @@ struct Fixture {
  }
  static void stack_pop(unsigned saved){live->stack_cursor=saved;}
  static unsigned allocate(unsigned){++live->allocations;return 0;}
- static int take_ammo(int,int){return 1;}
+ static int take_ammo(int,int){return live->native_ammo_spent;}
+ static int play_class_sound(int entry,int flags,unsigned emitter,int klass){
+  live->class_sounds.push_back({unsigned(entry),unsigned(flags),emitter,unsigned(klass)});
+  return 1;
+ }
+ static void play_bank_sound(int bank,int sound,int volume,int pan,int modulation,int bend,int callback,void* context){
+  require(!pan&&!modulation&&!bend&&!callback&&!context,"the empty-bank cue is a centered native one-shot");
+  live->bank_sounds.push_back({bank,sound,volume});
+ }
  static void bone(unsigned,int,unsigned){}
  static void basis(unsigned,unsigned){}
  static void update_gun(unsigned owner,unsigned gun,int joint){live->gun_updates.push_back({owner,gun,unsigned(joint)});}
@@ -110,6 +121,8 @@ struct Fixture {
   if(std::strcmp(name,"FUN_001efa68")==0)return reinterpret_cast<void*>(&ray);
   if(std::strcmp(name,"FUN_L00_002223f8")==0)return reinterpret_cast<void*>(&set_state);
   if(std::strcmp(name,"FUN_L00_0025f090")==0)return reinterpret_cast<void*>(&burst);
+  if(std::strcmp(name,"FUN_L00_0028dc90")==0)return reinterpret_cast<void*>(&play_class_sound);
+  if(std::strcmp(name,"FUN_0012e308")==0)return reinterpret_cast<void*>(&play_bank_sound);
   if(std::strcmp(name,"FUN_L00_002d09b8")==0)return reinterpret_cast<void*>(&break_crate);
   if(std::strcmp(name,"FUN_L00_002d0538")==0)return reinterpret_cast<void*>(&drop_crate);
   if(std::strcmp(name,"FUN_L12_0027b9c0")==0)return reinterpret_cast<void*>(&update_gun);
@@ -157,6 +170,39 @@ struct Fixture {
 };
 }
 int main(){
+ {
+  Fixture f;
+  using namespace native_arsenal_layout;
+  constexpr unsigned stock_bomb_glove=192;
+  constexpr unsigned resident_slot=7,header=0x100000,sounds=0x101000;
+  constexpr unsigned headers_at=0x197300,swap_count_at=0x160008,swap_ids_at=0x1afbc0,swap_sounds_at=0x1afe60;
+  constexpr unsigned bank_at=0x15ed5c,next_swap_row=16*sizeof(std::uint16_t);
+  const unsigned definition=level_item_definitions+NativeAmmunition::item_id*item_definition_size;
+  const unsigned ammo_at=weapon_ammo_counts+NativeAmmunition::item_id*sizeof(int);
+  f.put(definition+item_definition_class,180);
+  f.put(ammo_at,1);
+  require(f.world.begin_attack()&&f.class_sounds.empty(),"a real shot does not request the native empty cue");
+  f.native_ammo_spent=false;
+  f.put(ammo_at,0);
+  require(!f.world.begin_attack()&&f.class_sounds.empty()&&f.bank_sounds.empty(),
+          "missing bank definition is silent");
+  f.put(0x1b3ac0+stock_bomb_glove,std::uint8_t(resident_slot));
+  f.put(bank_at,3);f.put(swap_count_at,2);
+  f.put(swap_ids_at+sizeof(int),int(stock_bomb_glove));
+  f.put<std::uint16_t>(swap_sounds_at+next_swap_row,139);
+  require(!f.world.begin_attack()&&f.class_sounds.empty()&&f.bank_sounds==std::vector<std::array<int,3>>{{3,139,2048}},
+          "an unequipped donor resolves the per-level stock bank without loading its class");
+  f.put(headers_at+resident_slot*sizeof(unsigned),header);
+  f.put(header+0x0d,std::uint8_t{1});f.put(header+0x28,sounds);
+  require(!f.world.begin_attack()&&f.class_sounds==std::vector<std::array<unsigned,4>>{{0,0,weapon,stock_bomb_glove}}&&
+          f.bank_sounds.size()==1,"the resident cue is requested once");
+  f.put(game_mode,3);
+  require(!f.world.begin_attack()&&f.class_sounds.size()==1&&f.bank_sounds.size()==1,"pause does not make a dry-fire request");
+  f.put(game_mode,gameplay_mode);
+  f.world.set_active(false);
+  require(!f.world.begin_attack()&&f.class_sounds.size()==1&&f.bank_sounds.size()==1,
+          "other weapons never go through the Rotatore dry-fire path");
+ }
  {
   Fixture f;
   constexpr unsigned moby_callback=0x74,native_callback=0x2b9500,foreign_callback=0x2b9580;

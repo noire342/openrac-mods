@@ -4,6 +4,10 @@ The current runtime uses the original game sounds. The custom sound adapter is
 not linked or connected, and no custom WAV files are included in the installable
 archive. The native equip and gameplay sound paths remain in place.
 
+An empty attack uses the Bomb Glove's original click from the current level's
+sound bank. The level's weapon sound table also provides the cue before the
+Bomb Glove model has been loaded.
+
 The procedural sound experiment is parked in development source only, including
 its waveform files, generators, tests, manifest and provenance. Earlier native
 mix recordings apply only to the exact experimental DLL recorded in those
