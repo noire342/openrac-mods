@@ -156,7 +156,7 @@ private:
  float collision_radius(Target target)const;
  bool visible_from(Vec3 origin,Target target,unsigned ignore)const;
  bool clear_path(Vec3 from,Vec3 to,unsigned accepted_target,unsigned ignore)const;
- std::optional<Vec3> ray(Vec3 from,Vec3 to,unsigned ignore)const;
+ std::optional<Vec3> ray(Vec3 from,Vec3 to,unsigned ignore,bool* clear=nullptr)const;
  std::optional<Contact> sweep_impact(Target target,Vec3 from,Vec3 to);
  bool hit(Target target,float damage,Vec3 direction,unsigned attacker,bool explosive=false);
  bool submit_hit(Target target,float damage,Vec3 direction,const Shot& shot,bool explosive=false);

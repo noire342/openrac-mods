@@ -17,7 +17,8 @@ constexpr bool capture_excluded_class(unsigned klass) {
     case 233: case 326: case 631: // helicopter gunships with their own attached actors
     case 36: case 401: case 1632: // mounted gunner, fighter part, hit proxy
     case 455: case 668: case 755: case 1885: // spawners, Sand Shark nest/egg
-    case 541: case 556: case 871: case 1906: // test dummies, scripted boltcrate, Gadgebot
+    case 541: case 556: case 871: // test dummies and scripted boltcrate
+    case 282: case 857: case 1906: // friendly Miner and Gadgebots
     case 568: case 621: case 643: case 660: case 933:
     case 1110: case 1112: case 1269: case 1355: // mines and boss missiles
         return true;

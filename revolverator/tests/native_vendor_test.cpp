@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #include "native_vendor.hpp"
+#include "native_arsenal.hpp"
 #include "arsenal_state.hpp"
 #include "native_weapon_alias.hpp"
 #include <array>
@@ -21,6 +22,7 @@ void require(bool condition,const char* message){
     ++checks;if(!condition){std::fprintf(stderr,"vendor: %s\n",message);std::exit(1);}
 }
 struct Row{int item,is_ammo,state,unused,sound;};
+struct View final : ArsenalIdentityView { void select_identity(bool) override {} };
 constexpr unsigned price=0x1c40b0+18*24,menu=0x1ca4c0,owned=0x13d4c0;
 constexpr unsigned visit=0x13dd58+12,stock=0x15edd0;
 constexpr unsigned preview_list=0x1f00000,preview_model=0x1c8ff0+18*0x40+0x30;
@@ -70,8 +72,40 @@ struct Fixture {
         arena.reserve(0x150000,1024);
     }
 };
+
+void checkpoint_metadata() {
+    Fixture f;
+    arsenal::Registry registry;
+    require(registry.register_weapon({arsenal::RevolveratorKey, "noire342.revolverator",
+            18, 60037, 20, NativeVendor::normal_price, 12}), "register Revolverator for the vendor");
+    View view;
+    NativeArsenal arsenal(&f.api, registry, view);
+    NativeVendor vendor(&f.api, f.weapon_alias, f.arena);
+    vendor.set_arsenal(&arsenal);
+
+    const auto prepare = [&] {
+        arsenal.begin_level();
+        vendor.frame();
+        arsenal.finish_level();
+        arsenal.project(arsenal::RevolveratorKey);
+    };
+    prepare();
+    require(f.get<int>(price) == NativeVendor::normal_price && f.get<int>(preview_model) == 225,
+            "the custom vendor price and ammo class are captured during normal level setup");
+
+    // Checkpoint restoration refreshes the inventory without leaving the overlay.
+    arsenal.reset();
+    vendor.reset();
+    prepare();
+    require(f.get<int>(price) == NativeVendor::normal_price && f.get<int>(preview_model) == 225,
+            "the custom vendor price and ammo class survive a same-level checkpoint refresh");
+    arsenal.project(arsenal::NativeWalloperKey);
+    require(f.get<int>(price) == 7500 && f.get<int>(preview_model) == 0,
+            "the stock price and preview class remain available after checkpoint refresh");
+}
 }
 int main(){
+    checkpoint_metadata();
     {Fixture f;NativeVendor vendor(&f.api,f.weapon_alias,f.arena);
      constexpr unsigned scene=0x16c860;
      f.rows({{18,0,0,0,0},{18,0,0,0x52564f31,0}},1);f.previews();vendor.frame();

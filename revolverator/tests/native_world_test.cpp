@@ -45,6 +45,7 @@ struct Fixture {
  std::optional<float> floor_z;
  Vec3 floor_normal{0,0,1};
  int current_level=1;Vec3 burst_position{};
+ std::vector<std::array<unsigned,3>> gun_updates;
  std::function<void()> on_burst;
  template<class T>void put(unsigned at,T value){std::memcpy(ram.data()+at,&value,sizeof value);}
  template<class T>T get(unsigned at)const{T value{};std::memcpy(&value,ram.data()+at,sizeof value);return value;}
@@ -62,6 +63,7 @@ struct Fixture {
  static int take_ammo(int,int){return 1;}
  static void bone(unsigned,int,unsigned){}
  static void basis(unsigned,unsigned){}
+ static void update_gun(unsigned owner,unsigned gun,int joint){live->gun_updates.push_back({owner,gun,unsigned(joint)});}
  static void break_crate(unsigned target,int explosive,unsigned contact){
   require(!explosive&&!contact,"void break uses the ordinary isolated crate routine");
   ++live->crate_breaks;live->put<unsigned char>(target+0x20,3);live->put(target+0x94,0u);
@@ -110,6 +112,7 @@ struct Fixture {
   if(std::strcmp(name,"FUN_L00_0025f090")==0)return reinterpret_cast<void*>(&burst);
   if(std::strcmp(name,"FUN_L00_002d09b8")==0)return reinterpret_cast<void*>(&break_crate);
   if(std::strcmp(name,"FUN_L00_002d0538")==0)return reinterpret_cast<void*>(&drop_crate);
+  if(std::strcmp(name,"FUN_L12_0027b9c0")==0)return reinterpret_cast<void*>(&update_gun);
   return nullptr;
  }
  static const openrac_api* prepare(Fixture* fixture){
@@ -169,10 +172,20 @@ int main(){
   f.put<std::uint16_t>(enemy.address+0x34,0x21);
   require(!f.world.find_target({},0,2),"an invisible actor cannot be latched through native aim metadata");
   f.put<std::uint16_t>(enemy.address+0x34,0x20);
+  f.stack_fail_size=32;
+  require(!f.world.find_target({},0,2),"target acquisition requires a successful native visibility trace");
+  f.stack_fail_size=0;
   require(f.world.find_target({},0,2)==enemy&&f.world.capture(enemy),"native enemy metadata admits regular enemies without class-specific hooks");
   require(f.get<unsigned>(enemy.address+moby_callback)==0,"hold suspends only the captured actor callback");
   f.world.release(enemy,true);
   require(f.get<unsigned>(enemy.address+moby_callback)==native_callback,"release restores the captured actor callback");
+  require(f.world.find_target({},0,2)==enemy&&f.world.capture(enemy),"the dying enemy fixture begins with an owned lease");
+  f.put(health,0.f);
+  require(!f.world.valid(enemy)&&f.world.frozen(enemy.address),"death cleanup still recognizes ownership after health reaches zero");
+  f.world.discarded(enemy);
+  require(f.get<unsigned>(enemy.address+moby_callback)==native_callback&&!f.world.frozen(enemy.address),
+          "death cleanup releases the original actor callback and lease");
+  f.put(health,2.f);
   f.launch(enemy);
   f.world.impact_result(enemy,f.impact());
   require(f.packet(enemy.address)!=nullptr,"a Golden throw damages a regular enemy admitted by native aim metadata");
@@ -187,11 +200,32 @@ int main(){
   f.world.discarded(enemy);
   require(!f.world.valid(boss)&&f.get<unsigned>(boss.address+moby_callback)==native_callback,
           "capture exceptions win over native aim metadata and pool reuse is untouched");
-  for(const unsigned klass:{36u,455u,541u,568u,668u,871u,1632u,1906u}){
+  for(const unsigned klass:{36u,282u,455u,541u,568u,668u,857u,871u,1632u,1906u}){
    const auto scripted=f.actor(enemy.address,klass,{1.3f,0,0},80+klass);
-   require(!f.world.valid(scripted),"linked actors, mines and scripted props remain uncapturable even with aim metadata");
+   require(!f.world.valid(scripted),"friendly NPCs, linked actors and scripted props remain uncapturable even with aim metadata");
   }
+  const auto player=f.actor(enemy.address,0,{1.3f,0,0},2000);
+  f.put(hero+0x2080,player.address);
+  require(!f.world.valid(player),"the player cannot be considered an enemy through aim metadata");
   require(capturable_class(hoven_anklebiter_class),"the Hoven anklebiter is capturable");
+ }
+ {
+  Fixture f;f.current_level=12;f.world.reset();
+  const auto trooper=f.enemy(0,hoven_blarg_trooper_class,{1,0,.6f});
+  f.enemy(1,499,{1,.5f,.6f});
+  const unsigned gun=pool+256;
+  f.put(trooper.pvars+0x248,gun);
+  f.put(gun+0x38,trooper.stamp);
+  require(f.world.find_target({},0,2)==trooper&&f.world.capture(trooper),"Hoven Trooper acquires its original attached gun");
+  f.world.move(trooper,{1,2,3},0);
+  f.launch(trooper,false);
+  f.world.move(trooper,{2,3,4},0);
+  require(f.gun_updates==std::vector<std::array<unsigned,3>>(2,{trooper.address,gun,1}),
+          "carry and flight drive the original gun through the Trooper's native joint");
+  f.put(gun+0x38,trooper.stamp+1);
+  f.world.move(trooper,{3,4,5},0);
+  f.world.release(trooper,true);
+  require(f.gun_updates.size()==2,"a recycled gun slot is untouched by flight and teardown");
  }
  {
   Fixture f;auto frame=f.frame();f.world.set_active(true);f.world.observe_frame(frame);
@@ -492,6 +526,16 @@ int main(){
   f.world.cancelled();f.launch(projectile,false);require(!f.world.sweep(projectile,{0,0,.5f},{2,0,.5f}),"base collision eligibility unchanged");
   f.launch(projectile);f.wall_x=.5f;const auto wall=f.world.sweep(projectile,{0,0,.5f},{2,0,.5f});
   require(wall&&!wall->other&&near(wall->point.x,.5f),"earlier terrain wins over actor behind it");
+ }
+ {
+  Fixture f;const auto projectile=f.enemy(0,459,{0,0,0});
+  f.enemy(1,573,{4,0,0});const auto nearby=f.enemy(2,573,{2,0,0});
+  f.launch(projectile,false);
+  auto hit=f.world.sweep(projectile,{0,0,.5f},{5,0,.5f});
+  require(hit&&hit->other==nearby,"Base flight contacts the nearest enemy regardless of native pool order");
+  f.wall_x=1.5f;
+  hit=f.world.sweep(projectile,{0,0,.5f},{5,0,.5f});
+  require(hit&&!hit->other&&near(hit->point.x,1.5f),"Base flight cannot damage an enemy through terrain");
  }
  {
   Fixture f;const auto projectile=f.enemy(0,459,{1,0,.6f});

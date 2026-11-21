@@ -271,7 +271,12 @@ int main(){
   require(presentation.notify_acquisition(4)&&f.notified_text=="Rotatore d'oro","disabling versioned names preserves the user's native name preference");
   const int before=f.notifications;
   require(!presentation.notify_acquisition(1)&&!presentation.notify_acquisition(11)&&f.notifications==before,"invalid caption versions never reach the native subtitle call");
-  f.level=2;require(!presentation.notify_acquisition(2)&&f.notifications==before,"stale text banks cannot notify after overlay travel");
+  f.level=2;f.put(TextBank,ForeignName);
+  const auto old_name=f.bytes<256>(projected);
+  require(!presentation.notify_acquisition(2)&&f.notifications==before,"stale text banks cannot notify after overlay travel");
+  presentation.set_golden(false);
+  require(f.get<unsigned>(TextBank)==ForeignName&&f.bytes<256>(projected)==old_name,
+          "reusing a text-bank address in another level cannot rewrite its entries or the retired name storage");
  }
  {
   Fixture f;const auto original_name=f.bytes<128>(Name),original_description=f.bytes<128>(Description);
@@ -376,6 +381,58 @@ int main(){
   presentation.frame(false,false);
   require(f.get<unsigned char>(Slot+hud::channel_visibility)==fully_visible,
           "retiring the custom HUD preserves another weapon's native fade");
+ }
+ {
+  Fixture f;Presentation presentation(&f.api,nullptr,&f.arena);presentation.frame(true);
+  f.put<int>(Slot+hud::channel_next_id,other_weapon_hud_bank);
+  f.put<int>(Slot+hud::channel_pending,1);
+  f.put<std::uint8_t>(Slot+hud::channel_text_fade,fully_visible);
+  f.put<int>(Slot+hud::channel_display_timer,fully_visible);
+  presentation.frame(false);
+  require(f.get<std::uint8_t>(Slot+hud::channel_visibility)==0&&f.get<std::uint8_t>(Slot+hud::channel_text_fade)==0&&
+          f.get<int>(Slot+hud::channel_display_timer)==0&&f.get<int>(Slot+hud::channel_pending)==1,
+          "a newly queued weapon retires the active Revolverator fade and keeps the native queue");
+  require(f.get<unsigned>(Slot+hud::channel_callback)==NativeCode&&f.get<int>(Slot+hud::channel_next_id)==other_weapon_hud_bank,
+          "retiring an active tile restores the native callback and keeps the next item");
+ }
+ {
+  Fixture f;Presentation presentation(&f.api,nullptr,&f.arena);presentation.frame(true);
+  f.put<int>(Slot+hud::channel_current_id,other_weapon_hud_bank);
+  require(!presentation.owns(Slot),"a carrier request does not override an active stock weapon tile");
+  presentation.frame(true);
+  require(f.get<unsigned>(Slot+hud::channel_callback)==NativeCode&&
+          f.get<unsigned char>(Slot+hud::channel_visibility)==fully_visible,
+          "the active stock tile keeps its callback and fade while the carrier is queued");
+ }
+ {
+  Fixture f;Presentation presentation(&f.api,nullptr,&f.arena);presentation.frame(true);
+  const auto clone=f.get<HudTables>(State+hud::bank_header);
+  f.put(Cached+hud::bank_header,clone);
+  f.put<int>(item::game_mode,item::loading_mode);
+  require(!presentation.owns(Slot),"the native callback keeps control during level loading");
+  f.put<int>(quick_ring_type,quick_ring_mode);
+  f.put<int>(quick_ring_fade_frames,fully_visible);
+  require(presentation.draw_quick_selector(Slot,+[](unsigned){return quick_ring_draw_result;},
+                                           {arsenal::RevolveratorKey})==quick_ring_draw_result&&f.sprites.empty(),
+          "loading leaves the native quick-selector draw in control");
+  const auto text_entry=f.get<unsigned>(TextBank);
+  std::memset(f.ram.data()+f.arena.begin(),0x9d,f.arena.used());
+  const auto incoming=std::vector<unsigned char>(f.ram.begin()+f.arena.begin(),f.ram.begin()+f.arena.begin()+f.arena.used());
+  const auto stock_header=f.bytes<hud::bank_header_words*sizeof(std::uint32_t)>(Header);
+  const auto stock_definitions=f.bytes<32>(Defs);
+  const auto stock_references=f.bytes<80>(Refs);
+  const auto stock_images=f.bytes<2*texture_page_size>(Images);
+  const auto stock_palettes=f.bytes<2*texture_page_size>(Palettes);
+  presentation.reset();
+  require(std::equal(incoming.begin(),incoming.end(),f.ram.begin()+f.arena.begin())&&
+          f.get<unsigned>(TextBank)==text_entry,
+          "loading cleanup avoids recycled level storage and retired text entries");
+  require(f.bytes<hud::bank_header_words*sizeof(std::uint32_t)>(Header)==stock_header&&
+          f.bytes<32>(Defs)==stock_definitions&&f.bytes<80>(Refs)==stock_references&&
+          f.bytes<2*texture_page_size>(Images)==stock_images&&f.bytes<2*texture_page_size>(Palettes)==stock_palettes,
+          "loading cleanup never merges input bytes into native sprite tables");
+  require(f.get<HudTables>(State+hud::bank_header)==stock_tables&&f.get<HudTables>(Cached+hud::bank_header)==stock_tables,
+          "loading cleanup withdraws owned pointers from both HUD state views");
  }
  {
   Fixture f;Presentation presentation(&f.api,nullptr,&f.arena);presentation.frame(true);

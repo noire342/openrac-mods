@@ -130,6 +130,7 @@ struct Session {
    // The native checkpoint restores the equipment tables after LoadGameplay.
    // Rebuild only the inventory projection against those final tables.
    arsenal.reset();
+   vendor.reset();
    ammunition.reset();
    prepare_level();
    arsenal.mark_snapshot_restored();

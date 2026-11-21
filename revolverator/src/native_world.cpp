@@ -57,7 +57,7 @@ bool NativeWorld::identity_valid(Target t)const{
   &&read<unsigned char>(t.address+0x20)<0x80;
 }
 bool NativeWorld::capturable_enemy(Target t)const{
- if(capture_excluded_class(t.klass))return false;
+ if(capture_excluded_class(t.klass)||t.address==body())return false;
  if(capturable_class(int(t.klass)))return true;
  if(!(read<std::uint16_t>(t.address+moby_flags_offset)&aim_target_flag))return false;
  // The same target contract the Morph-o-Ray uses: a creature class, the
@@ -122,11 +122,15 @@ bool NativeWorld::clear_path(Vec3 from,Vec3 to,unsigned accepted_target,unsigned
  if(!ray_(stack.at,stack.at+16,0x24,ignore,0))return true;
  return read<unsigned>(level(0x173e58))==accepted_target;
 }
-std::optional<Vec3> NativeWorld::ray(Vec3 from,Vec3 to,unsigned ignore)const{
+std::optional<Vec3> NativeWorld::ray(Vec3 from,Vec3 to,unsigned ignore,bool* clear)const{
+ if(clear)*clear=false;
  Stack stack(api_,32);if(!stack.at||!finite(from)||!finite(to))return std::nullopt;
  const std::array<float,4> start{from.x,from.y,from.z,0},end{to.x,to.y,to.z,0};
  std::memcpy(api_->memory+stack.at,start.data(),16);std::memcpy(api_->memory+stack.at+16,end.data(),16);
- if(!ray_(stack.at,stack.at+16,0x24,ignore,0))return std::nullopt;
+ if(!ray_(stack.at,stack.at+16,0x24,ignore,0)){
+  if(clear)*clear=true;
+  return std::nullopt;
+ }
  const auto point=read<Vec3>(level(0x173e60));
  return finite(point)?std::optional<Vec3>{point}:std::nullopt;
 }
@@ -148,10 +152,11 @@ std::optional<Target> NativeWorld::find_target(Vec3 origin,float yaw,float reach
   const Vec3 start=s.origin+Vec3{0,0,.9f};
   Vec3 centre=w.read<Vec3>(target.address)*(1.f/1024.f);
   if(!finite(centre)||length_squared(centre-pos)>16)centre=pos+Vec3{0,0,.6f};
-  const auto obstruction=w.ray(start,centre,w.body());
+  bool clear=false;
+  const auto obstruction=w.ray(start,centre,w.body(),&clear);
   const auto hit_owner=obstruction?w.read<unsigned>(w.level(0x173e58)):0;
   const bool hit_target=obstruction&&hit_owner==target.address;
-  const bool clear=!obstruction||hit_target||hit_owner==w.weapon();
+  clear=clear||hit_target||(obstruction&&hit_owner==w.weapon());
   if(w.trace_){char msg[240];std::snprintf(msg,sizeof msg,"candidate class=%u dist=%.2f z=%.2f cosine=%.2f visible=%u hit=%08x target-contact=%d",target.klass,std::sqrt(distance),delta.z,cosine,unsigned(w.read<unsigned char>(target.address+0x31)),hit_owner,int(hit_target));w.log(msg);}
   if(score<s.score&&clear){
    s.score=score;s.best=target;
@@ -209,8 +214,11 @@ NativeWorld::Lease* NativeWorld::owned_lease(Target target){
  auto* entry=flight(target);return entry&&entry->lease.target?&entry->lease:nullptr;
 }
 bool NativeWorld::frozen(unsigned moby)const{
- if(lease_valid()&&lease_.target.address==moby)return true;
- for(const auto& entry:flights_)if(entry.lease.target.address==moby&&valid(entry.lease.target))return true;
+ // A health or aim change can invalidate capture eligibility before the
+ // native death hook runs. Ownership follows the actor until it is released.
+ if(!moby)return false;
+ if(lease_.target.address==moby&&identity_valid(lease_.target))return true;
+ for(const auto& entry:flights_)if(entry.lease.target.address==moby&&identity_valid(entry.lease.target))return true;
  return false;
 }
 void NativeWorld::update_nanotech(unsigned orb,NativeCrates::Update next)const{
@@ -394,50 +402,42 @@ float NativeWorld::flight_duration(Target t,float normal_duration)const{
 }
 std::optional<Contact> NativeWorld::sweep_impact(Target t,Vec3 from,Vec3 to){
  const auto* active_flight=flight(t);
- if(active_flight&&active_flight->impact.golden_flight(t)){
-  // Golden can collide with bosses and other damageable actors, but never
-  // acquire them. Respect the nearest terrain contact before testing actors.
-  struct Search{NativeWorld* self;Target target;Vec3 from,to;std::optional<Contact> hit;float first=1.001f;};
-  Search search{this,t,from,to,{}};
-  const Vec3 direction=to-from;const float square=length_squared(direction);
-  if(!finite(from)||!finite(to)||!std::isfinite(square))return std::nullopt;
-  if(auto point=ray(from,to,t.address)){
-   search.hit=Contact{*point,{},read<Vec3>(level(0x173e80))};
-   search.first=square>.000001f?std::clamp(dot(*point-from,direction)/square,0.f,1.f):0;
-  }
-  each_damageable(&search,+[](const void* ctx,Target candidate){
-   auto& s=*const_cast<Search*>(static_cast<const Search*>(ctx));auto& w=*s.self;
-   if(candidate==s.target||w.flying(candidate)||w.frozen(candidate.address))return;
-   const Vec3 p=w.damage_centre(candidate),d=s.to-s.from,offset=s.from-p;
-   const float radius=w.collision_radius(candidate)+.4f,l=length_squared(d),c=length_squared(offset)-radius*radius;
-   if(!finite(p)||!std::isfinite(c))return;
-   float u=0;
-   if(c>0){
-    if(l<=.000001f)return;
-    const float b=dot(offset,d),discriminant=b*b-l*c;
-    if(!std::isfinite(discriminant)||discriminant<0)return;
-    u=(-b-std::sqrt(discriminant))/l;
-   }
-   if(u<0||u>1||u>=s.first||!w.visible_from(s.from,candidate,s.target.address))return;
-   s.first=u;s.hit=Contact{s.from+d*u,candidate,{}};
-  });
-  return search.hit;
+ const bool golden=active_flight&&active_flight->impact.golden_flight(t);
+ const Vec3 direction=to-from;
+ const float square=length_squared(direction);
+ if(!finite(from)||!finite(to)||!std::isfinite(square))return std::nullopt;
+ struct Search {
+  NativeWorld& world;Target target;Vec3 from,direction;float square;bool golden;
+  std::optional<Contact> hit;float first=1.001f;
+ } search{*this,t,from,direction,square,golden,{}};
+ bool clear=false;
+ if(const auto point=ray(from,to,t.address,&clear)){
+  search.hit=Contact{*point,{},read<Vec3>(level(0x173e80))};
+  search.first=square>.000001f?std::clamp(dot(*point-from,direction)/square,0.f,1.f):0;
+ }else if(!clear){
+  return std::nullopt;
  }
- struct Search{NativeWorld* self;Target target;Vec3 from,to;std::optional<Contact> hit;};
- Search search{this,t,from,to,{}};
  const auto visit=+[](const void* ctx,Target candidate){
-  auto& s=*const_cast<Search*>(static_cast<const Search*>(ctx));if(s.hit||candidate==s.target||s.self->flying(candidate)||s.self->frozen(candidate.address))return;
-  const Vec3 p=s.self->read<Vec3>(candidate.address+0x10)+Vec3{0,0,.5f};
-  if(!finite(p))return;
-  const Vec3 d=s.to-s.from;const float l=length_squared(d);
-  const Vec3 a=p-s.from;const float u=l>.00001f?std::clamp((a.x*d.x+a.y*d.y+a.z*d.z)/l,0.f,1.f):0;
-  const float radius=1.1f;
-  if(length_squared(p-(s.from+d*u))<radius*radius)s.hit=Contact{s.from+d*u,candidate,{}};
+  auto& s=*const_cast<Search*>(static_cast<const Search*>(ctx));auto& w=s.world;
+  if(candidate==s.target||w.flying(candidate)||w.frozen(candidate.address))return;
+  const Vec3 point=s.golden?w.damage_centre(candidate):w.read<Vec3>(candidate.address+0x10)+Vec3{0,0,.5f};
+  const float radius=s.golden?w.collision_radius(candidate)+.4f:1.1f;
+  const Vec3 offset=s.from-point;
+  const float c=length_squared(offset)-radius*radius;
+  if(!finite(point)||!std::isfinite(c))return;
+  float fraction=0;
+  if(c>0){
+   if(s.square<=.000001f)return;
+   const float b=dot(offset,s.direction),discriminant=b*b-s.square*c;
+   if(!std::isfinite(discriminant)||discriminant<0)return;
+   fraction=(-b-std::sqrt(discriminant))/s.square;
+  }
+  if(fraction<0||fraction>1||fraction>=s.first||!w.visible_from(s.from,candidate,s.target.address))return;
+  s.first=fraction;s.hit=Contact{s.from+s.direction*fraction,candidate,{}};
  };
- each_enemy(&search,visit,true);
- if(search.hit)return search.hit;
- if(auto point=ray(from,to,t.address))return Contact{*point,{},read<Vec3>(level(0x173e80))};
- return std::nullopt;
+ if(golden)each_damageable(&search,visit);
+ else each_enemy(&search,visit,true);
+ return search.hit;
 }
 bool NativeWorld::hit(Target t,float damage,Vec3 direction,unsigned attacker,bool explosive){
  const bool allowed=explosive?golden_damage_target(t):capturable_enemy(t)||destructible_crate_class(int(t.klass));

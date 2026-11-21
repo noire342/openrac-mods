@@ -222,8 +222,9 @@ void HdIcon::merge_pages(unsigned original,unsigned copy,const std::vector<std::
 void HdIcon::reset(bool reuse_storage){
  if(!reuse_storage)spare_=spare_capacity_=0;
  if(api_->loaded_level()==level_&&image_copy_){
+  const bool live_storage=!api_->relocate_level_data||!level_transitioning();
   const bool own_refs=read<unsigned>(state_+native_hud::frame_references)==refs_;
-  if(own_refs)for(unsigned i=0;i<count_;++i){
+  if(live_storage&&own_refs)for(unsigned i=0;i<count_;++i){
    const unsigned at=refs_+(first_+i)*frame_reference_bytes,value=read<unsigned>(at);
    if(value==hd_ref_||value==blank_ref_||(ammunition_enabled_&&value==ammunition_ref_)||
       (vendor_ammunition_enabled_&&value==vendor_ammunition_ref_)||(golden_enabled_&&value==golden_ref_))write(at,old_refs_[i]);
@@ -231,20 +232,22 @@ void HdIcon::reset(bool reuse_storage){
   // A later owner may have copied references containing our appended indices.
   // In that case leave the level-owned pages alive instead of dangling its refs.
   if(own_refs&&owns_tables()){
-   merge_pages(images_,image_copy_,old_images_);merge_pages(palettes_,palette_copy_,old_palettes_);
-   for(unsigned i=0;i<old_header_.size();++i){
-    const unsigned offset=i*sizeof(old_header_[i]);
-    if(offset==native_hud::bank_palette_count||offset==native_hud::bank_image_count)continue;
-    if(read<unsigned>(header_+offset)==old_header_[i])write(header_+offset,read<unsigned>(header_copy_+offset));
+   if(live_storage){
+    merge_pages(images_,image_copy_,old_images_);merge_pages(palettes_,palette_copy_,old_palettes_);
+    for(unsigned i=0;i<old_header_.size();++i){
+     const unsigned offset=i*sizeof(old_header_[i]);
+     if(offset==native_hud::bank_palette_count||offset==native_hud::bank_image_count)continue;
+     if(read<unsigned>(header_+offset)==old_header_[i])write(header_+offset,read<unsigned>(header_copy_+offset));
+    }
+    if(reuse_storage&&guest_arena_&&guest_arena_->owns(image_copy_,allocation_capacity_)){
+     spare_=image_copy_;spare_capacity_=allocation_capacity_;
+    }
    }
    write(state_+native_hud::bank_header,header_);write(state_+native_hud::image_pages,images_);write(state_+native_hud::palette_pages,palettes_);
    if(api_->relocate_level_data){
     restore_cached_hud_pointer(*this,native_hud::bank_header,header_copy_,header_);
     restore_cached_hud_pointer(*this,native_hud::image_pages,image_copy_,images_);
     restore_cached_hud_pointer(*this,native_hud::palette_pages,palette_copy_,palettes_);
-   }
-   if(reuse_storage&&guest_arena_&&guest_arena_->owns(image_copy_,allocation_capacity_)){
-    spare_=image_copy_;spare_capacity_=allocation_capacity_;
    }
   }
  }

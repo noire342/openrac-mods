@@ -26,6 +26,10 @@ constexpr int ammo_tile_ntsc_y=18;
 constexpr unsigned color_rgb_mask=0x00ffffff;
 constexpr unsigned color_alpha_shift=24;
 
+bool active_ammo_tile(int bank){
+ return bank==walloper_hud_bank||bank==animation_terminator;
+}
+
 // Canonical resident relay addresses, checked against the running function table.
 // Source: OpenRAC's NTSC-U bindings; the same callback technique as Weapon XP.
 constexpr std::array<unsigned,native_arsenal_layout::last_campaign_level+1> relays{{
@@ -97,7 +101,7 @@ bool Presentation::notify_acquisition(unsigned level){
  return true;
 }
 void Presentation::apply_identity(){
- if(level_transitioning())return;
+ if(level_transitioning()||api_->loaded_level()!=level_)return;
  if(arena_){
   const int language=read<int>(global(localization::native_language_address));
   const char* localized_name=localization::weapon_name_for_language(language,golden_identity_);
@@ -125,8 +129,9 @@ void Presentation::frame(bool equipped,bool alive){
  const auto slot=global(channel_slots);
  // Native ammo HUD requests60000+item, independently of the item-definition
  // icon. Keep its scheduler's18 identity and scope the render-only bank below.
+ const int active_bank=read<int>(slot+channel_current_id);
  if(!equipped||!icon_copy_||!Memory::valid(slot,channel_size)||read<int>(slot+channel_next_id)!=walloper_hud_bank||
-     (read<int>(slot+channel_pending)!=0&&read<int>(slot+channel_current_id)!=walloper_hud_bank)){
+     !active_ammo_tile(active_bank)||(read<int>(slot+channel_pending)!=0&&active_bank!=walloper_hud_bank)){
   detach_ammo_hud();
   return;
  }
@@ -212,8 +217,9 @@ void Presentation::bind_icon(){
  }
 }
 bool Presentation::owns(unsigned e)const{
- return slot_==e&&callback_&&api_->loaded_level()==level_&&
-        read<unsigned>(e+channel_callback)==callback_&&read<int>(e+channel_next_id)==walloper_hud_bank;
+ return slot_==e&&callback_&&api_->loaded_level()==level_&&!level_transitioning()&&
+        read<unsigned>(e+channel_callback)==callback_&&read<int>(e+channel_next_id)==walloper_hud_bank&&
+        active_ammo_tile(read<int>(e+channel_current_id));
 }
 void Presentation::draw_base(unsigned e,void(*previous_relay)(unsigned),std::optional<unsigned> vendor_ammo){
  (void)previous_relay;
@@ -237,7 +243,7 @@ void Presentation::draw_base(unsigned e,void(*previous_relay)(unsigned),std::opt
 }
 int Presentation::draw_quick_selector(unsigned e,int(*original)(unsigned),const std::array<arsenal::WeaponKey,8>& bindings){
  if(!original)return 0;
- if(read<int>(level(0x15fa90))!=8)return original(e);
+ if(level_transitioning()||read<int>(level(0x15fa90))!=8)return original(e);
  HudTableScope tables(*this);
  const bool hidden=hd_.before_base();const int result=original(e);hd_.after_base();
  if(!hidden)return result;
@@ -311,16 +317,19 @@ void Presentation::after_hud(unsigned e,const Controller& c){
  rect(left+1,y+22,fill,height-1,color);
 }
 void Presentation::detach_ammo_hud(){
- const int current=slot_?read<int>(slot_+channel_current_id):0;
- if(slot_&&owns(slot_)&&(current==walloper_hud_bank||current==animation_terminator)){
-  // Retire the departing cartridge tile before returning to the native draw.
-  // Otherwise its remaining fade requests a frame absent from the carrier bank.
-  write<std::uint8_t>(slot_+channel_visibility,0);
-  write<std::uint8_t>(slot_+channel_text_fade,0);
-  write<int>(slot_+channel_display_timer,0);
+ if(slot_&&api_->loaded_level()==level_&&read<unsigned>(slot_+channel_callback)==callback_){
+  const int active_bank=read<int>(slot_+channel_current_id);
+  const bool departing=active_bank==walloper_hud_bank||
+     (active_bank==animation_terminator&&read<int>(slot_+channel_next_id)==walloper_hud_bank);
+  if(departing&&!level_transitioning()){
+    // Fade belongs to the active tile. The native queue may already hold the
+    // next weapon, which keeps its pending flag and all other scheduler fields.
+    write<std::uint8_t>(slot_+channel_visibility,0);
+    write<std::uint8_t>(slot_+channel_text_fade,0);
+    write<int>(slot_+channel_display_timer,0);
+  }
+  if(old_callback_)write(slot_+channel_callback,old_callback_);
  }
- if(slot_&&old_callback_&&api_->loaded_level()==level_&&
-    read<unsigned>(slot_+channel_callback)==callback_)write(slot_+channel_callback,old_callback_);
  slot_=old_callback_=callback_=0;
 }
 void Presentation::reset_icons(bool reuse_storage){
@@ -329,22 +338,26 @@ void Presentation::reset_icons(bool reuse_storage){
  if(!reuse_storage)spare_icons_=spare_icon_capacity_=0;
  if(api_->loaded_level()==level_){
   if(icon_copy_&&read<unsigned>(icon_state_+native_hud::frame_references)==icon_copy_&&read<unsigned>(icon_state_+native_hud::animation_definitions)==icon_defs_copy_){
-   for(unsigned i=0;i<icon_baseline_.size();++i){
-    const unsigned offset=i*frame_reference_bytes;
-    const unsigned at=icon_refs_+offset;
-    if(read<unsigned>(at)==icon_baseline_[i])write(at,read<unsigned>(icon_copy_+offset));
+   if(!level_transitioning()){
+    for(unsigned i=0;i<icon_baseline_.size();++i){
+     const unsigned offset=i*frame_reference_bytes;
+     const unsigned at=icon_refs_+offset;
+     if(read<unsigned>(at)==icon_baseline_[i])write(at,read<unsigned>(icon_copy_+offset));
+    }
+    for(unsigned i=0;i<icon_defs_count_;++i){
+     const unsigned offset=i*animation_entry_bytes;
+     const auto at=icon_defs_+offset;
+     if(read<std::uint64_t>(at)==icon_definitions_baseline_[i])write(at,read<std::uint64_t>(icon_defs_copy_+offset));
+    }
+    if(reuse_storage&&guest_arena_&&guest_arena_->owns(icon_copy_,icon_capacity_)){
+     spare_icons_=icon_copy_;spare_icon_capacity_=icon_capacity_;
+    }
    }
-   for(unsigned i=0;i<icon_defs_count_;++i){
-    const unsigned offset=i*animation_entry_bytes;
-    const auto at=icon_defs_+offset;
-    if(read<std::uint64_t>(at)==icon_definitions_baseline_[i])write(at,read<std::uint64_t>(icon_defs_copy_+offset));
-   }
+   // The resident and overlay pointers can still be ours after the loader
+   // has reused the level arena. Withdraw them without merging stale data.
    write(icon_state_+native_hud::frame_references,icon_refs_);write(icon_state_+native_hud::animation_definitions,icon_defs_);
    restore_cached_hud_pointer(*this,native_hud::frame_references,icon_copy_,icon_refs_);
    restore_cached_hud_pointer(*this,native_hud::animation_definitions,icon_defs_copy_,icon_defs_);
-   if(reuse_storage&&guest_arena_&&guest_arena_->owns(icon_copy_,icon_capacity_)){
-    spare_icons_=icon_copy_;spare_icon_capacity_=icon_capacity_;
-   }
   }
  }
  icon_state_=icon_defs_=icon_refs_=icon_copy_=icon_defs_copy_=icon_defs_count_=0;
@@ -353,8 +366,8 @@ void Presentation::reset_icons(bool reuse_storage){
 }
 void Presentation::reset(){
  reset_icons(false);
- if(format_changed_&&api_->loaded_level()==level_)write(level(ammo_format),format_);
- if(api_->loaded_level()==level_){
+ if(api_->loaded_level()==level_&&!level_transitioning()){
+  if(format_changed_)write(level(ammo_format),format_);
   if(table_&&read<unsigned short>(table_+8)==1)write(table_+8,old_hud_flag_);
   for(const auto& b:bindings_)if(read<unsigned>(b.entry)==b.replacement)write(b.entry,b.original);
  }

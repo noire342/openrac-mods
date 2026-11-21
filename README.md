@@ -60,13 +60,13 @@ the game's memory cards. Load it after other level-loading hooks, including XP,
 if managing `plugins.json` by hand. Full details and validation limits are in the
 module READMEs and [validation notes](docs/VALIDATION.md).
 
-## Install Rotatore / Revolverator 0.4.6
+## Install Rotatore / Revolverator 0.4.7
 
 1. Set up official OpenRAC on Windows x64 with **mod interface 1.12 or newer**
    with your own **PAL Europe v2.00 / SCES_509.16** data, the reference region.
    NTSC-U has a separate supported binding profile. Use **Check and play** if
    the client asks to refresh the extracted levels.
-2. Download the Windows ZIP from the [0.4.6 release](https://github.com/noire342/openrac-mods/releases/tag/revolverator-v0.4.6).
+2. Download the Windows ZIP from the [0.4.7 release](https://github.com/noire342/openrac-mods/releases/tag/revolverator-v0.4.7).
    Import it with **Mods → Add a mod → File**.
 3. Enable Revolverator and start normally. Italian UI calls the weapon
    **Rotatore**; **Revolverator unlocked from the start** enables an immediate trial.
@@ -101,14 +101,13 @@ and compatible later versions, with an adapter for earlier supported clients.
 It scopes acquisition and save operations and preserves the Rotatore's Golden
 upgrade, ammo, XP and favourite through Challenge Mode.
 
-For local import, choose `revolverator-0.3.5-windows-x86_64.zip` with **Mods → File**.
-The installable weapon, complete corresponding source, native validation and
-checksums are available on the [0.3.5 release page](https://github.com/noire342/openrac-mods/releases/tag/revolverator-v0.3.5).
-See the [weapon README](revolverator/README.md) for installation and controls.
+The current release includes the installable weapon, corresponding source,
+native validation and checksums. See the [weapon README](revolverator/README.md)
+for installation and controls.
 
 | Component | Current source | Role |
 |---|---|---|
-| [Revolverator](revolverator/README.md) | 0.4.6, PAL reference | Additional weapon, charge-gated throws, drill heat, Gold upgrade, contact sparks and API v3 |
+| [Revolverator](revolverator/README.md) | 0.4.7, PAL reference | Additional weapon, charge-gated throws, drill heat, Gold upgrade, contact sparks and API v3 |
 | [Weapon Experience](weapon-xp/README.md) |0.6.4 | Optional API v4 progression companion with PAL HUD/camera corrections |
 | [Skill Points: RetroAchievements](skill-points-ra/README.md) |0.1.3 | Native menu, offline rules and read-only/event C API v1 |
 | [Cinematic Journeys](cinematic-journeys/README.md) |0.1.1 | Cutscene protection and configurable original flight animation |

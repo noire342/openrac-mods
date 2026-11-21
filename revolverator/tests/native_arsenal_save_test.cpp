@@ -94,6 +94,27 @@ void regional_save_checks(const char* version){
     require(!f.registry.owned(arsenal::RevolveratorKey),"a stale sidecar cannot attach to different native bytes");
     require(f.ram[f.region.data(0x13d408)+18]==7,"save, restore and new-game scopes preserve the original skill-point byte");
 }
+void malformed_stock_favourites(const char* version) {
+    Fixture f(version);
+    f.create_native();
+    f.grant(7);
+    NativeArsenalSave save(&f.api, nullptr, *f.arsenal, {f.root, f.storage, false});
+    f.put<unsigned char>(f.region.data(0x13d4c0) + 18, 0);
+    f.put(f.region.data(0x141ea0), std::array<int, 8>{18, 11, 11, 15, 0, 0, 0, 0});
+    const std::array<unsigned, 8> valid_slots{0, 11, 0, 15, 0, 0, 0, 0};
+    f.state(13, -1, 0);
+    save.import_native_state();
+    save.after_restore_data(f.region.data(0x1a04c0));
+    require(!f.registry.owned(arsenal::RevolveratorKey),
+            "stock save with a stale carrier and duplicate favourites clears the previous save's Revolverator");
+    require(f.registry.quick() == valid_slots && f.registry.equipped() == arsenal::NativeWrenchKey,
+            "stock restore retains valid favourites in their original slots and falls back to the wrench");
+
+    f.grant(9);
+    save.reset_campaign(false);
+    require(!f.registry.owned(arsenal::RevolveratorKey) && f.registry.quick() == valid_slots,
+            "a campaign reset clears custom equipment even with stale native favourites");
+}
 void pal_layout_decoys(){
     Fixture f("pal");f.create_native();f.grant(7);
     const auto mc=f.region.data(0x13d290);const auto& layout=f.region.memcard();
@@ -202,4 +223,4 @@ void ports_and_disabling(const char* version){
     require(rejected,"an explicit empty card root is rejected");
 }
 }
-int main(){pal_layout_decoys();for(const char* version:{"ntsc","pal"}){regional_save_checks(version);native_save_ownership(version);ports_and_disabling(version);}std::printf("%u native arsenal save checks passed (PAL/NTSC paths, queued saves, load, NG+, stale data, two ports)\n",checks);}
+int main(){pal_layout_decoys();for(const char* version:{"ntsc","pal"}){regional_save_checks(version);malformed_stock_favourites(version);native_save_ownership(version);ports_and_disabling(version);}std::printf("%u native arsenal save checks passed (PAL/NTSC paths, queued saves, load, NG+, stale data, two ports)\n",checks);}

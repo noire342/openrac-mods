@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #include "native_arsenal_save.hpp"
+#include "native_arsenal_layout.hpp"
 #include <algorithm>
 #include <cstdlib>
 #include <cstdio>
@@ -140,10 +141,23 @@ void NativeArsenalSave::report(const char* operation,arsenal::StoreStatus status
     api_->log(mod_,status==arsenal::StoreStatus::Ok?OPENRAC_LOG_INFO:OPENRAC_LOG_WARN,text);
 }
 arsenal::Snapshot NativeArsenalSave::vanilla_snapshot()const{
-    arsenal::Snapshot state;state.walloper=arsenal_.native_walloper();
-    for(unsigned i=0;i<8;++i){const int id=read<int>(global(0x141ea0)+i*4);if(id>=0&&id<=36)state.quick[i]=unsigned(id);}
-    const int held=read<int>(global(0x141660));state.equipped=held>0&&held<=36?unsigned(held):8;
-    if(state.equipped==18&&!state.walloper.owned)state.equipped=8;
+    arsenal::Snapshot state;
+    state.walloper = arsenal_.native_walloper();
+    const auto selectable = [&](int id) {
+        return id > 0 && id <= int(arsenal::Registry::MaximumNativeKey) &&
+            (id != int(arsenal::NativeWalloperKey) || state.walloper.owned);
+    };
+    const auto favourites = global(native_arsenal_layout::quick_slots);
+    for (unsigned slot = 0; slot < state.quick.size(); ++slot) {
+        const int id = read<int>(favourites + slot * sizeof(int));
+        // An old carrier binding or a duplicate must not make the entire
+        // stock snapshot fail and leave the previous campaign in the registry.
+        if (selectable(id) && std::find(state.quick.begin(), state.quick.end(), unsigned(id)) == state.quick.end()) {
+            state.quick[slot] = unsigned(id);
+        }
+    }
+    const int held = read<int>(global(native_arsenal_layout::hand_selection));
+    state.equipped = selectable(held) ? unsigned(held) : arsenal::NativeWrenchKey;
     return state;
 }
 void NativeArsenalSave::begin_save(){
