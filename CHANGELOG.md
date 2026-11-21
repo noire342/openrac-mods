@@ -1,5 +1,13 @@
 # Changelog
 
+## Rotatore / Revolverator 0.4.5 — 2026-11-21
+
+- Restore the native HUD and inventory textures at checkpoints. The
+  Revolverator re-equips with its existing ammunition after respawn.
+- Add optional Windows compatibility with Expanded Quick Select 1.0.3
+  by glawks. EQS owns its wheel assignments and the Revolverator remains
+  selectable from the game's Weapons menu.
+
 ## Rotatore / Revolverator 0.4.3 — 2026-11-20
 
 - Move old Revolverator save companions out of the memory card before the title
