@@ -19,16 +19,22 @@ struct View final:ArsenalIdentityView {void select_identity(bool)override{}};
 struct Fixture;
 Fixture* live;
 struct Fixture {
-    enum Provider {Absent,Legacy,V4};
+    enum Provider {Absent,Legacy,V4,V5};
     std::vector<unsigned char> memory=std::vector<unsigned char>(0x2000000);
     openrac_api api{};arsenal::Registry registry;View view;NativeArsenal arsenal;
-    weapon_xp_api_v4 provider{};weapon_xp_configuration_v3 configuration{};weapon_xp_rules_v3 rules{};
+    weapon_xp_api_v4 provider{};weapon_xp_api_v5 extension{};
+    weapon_xp_configuration_v3 configuration{};weapon_xp_rules_v3 rules{};
     weapon_xp_hit_filter_v4 filter{};void* filter_user{};
     weapon_xp_listener_v1 listener{};void* listener_user{};
     Provider mode=V4;unsigned registers{},unregisters{},subscriptions{},unsubscriptions{},warnings{},native_calls{},next_target{};
     int level=1,registration_result=WEAPON_XP_OK,configuration_result=WEAPON_XP_OK;
     int presentation_result=WEAPON_XP_OK,presentation_active=0,last_presentation_item=-1;
     unsigned presentation_requests{};
+    unsigned reward_calls{},evaluation_calls{},name_calls{},reward_target{};
+    unsigned provided_bolts=7,provided_quarters=5;
+    int reward_result=WEAPON_XP_OK,evaluation_result=WEAPON_XP_OK,name_result=WEAPON_XP_OK;
+    bool invalid_fraction=false;
+    weapon_xp_balance_v5 evaluated_balance{};
     unsigned epoch=1;
     static constexpr unsigned hero=0x13f350,body=0x300000,held=0x300100;
     template<class T>void put(unsigned at,const T& value){std::memcpy(memory.data()+at,&value,sizeof value);}
@@ -69,6 +75,43 @@ struct Fixture {
             ++live->presentation_requests;live->last_presentation_item=item;return live->presentation_result;
         };
         provider.acquisition_presentation_active=+[]()->int{return live->presentation_active;};
+        extension.v4=provider;
+        extension.v4.v3.v2.base.size=sizeof extension;
+        extension.v4.v3.v2.base.abi_version=WEAPON_XP_ABI_V5;
+        extension.get_native_reward=+[](std::uint32_t target,std::uint32_t* out)->int{
+            ++live->reward_calls;
+            live->reward_target=target;
+            if(live->reward_result!=WEAPON_XP_OK)return live->reward_result;
+            *out=live->provided_bolts;
+            return WEAPON_XP_OK;
+        };
+        extension.evaluate_progress=+[](const weapon_xp_rules_v3* rules,
+                  const weapon_xp_balance_v5* balance,std::uint32_t bolts,weapon_xp_progress_v5* out)->int{
+            ++live->evaluation_calls;
+            live->evaluated_balance=*balance;
+            require(rules->item_id==18&&rules->thresholds[1]==live->rules.thresholds[1]&&
+                    bolts==live->provided_bolts&&balance->size==sizeof(*balance)&&out->size==sizeof(*out),
+                    "v5 receives the copied compatibility rules, custom XP and provider's nominal bolts");
+            if(live->evaluation_result!=WEAPON_XP_OK)return live->evaluation_result;
+            constexpr unsigned quarters_per_xp=4;
+            const auto total=balance->xp_quarters+live->provided_quarters;
+            out->xp=balance->xp+total/quarters_per_xp;
+            out->xp_quarters=live->invalid_fraction?quarters_per_xp:total%quarters_per_xp;
+            return WEAPON_XP_OK;
+        };
+        extension.format_custom_name=+[](const weapon_xp_name_context_v5* context,char* out,
+                                        std::uint32_t capacity)->int{
+            ++live->name_calls;
+            require(context->size==sizeof(*context)&&context->item_id==-1&&context->level==2&&
+                    context->language==3&&std::strcmp(context->default_name,"Rotatore v2")==0&&
+                    std::strcmp(context->custom_id,"noire342.revolverator")==0,
+                    "v5 naming receives the localized default and the logical custom identity");
+            if(live->name_result!=WEAPON_XP_OK)return live->name_result;
+            static constexpr char replacement[]="Rotatore Mk II";
+            require(capacity>=sizeof replacement,"name callback receives bounded output capacity");
+            std::memcpy(out,replacement,sizeof replacement);
+            return WEAPON_XP_OK;
+        };
         configuration.size=sizeof configuration;configuration.flags=WEAPON_XP_SHOW_HUD|WEAPON_XP_VERSIONED_NAMES;
         configuration.level_count=10;configuration.xp_rate=1;configuration.kill_xp_cap=500;configuration.revision=7;
         rules.size=sizeof rules;rules.item_id=18;rules.level_count=10;rules.xp_multiplier=1;
@@ -76,7 +119,12 @@ struct Fixture {
         std::copy(thresholds.begin(),thresholds.end(),rules.thresholds);
         for(unsigned i=0;i<10;++i){rules.damage[i]=1+.2f*i;rules.ammo[i]=1+.1f*i;}
     }
-    static const weapon_xp_api_v1* query(unsigned abi){return abi==4&&live->mode==V4?&live->provider.v3.v2.base:nullptr;}
+    static const weapon_xp_api_v1* query(unsigned abi){
+        if(abi==WEAPON_XP_ABI_V4&&(live->mode==V4||live->mode==V5))
+            return &live->provider.v3.v2.base;
+        if(abi==WEAPON_XP_ABI_V5&&live->mode==V5)return &live->extension.v4.v3.v2.base;
+        return nullptr;
+    }
     static weapon_xp_query_fn resolve(){return live->mode==Absent?nullptr:query;}
     unsigned xp()const{return registry.state(arsenal::RevolveratorKey)->xp;}
     void set_xp(unsigned xp){auto state=*registry.state(arsenal::RevolveratorKey);state.xp=xp;registry.set_state(arsenal::RevolveratorKey,state);}
@@ -131,6 +179,61 @@ int main(){
      require(xp.ready()&&xp.compatible(),"the original v4 filter prefix remains compatible without the new optional tail");
      require(xp.request_acquisition_presentation()==WEAPON_XP_NOT_FOUND&&xp.acquisition_presentation_active()==WEAPON_XP_NOT_FOUND&&f.presentation_requests==0,
              "an absent presentation tail is checked by size before dereferencing its pointers");}
+    {Fixture f;f.mode=Fixture::V5;
+     f.set_xp(398);
+     auto owner=std::make_unique<NativeArsenalXP>(&f.api,nullptr,f.arsenal,Fixture::resolve);
+     auto& xp=*owner;
+     xp.frame();
+     const auto first=f.target(100);
+     f.kill(xp,first);
+     require(f.xp()==399&&f.reward_target==first.target_moby&&f.reward_calls==1&&f.evaluation_calls==1,
+             "v5 supplies both nominal bolts and the award for a confirmed custom death");
+     xp.death_before(first.target_moby);
+     require(f.reward_calls==1&&f.evaluation_calls==1,"v5 is not called twice for a consumed death");
+     f.kill(xp,f.target(100));
+     require(f.xp()==400&&f.evaluated_balance.xp==399&&f.evaluated_balance.xp_quarters==1,
+             "v5 receives the precise previous balance while the logical weapon owns its stored XP");
+     NativeArsenalXP::LevelUp event{};
+     require(xp.poll_level_up(event)&&event.old_level==1&&event.new_level==2&&event.xp==400&&
+             !xp.poll_level_up(event),"v5 awards retain normal custom level-up delivery");
+     char name[WEAPON_XP_NAME_MAX_BYTES]="Localized default";
+     require(xp.format_name(2,3,"Rotatore v2",name,sizeof name)==WEAPON_XP_OK&&
+             std::strcmp(name,"Rotatore Mk II")==0&&f.name_calls==1,
+             "v5 custom name overrides use the stable Rotatore identity");
+     f.name_result=WEAPON_XP_NOT_FOUND;
+     require(xp.format_name(2,3,"Rotatore v2",name,sizeof name)==WEAPON_XP_NOT_FOUND&&
+             std::strcmp(name,"Rotatore Mk II")==0,"a name provider's failure does not overwrite the output");
+     f.evaluation_result=WEAPON_XP_BUSY;
+     f.kill(xp,f.target(100));
+     require(f.xp()==400&&f.evaluation_calls==3,"v5 failure cannot fall through to a duplicate local award");
+     f.evaluation_result=WEAPON_XP_OK;
+     f.invalid_fraction=true;
+     f.kill(xp,f.target(100));
+     require(f.xp()==400&&f.evaluation_calls==4,"an invalid v5 balance cannot modify the custom inventory");
+     f.reward_result=WEAPON_XP_NOT_FOUND;
+     f.kill(xp,f.target(100));
+     require(f.xp()==400&&f.evaluation_calls==4,"a target rejected by the v5 reward source cannot earn XP");
+     weapon_xp_event_v1 stopped{};
+     stopped.size=sizeof stopped;
+     stopped.kind=WEAPON_XP_STOPPING;
+     f.listener(f.listener_user,&stopped);
+     require(xp.format_name(2,3,"Rotatore v2",name,sizeof name)==WEAPON_XP_NOT_READY&&f.name_calls==2,
+             "provider shutdown invalidates v5 alongside v4 before any further calls");
+    }
+    for(bool wrong_version:{false,true}){
+        Fixture f;
+        f.mode=Fixture::V5;
+        if(wrong_version)f.extension.v4.v3.v2.base.abi_version=WEAPON_XP_ABI_V4;
+        else f.extension.v4.v3.v2.base.size=sizeof(weapon_xp_api_v4);
+        auto owner=std::make_unique<NativeArsenalXP>(&f.api,nullptr,f.arsenal,Fixture::resolve);
+        auto& xp=*owner;
+        xp.frame();
+        f.kill(xp,f.target());
+        char name[WEAPON_XP_NAME_MAX_BYTES]="Rotatore v2";
+        require(xp.ready()&&f.xp()==16&&f.reward_calls==0&&f.evaluation_calls==0&&
+                xp.format_name(2,3,"Rotatore v2",name,sizeof name)==WEAPON_XP_NOT_FOUND&&f.name_calls==0,
+                "a short or wrong-version v5 table preserves legacy v4 behavior");
+    }
     {Fixture f;auto xp_owner=std::make_unique<NativeArsenalXP>(&f.api,nullptr,f.arsenal,Fixture::resolve);auto& xp=*xp_owner;xp.frame();
      require(xp.request_acquisition_presentation()==WEAPON_XP_OK&&f.last_presentation_item==18,"custom level-up scenes use the native carrier without native XP awards");
      f.presentation_result=WEAPON_XP_BUSY;require(xp.request_acquisition_presentation(11)==WEAPON_XP_BUSY&&f.last_presentation_item==11,"presentation queue busy status is preserved for retry");

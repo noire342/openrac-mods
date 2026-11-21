@@ -43,6 +43,7 @@ public:
     // Preserve result codes (especially BUSY versus DISABLED/NOT_FOUND).
     int request_acquisition_presentation(int native_item=18);
     int acquisition_presentation_active()const;
+    int format_name(unsigned level,int language,const char* default_name,char* out,unsigned capacity)const;
     unsigned flags()const{return ready()?configuration_.flags:0;}
     const weapon_xp_configuration_v3& configuration()const{return configuration_;}
     const weapon_xp_rules_v3& rules()const{return rules_;}
@@ -63,6 +64,7 @@ private:
     ProviderResolver resolver_;
     weapon_xp_query_fn query_{};
     const weapon_xp_api_v4* provider_{};
+    const weapon_xp_api_v5* provider_v5_{};
     unsigned filter_token_{},listener_token_{};
     weapon_xp_configuration_v3 configuration_{};
     weapon_xp_rules_v3 rules_{};

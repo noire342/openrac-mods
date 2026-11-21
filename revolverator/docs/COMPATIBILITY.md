@@ -54,7 +54,12 @@ scopes native carrier projection to operations that need it. The stable
 custom key remains 0x10012 / noire342.revolverator; changing the display author
 or localized weapon name does not change save identity.
 
-The optional Weapon Experience integration requires its API v4 contract.
+The optional Weapon Experience integration requires its API v4 contract and
+declares that Weapon Experience loads first. With API v5 available, the mod
+uses the provider's shared nominal bolt rewards and quarter-XP calculation.
+Existing per-weapon rules retain their effect as a copied balancing preset.
+Progress remains owned by the Revolverator's save and the display-name hook
+uses the stable identity `noire342.revolverator`.
 Unsupported XP providers are reported rather than silently crediting the
 native carrier. No other custom-weapon or shared-inventory integration is
 claimed solely because it shares a carrier or an API header.

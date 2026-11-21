@@ -66,9 +66,27 @@ void Presentation::names(){
 }
 void Presentation::select_identity(bool revolverator){revolverator_identity_=revolverator;names();}
 void Presentation::set_experience(bool enabled,unsigned level,float progress,bool versioned_names){
+ // This runs once per gameplay frame. Native menu and HUD projections can
+ // reuse one name lookup without delaying provider registration changes.
+ name_cache_.reset();
  experience_enabled_=enabled;experience_level_=std::clamp(level,1u,10u);
  experience_progress_=std::isfinite(progress)?std::clamp(progress,0.f,1.f):0;
  versioned_names_=versioned_names;
+}
+void Presentation::format_name(char* name,unsigned capacity,unsigned version,int language){
+ const auto* localized=localization::weapon_name_for_language(language,golden_identity_);
+ if(versioned_names_&&version>1)std::snprintf(name,capacity,"%s v%u",localized,version);
+ else std::snprintf(name,capacity,"%s",localized);
+ if(!versioned_names_||!name_provider_)return;
+ if(!name_cache_||name_cache_->level!=version||name_cache_->language!=language||
+    name_cache_->golden!=golden_identity_){
+  name_cache_=CachedName{version,language,golden_identity_};
+  auto& replacement=name_cache_->replacement;
+  if(!name_provider_(name_user_,version,language,name,replacement.data(),WEAPON_XP_NAME_MAX_BYTES))
+   replacement.front()=0;
+ }
+ const auto& replacement=name_cache_->replacement;
+ if(replacement.front())std::snprintf(name,capacity,"%s",replacement.data());
 }
 bool Presentation::notify_acquisition(unsigned level){
  if(level_transitioning())return false;
@@ -84,10 +102,8 @@ bool Presentation::notify_acquisition(unsigned level){
  std::array<unsigned char,256> previous_name{};
  std::memcpy(previous_name.data(),api_->memory+replacement,previous_name.size());
  const auto version=level?level:experience_level_;
- const auto localized=localization::weapon_name_for_language(read<int>(global(localization::native_language_address)),golden_identity_);
  char name[256];
- if(versioned_names_&&version>1)std::snprintf(name,sizeof name,"%s v%u",localized,version);
- else std::snprintf(name,sizeof name,"%s",localized);
+ format_name(name,sizeof name,version,read<int>(global(localization::native_language_address)));
  std::memcpy(api_->memory+replacement,name,std::strlen(name)+1);
  write(entry,replacement);
  // This native call copies the string into the stock subtitle buffer, so the
@@ -104,10 +120,8 @@ void Presentation::apply_identity(){
  if(level_transitioning()||api_->loaded_level()!=level_)return;
  if(arena_){
   const int language=read<int>(global(localization::native_language_address));
-  const char* localized_name=localization::weapon_name_for_language(language,golden_identity_);
   char name[256];
-  if(versioned_names_&&experience_level_>1)std::snprintf(name,sizeof name,"%s v%u",localized_name,experience_level_);
-  else std::snprintf(name,sizeof name,"%s",localized_name);
+  format_name(name,sizeof name,experience_level_,language);
   std::memcpy(api_->memory+arena_,name,std::strlen(name)+1);
   const char* description=localization::description_for_language(language,golden_identity_);
   std::memcpy(api_->memory+arena_+256,description,std::strlen(description)+1);
@@ -365,6 +379,7 @@ void Presentation::reset_icons(bool reuse_storage){
  icon_baseline_.clear();icon_definitions_baseline_.clear();
 }
 void Presentation::reset(){
+ name_cache_.reset();
  reset_icons(false);
  if(api_->loaded_level()==level_&&!level_transitioning()){
   if(format_changed_)write(level(ammo_format),format_);

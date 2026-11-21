@@ -58,6 +58,10 @@ struct Session {
   +[](void* user,unsigned level){static_cast<Session*>(user)->presentation.notify_acquisition(level);}}),
   acquisition_hand(a,arena){
   registry.register_weapon({arsenal::RevolveratorKey,"noire342.revolverator",18,60037,NativeAmmunition::capacity,15000,12});vendor.set_arsenal(&arsenal);
+  presentation.set_name_provider(+[](void* user,unsigned level,int language,const char* default_name,
+                                     char* out,unsigned capacity){
+   return static_cast<NativeArsenalXP*>(user)->format_name(level,language,default_name,out,capacity)==WEAPON_XP_OK;
+  },&xp);
  }
  ~Session(){before_load();}
  void before_load(){

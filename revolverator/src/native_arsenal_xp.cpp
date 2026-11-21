@@ -20,7 +20,8 @@
 
 namespace revolverator {
 namespace {
-constexpr unsigned custom_origin=2017,transport_item=18;
+constexpr unsigned custom_origin=2017,transport_item=arsenal::NativeWalloperKey;
+constexpr unsigned quarters_per_xp=4;
 constexpr std::array<unsigned,10> thresholds{0,400,1400,3200,6000,10000,15500,23000,33000,46000};
 constexpr std::array<float,10> damage{1,1.15f,1.30f,1.50f,1.75f,2,2.25f,2.50f,2.75f,3};
 constexpr std::array<float,10> capacity{1,1.125f,1.25f,1.375f,1.50f,1.625f,1.75f,1.875f,2,2.125f};
@@ -118,6 +119,18 @@ int NativeArsenalXP::acquisition_presentation_active()const{
     return provider_->acquisition_presentation_active();
 }
 
+int NativeArsenalXP::format_name(unsigned level,int language,const char* default_name,
+                                char* out,unsigned capacity)const{
+    if(!ready())return WEAPON_XP_NOT_READY;
+    if(!provider_v5_||!provider_v5_->format_custom_name)return WEAPON_XP_NOT_FOUND;
+    const auto* descriptor=arsenal_.registry().descriptor(arsenal::RevolveratorKey);
+    if(!descriptor)return WEAPON_XP_NOT_FOUND;
+    const weapon_xp_name_context_v5 context{
+        sizeof(weapon_xp_name_context_v5),-1,level,language,default_name,descriptor->stable_id.c_str()
+    };
+    return provider_v5_->format_custom_name(&context,out,capacity);
+}
+
 void NativeArsenalXP::warn_incompatible(){
     if(logged_incompatible_)return;
     logged_incompatible_=true;
@@ -126,7 +139,10 @@ void NativeArsenalXP::warn_incompatible(){
 }
 void NativeArsenalXP::attach(){
     const auto query=resolver_();
-    if(provider_&&query!=query_){provider_=nullptr;query_=nullptr;filter_token_=listener_token_=0;configuration_valid_=false;reset();}
+    if(provider_&&query!=query_){
+        provider_=nullptr;provider_v5_=nullptr;query_=nullptr;
+        filter_token_=listener_token_=0;configuration_valid_=false;reset();
+    }
     present_=query!=nullptr;
     if(!query){incompatible_=false;return;}
     if(provider_)return;
@@ -144,13 +160,16 @@ void NativeArsenalXP::attach(){
         return;
     }
     provider_=candidate;query_=query;filter_token_=token;incompatible_=false;
+    const auto* extension=query(WEAPON_XP_ABI_V5);
+    if(extension&&extension->abi_version==WEAPON_XP_ABI_V5&&extension->size>=sizeof(weapon_xp_api_v5))
+        provider_v5_=reinterpret_cast<const weapon_xp_api_v5*>(extension);
     if(candidate->v3.v2.base.subscribe)
         candidate->v3.v2.base.subscribe(provider_event,this,&listener_token_);
 }
 void NativeArsenalXP::detach()noexcept{
     const auto* provider=provider_;const auto query=query_;
     const auto filter_token=filter_token_,listener_token=listener_token_;
-    provider_=nullptr;query_=nullptr;filter_token_=listener_token_=0;configuration_valid_=false;
+    provider_=nullptr;provider_v5_=nullptr;query_=nullptr;filter_token_=listener_token_=0;configuration_valid_=false;
     if(!provider||resolver_()!=query)return;
     const auto* base=query(WEAPON_XP_ABI_V4);
     if(base!=&provider->v3.v2.base)return;
@@ -199,7 +218,7 @@ void NativeArsenalXP::provider_event(void* user,const weapon_xp_event_v1* event)
     auto& self=*static_cast<NativeArsenalXP*>(user);
     if(event->kind==WEAPON_XP_LEVEL_LOADED)self.reset();
     if(event->kind==WEAPON_XP_STOPPING){
-        self.provider_=nullptr;self.query_=nullptr;self.filter_token_=self.listener_token_=0;
+        self.provider_=nullptr;self.provider_v5_=nullptr;self.query_=nullptr;self.filter_token_=self.listener_token_=0;
         self.configuration_valid_=false;self.present_=false;self.reset();
     }
 }
@@ -292,20 +311,41 @@ void NativeArsenalXP::death_before(unsigned target){
        !same(accepted->identity,identity(target)))return;
     accepted->credited=true; // Consume even a zero-rate/zero-bolt death exactly once.
     if(!ready()||read<int>(level(0x15f5c4))!=0)return;
-    const int bolts=native_reward(target);
     const auto* current=arsenal_.registry().state(arsenal::RevolveratorKey);
-    if(bolts<0||!current||!current->owned)return;
+    if(!current||!current->owned)return;
     auto state=*current;
     if(state.xp!=observed_xp_)quarters_=0;
     const auto before=weapon_level(state.xp,rules_);
-    if(state.xp>=rules_.thresholds[9]){quarters_=0;observed_xp_=state.xp;return;}
-    // Match weapon-xp's quarter-XP arithmetic exactly, including lround(rate*4).
-    const auto amount=std::uint64_t(std::min(unsigned(bolts),configuration_.kill_xp_cap))*
-        unsigned(std::lround(configuration_.xp_rate*4))*rules_.xp_multiplier;
-    const auto total=amount+quarters_;
-    state.xp+=unsigned(std::min<std::uint64_t>(total/4,rules_.thresholds[9]-state.xp));
+    const auto cap=rules_.thresholds[WEAPON_XP_LEVEL_COUNT-1];
+    if(state.xp>=cap){quarters_=0;observed_xp_=state.xp;return;}
+    unsigned fraction;
+    if(provider_v5_&&provider_v5_->get_native_reward&&provider_v5_->evaluate_progress){
+        std::uint32_t bolts=0;
+        if(provider_v5_->get_native_reward(target,&bolts)!=WEAPON_XP_OK)return;
+        const weapon_xp_balance_v5 balance{sizeof(weapon_xp_balance_v5),state.xp,quarters_};
+        weapon_xp_progress_v5 progress{};
+        progress.size=sizeof progress;
+        // Use the historical Walloper rules as a copied preset while keeping
+        // the Rotatore's balance, receipts and level-up queue in its own registry.
+        if(provider_v5_->evaluate_progress(&rules_,&balance,bolts,&progress)!=WEAPON_XP_OK||
+           progress.size<sizeof progress||progress.xp<state.xp||progress.xp>cap||
+           progress.xp_quarters>=quarters_per_xp||
+           (progress.xp==cap&&progress.xp_quarters!=0)||
+           (progress.xp==state.xp&&progress.xp_quarters<quarters_))return;
+        state.xp=progress.xp;
+        fraction=progress.xp_quarters;
+    }else{
+        const int bolts=native_reward(target);
+        if(bolts<0)return;
+        // The v4 companion predates the shared reward and progression helpers.
+        const auto amount=std::uint64_t(std::min(unsigned(bolts),configuration_.kill_xp_cap))*
+            unsigned(std::lround(configuration_.xp_rate*quarters_per_xp))*rules_.xp_multiplier;
+        const auto total=amount+quarters_;
+        state.xp+=unsigned(std::min<std::uint64_t>(total/quarters_per_xp,cap-state.xp));
+        fraction=state.xp==cap?0:unsigned(total%quarters_per_xp);
+    }
     if(!arsenal_.registry().set_state(arsenal::RevolveratorKey,state))return;
-    quarters_=state.xp==rules_.thresholds[9]?0:unsigned(total%4);observed_xp_=state.xp;
+    quarters_=fraction;observed_xp_=state.xp;
     queue_level_up(before,weapon_level(state.xp,rules_),state.xp);
 }
 void NativeArsenalXP::queue_level_up(unsigned before,unsigned after,unsigned xp)noexcept{

@@ -14,6 +14,7 @@ extern "C" {
 #define WEAPON_XP_ABI_V2 2u
 #define WEAPON_XP_ABI_V3 3u
 #define WEAPON_XP_ABI_V4 4u
+#define WEAPON_XP_ABI_V5 5u
 #define WEAPON_XP_LEVEL_COUNT 10u
 #define WEAPON_XP_QUERY_SYMBOL "openrac_weapon_xp_query"
 
@@ -213,6 +214,75 @@ typedef struct weapon_xp_api_v4 {
      * count. This includes the quiet-input period and both actor-retirement frames. */
     int32_t (*acquisition_presentation_active)(void);
 } weapon_xp_api_v4;
+
+/* Filter masks use the defined v1 event constants below bit 32. Scope -1
+ * selects session events only; ANY selects session and weapon events. */
+#define WEAPON_XP_EVENT_MASK(kind) (UINT32_C(1) << (kind))
+#define WEAPON_XP_ANY_ITEM INT32_MIN
+
+typedef struct weapon_xp_balance_v5 {
+    uint32_t size;
+    uint32_t xp;
+    uint32_t xp_quarters; /* Fractional part, 0..3. Persist alongside XP. */
+} weapon_xp_balance_v5;
+
+typedef struct weapon_xp_progress_v5 {
+    uint32_t size;
+    uint32_t old_level;
+    uint32_t level;
+    uint32_t xp;
+    uint32_t xp_quarters;
+    uint32_t level_start_xp;
+    uint32_t next_level_xp;
+    float progress;
+    float damage_multiplier;
+    float ammo_multiplier;
+} weapon_xp_progress_v5;
+
+#define WEAPON_XP_NAME_MAX_BYTES 64u /* Including the terminating NUL. */
+typedef struct weapon_xp_name_context_v5 {
+    uint32_t size;
+    int32_t item_id;        /* Stock item ID, or -1 for a custom weapon. */
+    uint32_t level;
+    int32_t language;       /* Native OpenRAC language ID. */
+    const char* default_name; /* Borrowed localized name with the default level suffix. */
+    const char* custom_id;    /* NULL for stock; stable namespaced identity for custom. */
+} weapon_xp_name_context_v5;
+
+/* Return 1 to propose a display name or 0 to pass. Provider output must be
+ * printable ASCII with a NUL within capacity. The original localized name is
+ * kept when no provider returns a valid name. Callbacks must be read-only. */
+typedef int32_t (*weapon_xp_name_provider_v5)(void* user,
+    const weapon_xp_name_context_v5* context, char* out, uint32_t capacity);
+
+typedef struct weapon_xp_api_v5 {
+    weapon_xp_api_v4 v4; /* v1–v4 queries keep their exact ABI and sizes. */
+    /* Separate capacity of 16. Use v1 unsubscribe for either kind of token. */
+    int32_t (*subscribe_filtered)(uint32_t event_mask, int32_t item_id,
+                                 weapon_xp_listener_v1 listener, void* user, uint32_t* token);
+    /* Native weapon snapshot, including the persisted fractional XP. */
+    int32_t (*get_progress)(int32_t item_id, weapon_xp_progress_v5* out);
+    /* Read-only native nominal bolts for a supported enemy during gameplay, sampled
+     * before native death updates depletion. NOT_FOUND for unsupported targets. */
+    int32_t (*get_native_reward)(uint32_t moby, uint32_t* nominal_bolts);
+    /* Evaluate an award for state owned by the calling mod. NULL rules selects
+     * the standard curve; custom rules ignore item_id. Current global settings
+     * apply. Pass 0 bolts for a stats-only evaluation. No events, XP writes, or
+     * inventory changes. The caller verifies and deduplicates any credited kill. */
+    int32_t (*evaluate_progress)(const weapon_xp_rules_v3* rules,
+                                const weapon_xp_balance_v5* balance,
+                                uint32_t nominal_bolts, weapon_xp_progress_v5* out);
+    /* Providers run in registration order. The first valid name wins.
+     * Register once and unregister before unloading. Global versioned names
+     * must be enabled. The language/name passed to a callback is borrowed. */
+    int32_t (*register_name_provider)(weapon_xp_name_provider_v5 provider,
+                                      void* user, uint32_t* token);
+    int32_t (*unregister_name_provider)(uint32_t token);
+    /* Resolve a custom weapon's name in its own presentation. NOT_FOUND
+     * means use the caller's localized default. The output changes only on OK. */
+    int32_t (*format_custom_name)(const weapon_xp_name_context_v5* context,
+                                   char* out, uint32_t capacity);
+} weapon_xp_api_v5;
 
 typedef const weapon_xp_api_v1* (*weapon_xp_query_fn)(uint32_t abi_version);
 
