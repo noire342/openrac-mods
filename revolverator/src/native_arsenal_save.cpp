@@ -55,14 +55,16 @@ Path default_card_root(const char* serial){
 #endif
 }
 }
-NativeSaveFields::NativeSaveFields(const openrac_api* api, const arsenal::Registry& registry)
+NativeSaveFields::NativeSaveFields(const openrac_api* api, const arsenal::Registry& registry, QuickSlots quick_slots)
     : Memory(api), level_(api->loaded_level()), campaign_generation_(read<unsigned>(global(campaign_generation))) {
-    const auto favourites = global(0x141ea0);
-    const auto& logical = registry.quick();
-    for (unsigned slot = 0; slot < logical.size(); ++slot) {
-        const auto* descriptor = registry.descriptor(logical[slot]);
-        if (descriptor && registry.owned(logical[slot])) {
-            mask(favourites + slot * sizeof(int), int(descriptor->carrier), 0);
+    if (quick_slots == QuickSlots::Logical) {
+        const auto favourites = global(0x141ea0);
+        const auto& logical = registry.quick();
+        for (unsigned slot = 0; slot < logical.size(); ++slot) {
+            const auto* descriptor = registry.descriptor(logical[slot]);
+            if (descriptor && registry.owned(logical[slot])) {
+                mask(favourites + slot * sizeof(int), int(descriptor->carrier), 0);
+            }
         }
     }
     const auto equipped = registry.equipped();

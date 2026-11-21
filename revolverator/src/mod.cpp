@@ -18,6 +18,7 @@
 #include "native_acquisition.hpp"
 #include "native_acquisition_hand.hpp"
 #include "revolverator_api.h"
+#include "eqs_probe.hpp"
 #include <memory>
 #include <exception>
 #include <cstring>
@@ -237,7 +238,8 @@ class NativeSaveScope {
  bool campaign_transition_=false;
 public:
  explicit NativeSaveScope(Session& owner)
-  :owner_(owner),previous_(owner.arsenal.projected()),fields_(owner.api,owner.registry){
+  :owner_(owner),previous_(owner.arsenal.projected()),fields_(owner.api,owner.registry,
+    eqs_probe::installed()?NativeSaveFields::QuickSlots::External:NativeSaveFields::QuickSlots::Logical){
   ++owner_.native_save_depth;
   owner_.arsenal.project(arsenal::NativeWalloperKey);
  }
@@ -478,9 +480,17 @@ int item_ammo(unsigned screen){
  ArsenalScope view(s.arsenal,key);return item_ammo_original(screen);
 }
 void quick_init(unsigned element){
- if(session){session->arsenal.project_quick_slots();ArsenalScope stock(session->arsenal,arsenal::NativeWalloperKey);quick_init_original(element);}
+ // When EQS is present, its native page-one save and HUD cache must remain
+ // authoritative. Projecting the one-page Revolverator favourites here
+ // would also invalidate EQS's strict HUD layout check on later pages.
+ const bool eqs_present=eqs_probe::installed();
+ if(session){
+  if(!eqs_present)session->arsenal.project_quick_slots();
+  ArsenalScope stock(session->arsenal,arsenal::NativeWalloperKey);
+  quick_init_original(element);
+ }
  else quick_init_original(element);
- if(!session)return;
+ if(!session||eqs_present)return;
  auto& s=*session;auto& w=s.world;
  const auto records=w.level(0x17dac0);
  if(!Memory::valid(records,8*0x1c))return;
@@ -490,8 +500,19 @@ void quick_init(unsigned element){
 }
 arsenal::WeaponKey selected_quick(unsigned element){
  if(!session||!Memory::valid(element,0x80))return 0;
- const int slot=session->world.read<int>(element+0x74);
- return slot>=0&&slot<8?session->registry.quick()[unsigned(slot)]:0;
+ auto& s=*session;const int slot=s.world.read<int>(element+0x74);
+ if(slot<0||slot>=8)return 0;
+ const auto* provider=eqs_probe::discover();
+ if(provider){
+  // EQS v1 reports native choices. Never infer a custom weapon from a
+  // native ID, even when an older Revolverator save binds the same cell.
+  eqs_probe::Slots slots{};
+  if(!eqs_probe::gameplay_slots(*provider,slots))return 0;
+  const int native=slots.items[unsigned(slot)];
+  if(native<0||native>int(arsenal::Registry::MaximumNativeKey))return 0;
+  return arsenal::WeaponKey(native);
+ }
+ return s.registry.quick()[unsigned(slot)];
 }
 void quick_update(unsigned element){
  if(!session){quick_update_original(element);return;}
@@ -506,6 +527,7 @@ void quick_update(unsigned element){
 }
 int quick_draw(unsigned element){
  if(!session)return quick_draw_original(element);
+ if(eqs_probe::installed())return quick_draw_original(element);
  auto& s=*session;const auto key=selected_quick(element);int result;
  {ArsenalScope view(s.arsenal,key?key:s.registry.equipped());
   result=s.presentation.draw_quick_selector(element,quick_draw_original,s.registry.quick());}

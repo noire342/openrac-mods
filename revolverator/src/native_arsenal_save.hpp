@@ -11,7 +11,9 @@ namespace revolverator {
 // view masked, unless the call owns a campaign transition and rebuilt them.
 class NativeSaveFields final : private Memory {
 public:
-    NativeSaveFields(const openrac_api* api, const arsenal::Registry& registry);
+    enum class QuickSlots { Logical, External };
+    NativeSaveFields(const openrac_api* api, const arsenal::Registry& registry,
+                     QuickSlots quick_slots=QuickSlots::Logical);
     ~NativeSaveFields();
     NativeSaveFields(const NativeSaveFields&) = delete;
     NativeSaveFields& operator=(const NativeSaveFields&) = delete;

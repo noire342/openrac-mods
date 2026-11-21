@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #include "native_weapon_menu.hpp"
+#include "eqs_probe.hpp"
 #include <algorithm>
 #include <cmath>
 #include <cstring>
@@ -256,6 +257,14 @@ int NativeWeaponMenu::slots_update(unsigned screen,Call original){
     if(!original)return 0;
     if(!supported()||screen!=screen_address(QuickRing))return original(screen);
     const auto key=selected_key();const auto buttons=read<unsigned>(pressed_at());
+    if(eqs_probe::installed()){
+        // EQS v1 can store native items only. A custom choice cannot be
+        // confirmed as its transport ID in the native page editor.
+        const bool custom=model_.registry().descriptor(key)!=nullptr;
+        ScopedWrite<unsigned> confirm(*this,pressed_at(),custom?buttons&~Cross:buttons);
+        Projection view(model_,custom?0:key,true);
+        return original(screen);
+    }
     int slot=read<int>(screen+0x50);
     if(slot<0||slot>=8)return original(screen);
     if(buttons&8)slot=(slot+1)%8;
@@ -273,7 +282,7 @@ int NativeWeaponMenu::slots_update(unsigned screen,Call original){
 int NativeWeaponMenu::quick_load(unsigned screen,Call original){
     if(!original)return 0;
     const int result=original(screen);
-    if(supported()&&screen==screen_address(QuickRing)){
+    if(supported()&&screen==screen_address(QuickRing)&&!eqs_probe::installed()){
         write_native_slots(screen);
         int cursor=0;const auto& keys=model_.registry().quick();
         while(cursor<8&&keys[unsigned(cursor)]!=0)++cursor;
@@ -283,11 +292,13 @@ int NativeWeaponMenu::quick_load(unsigned screen,Call original){
 }
 int NativeWeaponMenu::quick_store(unsigned screen,Call original){
     if(!original)return 0;
-    if(supported()&&screen==screen_address(QuickRing))write_native_slots(screen);
+    if(supported()&&screen==screen_address(QuickRing)&&!eqs_probe::installed())
+        write_native_slots(screen);
     return original(screen);
 }
 int NativeWeaponMenu::quick_draw(unsigned screen,Call original){
     if(!original)return 0;
+    if(eqs_probe::installed())return original(screen);
     if(!supported()||screen!=screen_address(QuickRing)||!valid(screen,0x54))return original(screen);
     auto before=read<std::array<int,8>>(screen+0x30),safe=before;
     const auto& keys=model_.registry().quick();

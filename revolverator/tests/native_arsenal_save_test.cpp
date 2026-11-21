@@ -128,6 +128,12 @@ void native_save_ownership(const char* version) {
     f.put(favourites, std::array<int, 8>{18, 18, 11, 0, 0, 0, 0, 0});
     f.put(helmet, 7);
     {
+        NativeSaveFields native(&f.api, f.registry, NativeSaveFields::QuickSlots::External);
+        require(read(slot(0)) == 18 && read(slot(1)) == 18 && read(slot(2)) == 11,
+                "external wheel entries retain their own native identity during saves");
+        require(read(hand) == 8 && read(helmet) == 7, "external wheel ownership does not change hand or helmet save rules");
+    }
+    {
         NativeSaveFields native(&f.api, f.registry);
         require(read(slot(0)) == 18 && read(slot(1)) == 0 && read(slot(2)) == 11,
                 "mask only the custom favourite, keeping stock Walloper and the other native entries");

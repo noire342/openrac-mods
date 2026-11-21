@@ -59,6 +59,30 @@ Unsupported XP providers are reported rather than silently crediting the
 native carrier. No other custom-weapon or shared-inventory integration is
 claimed solely because it shares a carrier or an API header.
 
+## Optional Expanded Quick Select integration
+
+On **Windows x64**, Revolverator can detect the optional, read-only
+`openrac_expanded_quick_select_query(1)` API provided by glawks'
+[Expanded Quick Select v1.0.3](https://github.com/glawks/expanded-quick-select/releases/tag/v1.0.3).
+This API is now available in the public EQS release and does not make EQS
+a dependency of Revolverator. Without it, normal single-wheel behaviour
+is unchanged.
+
+With EQS enabled, EQS owns the editor, the native favourites in the game
+save and the extra pages in its sidecar. Revolverator reads the selected
+page through the API and leaves the wheel slots and icons to EQS. The
+weapon remains selectable from the pause menu. Custom weapon bindings in
+an EQS wheel require a future API that can store custom weapon identities.
+Existing Revolverator favourites remain in its own data for use when EQS
+is disabled. Detection uses the already loaded Windows module.
+
+Compatibility checks: verify distinct native weapon layouts across pages 1–4
+with Revolverator equipped and unequipped; edit assignments on pages 2–4,
+save and reload, and verify all EQS pages retain their contents. Confirm
+that assigning the custom weapon cannot insert a native item in an EQS
+slot. Repeat with EQS disabled to confirm the original single-wheel
+behaviour.
+
 ## Evidence boundary
 
 The release receipt records its actual official client, source, mod DLL,

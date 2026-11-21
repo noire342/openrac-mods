@@ -3,6 +3,7 @@
 #include "presentation.hpp"
 #include "hud_table_scope.hpp"
 #include "native_ammunition.hpp"
+#include "eqs_probe.hpp"
 #include "native_icon_variants.hpp"
 #include "localization.hpp"
 #include "ammunition_icon_data.hpp"
@@ -217,6 +218,8 @@ bool Presentation::owns(unsigned e)const{
 }
 void Presentation::draw_base(unsigned e,void(*previous_relay)(unsigned),std::optional<unsigned> vendor_ammo){
  (void)previous_relay;
+ // EQS can upload another wheel's atlas before the ammunition HUD draws.
+ if(eqs_probe::installed())hd_.frame();
  HudTableScope tables(*this);
  const int before=read<int>(e+channel_current_id);
  // The stock bank can have no suitable HUD frame. The selector and callback
