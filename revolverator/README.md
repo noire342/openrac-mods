@@ -13,11 +13,12 @@ scopes equipment changes during acquisition scenes and save operations to
 the mod's own state. Challenge Mode carries over the Rotatore's Golden upgrade,
 ammunition, XP and favourite when the slot is available.
 
-The [0.4.5 release page](https://github.com/noire342/openrac-mods/releases/tag/revolverator-v0.4.5)
+The [0.4.6 release page](https://github.com/noire342/openrac-mods/releases/tag/revolverator-v0.4.6)
 includes the installable Windows package, corresponding source and validation
-receipt. This update repairs the health, ammunition and inventory textures
-after respawn, preserving the equipped Revolverator and its ammunition. It
-also includes glawks' optional [Expanded Quick Select compatibility](docs/COMPATIBILITY.md#optional-expanded-quick-select-integration).
+receipt. This update fixes the Walloper label and selection in glawks'
+[Expanded Quick Select](docs/COMPATIBILITY.md#optional-expanded-quick-select-integration)
+when the Revolverator is equipped. Walloper selection works in either mod load
+order.
 
 Native metal sparks follow the drill's contact with a spinning enemy. Their
 rate follows the rotation speed. The Golden upgrade uses the green spark
@@ -31,8 +32,8 @@ contains no copied game models, textures or HUD artwork.
 
 1. Use the official OpenRAC launcher on Windows x64, with **mod interface 1.12
    or newer** and your own extracted PAL or NTSC-U copy of Ratchet & Clank.
-2. Download `revolverator-0.4.5-windows-x86_64.zip` from that release and import
-   it with **Mods → Add a mod → File**. If the catalog already shows 0.4.5,
+2. Download `revolverator-0.4.6-windows-x86_64.zip` from that release and import
+   it with **Mods → Add a mod → File**. If the catalog already shows 0.4.6,
    you can install or update from there.
 3. Enable the mod and start the game. The first start prepares its local
    graphics cache automatically. No separate Python installation, graphics

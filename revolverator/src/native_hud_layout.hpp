@@ -69,6 +69,12 @@ inline constexpr unsigned channel_ammunition = 0x74;
 inline constexpr unsigned ammo_format = 0x15f7c8;
 inline constexpr unsigned ammo_fade_frames = 0x15f91c;
 
+// The quick-select channel uses the same payload field for its selected slot.
+inline constexpr unsigned quick_selected_slot = 0x74;
+inline constexpr unsigned primary_pad = 0x13c940;
+inline constexpr unsigned pad_held_buttons = 0x1c0;
+inline constexpr unsigned triangle_button = 0x10;
+
 inline constexpr int weapon_hud_bank_base = 60000;
 inline constexpr std::uint16_t drill_icon_bank = 59901;
 inline constexpr unsigned drill_icon_frame = 13;

@@ -498,37 +498,49 @@ void quick_init(unsigned element){
   if(w.read<int>(records+i*0x1c+0x18)==int(descriptor->carrier))w.write<int>(records+i*0x1c,int(descriptor->icon_bank));
  }
 }
-arsenal::WeaponKey selected_quick(unsigned element){
- if(!session||!Memory::valid(element,0x80))return 0;
- auto& s=*session;const int slot=s.world.read<int>(element+0x74);
- if(slot<0||slot>=8)return 0;
- const auto* provider=eqs_probe::discover();
- if(provider){
-  // EQS v1 reports native choices. Never infer a custom weapon from a
-  // native ID, even when an older Revolverator save binds the same cell.
-  eqs_probe::Slots slots{};
-  if(!eqs_probe::gameplay_slots(*provider,slots))return 0;
-  const int native=slots.items[unsigned(slot)];
-  if(native<0||native>int(arsenal::Registry::MaximumNativeKey))return 0;
-  return arsenal::WeaponKey(native);
- }
- return s.registry.quick()[unsigned(slot)];
+int quick_slot(const Session& s,unsigned element){
+ constexpr auto field=native_hud::quick_selected_slot;
+ if(!Memory::valid(element,field+sizeof(int)))return -1;
+ const int slot=s.world.read<int>(element+field);
+ return slot>=0&&slot<int(native_arsenal_layout::quick_slot_count)?slot:-1;
+}
+arsenal::WeaponKey selected_quick(const Session& s,unsigned element){
+ const int slot=quick_slot(s,element);
+ return slot<0?0:s.registry.quick()[unsigned(slot)];
+}
+arsenal::WeaponKey selected_eqs(const Session& s,unsigned element,const eqs_probe::Slots& page){
+ const int slot=quick_slot(s,element);
+ if(slot<0)return 0;
+ const int native=page.items[unsigned(slot)];
+ return native>0&&native<=int(arsenal::Registry::MaximumNativeKey)?arsenal::WeaponKey(native):0;
 }
 void quick_update(unsigned element){
  if(!session){quick_update_original(element);return;}
- auto& s=*session;const auto key=selected_quick(element);
+ auto& s=*session;
+ const auto* eqs=eqs_probe::discover();
+ eqs_probe::Slots page{};
+ const bool eqs_open=eqs&&eqs_probe::gameplay_slots(*eqs,page);
+ const auto key=eqs?(eqs_open?arsenal::NativeWalloperKey:0):selected_quick(s,element);
  if(key)s.arsenal.project(key);
- quick_update_original(element);s.arsenal.commit();
- if(!(s.world.read<unsigned>(s.world.global(0x13c940)+0x1c0)&0x10)){
-  const auto chosen=selected_quick(element);
+ quick_update_original(element);
+ s.arsenal.commit();
+ const auto buttons=s.world.read<unsigned>(s.world.global(native_hud::primary_pad)+native_hud::pad_held_buttons);
+ if(!(buttons&native_hud::triangle_button)){
+  // The callback may close the EQS page. Resolve the final slot against
+  // the page that was open when the native update received the release.
+  const auto chosen=eqs?(eqs_open?selected_eqs(s,element,page):0):selected_quick(s,element);
   if(chosen)s.registry.equip(chosen);
  }
  s.restore_context();s.world.set_active(s.arsenal.revolverator_active());
 }
 int quick_draw(unsigned element){
  if(!session)return quick_draw_original(element);
- if(eqs_probe::installed())return quick_draw_original(element);
- auto& s=*session;const auto key=selected_quick(element);int result;
+ auto& s=*session;
+ if(eqs_probe::installed()){
+  ArsenalScope view(s.arsenal,arsenal::NativeWalloperKey);
+  return quick_draw_original(element);
+ }
+ const auto key=selected_quick(s,element);int result;
  {ArsenalScope view(s.arsenal,key?key:s.registry.equipped());
   result=s.presentation.draw_quick_selector(element,quick_draw_original,s.registry.quick());}
  s.restore_context();return result;

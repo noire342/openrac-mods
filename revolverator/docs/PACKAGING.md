@@ -1,9 +1,9 @@
 # Release packaging and provenance
 
-The Windows archive is revolverator-0.4.5-windows-x86_64.zip with
+The Windows archive is revolverator-0.4.6-windows-x86_64.zip with
 openrac-mod.json at its root. The manifest names author **noire342**,
-version 0.4.5, GPL-3.0-or-later and minimum mod interface 1.12. Use
-`revolverator-v0.4.5` as the release tag. The receipt identifies the exact
+version 0.4.6, GPL-3.0-or-later and minimum mod interface 1.12. Use
+`revolverator-v0.4.6` as the release tag. The receipt identifies the exact
 binaries and records the PAL and NTSC-U checkpoint checks, including HUD
 and ammunition, and the PAL Hoven purchase and optional EQS checks.
 
