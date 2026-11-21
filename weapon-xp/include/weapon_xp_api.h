@@ -45,7 +45,7 @@ typedef struct weapon_xp_stats_v1 {
     int32_t item_id;
     const char* name; /* Borrowed, valid while the DLL is loaded. */
     uint32_t level;   /* 1..10 */
-    uint32_t xp;      /* Total, 0..46000; use reported thresholds. */
+    uint32_t xp;      /* Total. The default cap is 46000; use the reported thresholds. */
     uint32_t level_start_xp;
     uint32_t next_level_xp; /* Current cap at level 10; never hard-code it. */
     float damage_multiplier;
@@ -216,9 +216,11 @@ typedef struct weapon_xp_api_v4 {
 } weapon_xp_api_v4;
 
 /* Filter masks use the defined v1 event constants below bit 32. Scope -1
- * selects session events only; ANY selects session and weapon events. */
+ * selects session events only; ANY selects session and weapon events. An
+ * exact weapon filter never receives STOPPING or other session events. */
 #define WEAPON_XP_EVENT_MASK(kind) (UINT32_C(1) << (kind))
 #define WEAPON_XP_ANY_ITEM INT32_MIN
+#define WEAPON_XP_SESSION_ITEM (-1)
 
 typedef struct weapon_xp_balance_v5 {
     uint32_t size;
@@ -274,7 +276,7 @@ typedef struct weapon_xp_api_v5 {
                                 uint32_t nominal_bolts, weapon_xp_progress_v5* out);
     /* Providers run in registration order. The first valid name wins.
      * Register once and unregister before unloading. Global versioned names
-     * must be enabled. The language/name passed to a callback is borrowed. */
+     * must be enabled. default_name and custom_id are valid for the callback. */
     int32_t (*register_name_provider)(weapon_xp_name_provider_v5 provider,
                                       void* user, uint32_t* token);
     int32_t (*unregister_name_provider)(uint32_t token);
@@ -285,6 +287,19 @@ typedef struct weapon_xp_api_v5 {
 } weapon_xp_api_v5;
 
 typedef const weapon_xp_api_v1* (*weapon_xp_query_fn)(uint32_t abi_version);
+
+/* Helpers for consumers. These add no exported symbols or table entries. */
+static inline const weapon_xp_api_v5* weapon_xp_get_v5(weapon_xp_query_fn query) {
+    const weapon_xp_api_v1* base = query ? query(WEAPON_XP_ABI_V5) : 0;
+    if (!base || base->abi_version != WEAPON_XP_ABI_V5 || base->size < sizeof(weapon_xp_api_v5)) {
+        return 0;
+    }
+    return (const weapon_xp_api_v5*)base;
+}
+
+static inline const weapon_xp_api_v1* weapon_xp_v5_base(const weapon_xp_api_v5* api) {
+    return api ? &api->v4.v3.v2.base : 0;
+}
 
 #ifdef __cplusplus
 }

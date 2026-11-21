@@ -913,7 +913,9 @@ void v5_contract(weapon_xp_query_fn query, const openrac_api& api, openrac_mod* 
     const auto* legacy = reinterpret_cast<const weapon_xp_api_v4*>(query(4));
     const auto* raw = query(WEAPON_XP_ABI_V5);
     CHECK(raw && raw->abi_version == 5 && raw->size == sizeof(weapon_xp_api_v5));
-    const auto* v5 = reinterpret_cast<const weapon_xp_api_v5*>(raw);
+    CHECK(!weapon_xp_get_v5(nullptr));
+    const auto* v5 = weapon_xp_get_v5(query);
+    CHECK(v5 && weapon_xp_v5_base(v5) == raw);
     CHECK(v5->v4.v3.v2.base.award_xp == legacy->v3.v2.base.award_xp);
     CHECK(v5->v4.register_hit_filter == legacy->register_hit_filter);
     CHECK(v5->v4.request_acquisition_presentation == legacy->request_acquisition_presentation);

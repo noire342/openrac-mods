@@ -18,7 +18,7 @@ int Events::subscribe(weapon_xp_listener_v1 fn, void* user, std::uint32_t* token
 int Events::subscribe_filtered(std::uint32_t mask, int item, weapon_xp_listener_v1 fn,
                                void* user, std::uint32_t* token) {
     if (!mask || (mask & ~kKnownEvents) ||
-        (item != WEAPON_XP_ANY_ITEM && item != -1 && weapon_index(item) < 0)) {
+        (item != WEAPON_XP_ANY_ITEM && item != WEAPON_XP_SESSION_ITEM && weapon_index(item) < 0)) {
         return WEAPON_XP_INVALID_ARGUMENT;
     }
     return subscribe(m_filtered, {fn, user, 0, mask, item}, token);

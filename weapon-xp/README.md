@@ -37,7 +37,8 @@ progression for their own weapons, and supply names by level and language.
 The [Pyrocitor Blarg example](examples/level_effect.c) shows how a companion
 can give the level-10 Pyrocitor a title and queue a cosmetic effect. Default
 gameplay and names use the original settings until a companion registers a
-hook. See the [integration guide](docs/API.md#level-effects-and-names-v5).
+hook. Follow the [first-hook walkthrough](docs/QUICK_START.md) or see the
+[API reference](docs/API.md#level-effects-and-names-v5).
 
 API v4 exposes hit-ownership filters and acquisition presentation helpers for
 Revolverator. Those filters keep custom hits out of native Walloper XP.
@@ -110,13 +111,21 @@ Legacy V5 effect event number 6 stays reserved and is never emitted. See
 
 ## Build and validation
 
-Build using CMake and the pinned OpenRAC mod SDK 1.3, then run CTest in Release.
-Twelve test groups cover ten level boundaries, independent bonuses, both-disc DLL
-integration, replay-safe co-op receipts, fractional persistence, format-1/2 migration,
-native HUD geometry, acquisition lifecycles and isolated model rotation/restoration.
-Native runtime evidence is separate
-from simulated-host tests; see the release validation receipt for the exact DLL.
-Native PAL gameplay and a complete campaign playthrough have not been validated.
+Build Weapon Experience from the repository root using the pinned OpenRAC mod
+SDK. These commands build this mod and its tests.
+
+```text
+python tools/fetch_sdk.py
+cmake -S . -B build-xp -DCMAKE_BUILD_TYPE=Release -DBUILD_WEAPON_XP=ON -DBUILD_SKILL_POINTS_RA=OFF -DBUILD_CINEMATIC_JOURNEYS=OFF
+cmake --build build-xp --config Release
+ctest --test-dir build-xp -C Release --output-on-failure
+```
+
+Thirteen automated test groups cover levels, optional bonuses, XP migration
+and persistence, the public ABI, hit attribution, both disc adapters and
+native UI bindings. In-game PAL and NTSC-U validation covers selected
+combat and presentation scenarios. See the release validation for the
+exact builds and scenarios.
 
 Progression, combat, persistence, events, UI, native adapters and service integration
 remain separate modules. The removed effect planners/renderers are absent from this

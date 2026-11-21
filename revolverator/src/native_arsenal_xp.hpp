@@ -5,6 +5,7 @@
 #include "weapon_xp_api.h"
 #include <array>
 #include <cstdint>
+#include <optional>
 
 namespace revolverator {
 
@@ -37,7 +38,8 @@ public:
     bool poll_level_up(LevelUp& event)noexcept;
     Stats get_stats()const;
     bool ready()const{return provider_&&configuration_valid_;}
-    bool compatible()const{return !incompatible_;}
+    bool compatible()const{return !integration_error_;}
+    const char* integration_error()const{return integration_error_;}
     bool provider_present()const{return present_;}
     // Optional v4 tail: call from normal frames, outside provider callbacks.
     // Preserve result codes (especially BUSY versus DISABLED/NOT_FOUND).
@@ -68,7 +70,8 @@ private:
     unsigned filter_token_{},listener_token_{};
     weapon_xp_configuration_v3 configuration_{};
     weapon_xp_rules_v3 rules_{};
-    bool configuration_valid_=false,present_=false,incompatible_=false,logged_incompatible_=false;
+    const char* integration_error_=nullptr;
+    bool configuration_valid_=false,present_=false,logged_incompatible_=false;
     bool active_=false;
     unsigned body_{},held_{},provider_epoch_{};
     int level_=-1;
@@ -82,14 +85,16 @@ private:
     void attach();
     void detach()noexcept;
     void refresh_configuration();
-    void warn_incompatible();
+    void report_attach_failure(int result,const char* message);
     static std::int32_t filter(void*,const weapon_xp_hit_context_v4*)noexcept;
     static void provider_event(void*,const weapon_xp_event_v1*)noexcept;
     std::int32_t classify(const weapon_xp_hit_context_v4&)noexcept;
     Identity identity(unsigned moby)const;
     static bool same(const Identity&,const Identity&)noexcept;
     static bool recent(std::uint64_t now,std::uint64_t before,unsigned ttl)noexcept;
-    int native_reward(unsigned target)const;
+    int legacy_nominal_bolts(unsigned target)const;
+    std::optional<weapon_xp_balance_v5> balance_after_kill(
+        unsigned target,weapon_xp_balance_v5 balance,unsigned cap)const;
     void queue_level_up(unsigned before,unsigned after,unsigned xp)noexcept;
 };
 }

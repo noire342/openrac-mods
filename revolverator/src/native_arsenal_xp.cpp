@@ -22,9 +22,15 @@ namespace revolverator {
 namespace {
 constexpr unsigned custom_origin=2017,transport_item=arsenal::NativeWalloperKey;
 constexpr unsigned quarters_per_xp=4;
-constexpr std::array<unsigned,10> thresholds{0,400,1400,3200,6000,10000,15500,23000,33000,46000};
-constexpr std::array<float,10> damage{1,1.15f,1.30f,1.50f,1.75f,2,2.25f,2.50f,2.75f,3};
-constexpr std::array<float,10> capacity{1,1.125f,1.25f,1.375f,1.50f,1.625f,1.75f,1.875f,2,2.125f};
+constexpr std::array<unsigned,WEAPON_XP_LEVEL_COUNT> default_thresholds{
+    0,400,1400,3200,6000,10000,15500,23000,33000,46000
+};
+constexpr std::array<float,WEAPON_XP_LEVEL_COUNT> default_damage_multipliers{
+    1,1.15f,1.30f,1.50f,1.75f,2,2.25f,2.50f,2.75f,3
+};
+constexpr std::array<float,WEAPON_XP_LEVEL_COUNT> default_ammo_multipliers{
+    1,1.125f,1.25f,1.375f,1.50f,1.625f,1.75f,1.875f,2,2.125f
+};
 
 #if !defined(_WIN32)
 weapon_xp_query_fn query_existing_image(const char* path){
@@ -100,8 +106,9 @@ NativeArsenalXP::NativeArsenalXP(const openrac_api* api,openrac_mod* mod,NativeA
     :Memory(api),mod_(mod),arsenal_(arsenal),resolver_(resolver?resolver:find_provider){
     configuration_.size=sizeof configuration_;configuration_.xp_rate=1;configuration_.kill_xp_cap=500;configuration_.level_count=10;
     rules_.size=sizeof rules_;rules_.item_id=18;rules_.level_count=10;rules_.xp_multiplier=1;
-    std::copy(thresholds.begin(),thresholds.end(),rules_.thresholds);
-    std::copy(damage.begin(),damage.end(),rules_.damage);std::copy(capacity.begin(),capacity.end(),rules_.ammo);
+    std::copy(default_thresholds.begin(),default_thresholds.end(),rules_.thresholds);
+    std::copy(default_damage_multipliers.begin(),default_damage_multipliers.end(),rules_.damage);
+    std::copy(default_ammo_multipliers.begin(),default_ammo_multipliers.end(),rules_.ammo);
     if(const auto* state=arsenal_.registry().state(arsenal::RevolveratorKey))observed_xp_=state->xp;
 }
 NativeArsenalXP::~NativeArsenalXP(){detach();}
@@ -131,11 +138,15 @@ int NativeArsenalXP::format_name(unsigned level,int language,const char* default
     return provider_v5_->format_custom_name(&context,out,capacity);
 }
 
-void NativeArsenalXP::warn_incompatible(){
+void NativeArsenalXP::report_attach_failure(int result,const char* message){
+    if(result==WEAPON_XP_NOT_READY||result==WEAPON_XP_BUSY){
+        integration_error_=nullptr;
+        return;
+    }
+    integration_error_=message;
     if(logged_incompatible_)return;
     logged_incompatible_=true;
-    if(api_->log)api_->log(mod_,OPENRAC_LOG_WARN,
-        "Revolverator XP: installed weapon-xp cannot isolate custom hits; API v4 hit filters are required");
+    if(api_->log)api_->log(mod_,OPENRAC_LOG_WARN,message);
 }
 void NativeArsenalXP::attach(){
     const auto query=resolver_();
@@ -144,27 +155,54 @@ void NativeArsenalXP::attach(){
         filter_token_=listener_token_=0;configuration_valid_=false;reset();
     }
     present_=query!=nullptr;
-    if(!query){incompatible_=false;return;}
+    if(!query){integration_error_=nullptr;return;}
     if(provider_)return;
     const auto* base=query(WEAPON_XP_ABI_V4);
     constexpr auto filter_api_bytes=offsetof(weapon_xp_api_v4,unregister_hit_filter)+sizeof(weapon_xp_api_v4{}.unregister_hit_filter);
-    if(!base||base->size<filter_api_bytes||base->abi_version<4){incompatible_=true;warn_incompatible();return;}
-    const auto* candidate=reinterpret_cast<const weapon_xp_api_v4*>(base);
-    if(!candidate->register_hit_filter||!candidate->unregister_hit_filter||
-       !candidate->v3.get_configuration||!candidate->v3.get_rules){incompatible_=true;warn_incompatible();return;}
-    unsigned token{};
-    const auto result=candidate->register_hit_filter(filter,this,&token);
-    if(result!=WEAPON_XP_OK||!token){
-        incompatible_=result!=WEAPON_XP_NOT_READY;
-        if(incompatible_)warn_incompatible();
+    constexpr const char* unsupported="Revolverator XP requires the Weapon Experience v4 hit and lifecycle APIs";
+    if(!base||base->size<filter_api_bytes||base->abi_version!=WEAPON_XP_ABI_V4){
+        report_attach_failure(WEAPON_XP_INVALID_ARGUMENT,unsupported);
         return;
     }
-    provider_=candidate;query_=query;filter_token_=token;incompatible_=false;
-    const auto* extension=query(WEAPON_XP_ABI_V5);
-    if(extension&&extension->abi_version==WEAPON_XP_ABI_V5&&extension->size>=sizeof(weapon_xp_api_v5))
-        provider_v5_=reinterpret_cast<const weapon_xp_api_v5*>(extension);
-    if(candidate->v3.v2.base.subscribe)
-        candidate->v3.v2.base.subscribe(provider_event,this,&listener_token_);
+    const auto* candidate=reinterpret_cast<const weapon_xp_api_v4*>(base);
+    if(!candidate->register_hit_filter||!candidate->unregister_hit_filter||
+       !candidate->v3.get_configuration||!candidate->v3.get_rules||!base->subscribe||!base->unsubscribe){
+        report_attach_failure(WEAPON_XP_INVALID_ARGUMENT,unsupported);
+        return;
+    }
+
+    unsigned filter_token{};
+    const auto filter_result=candidate->register_hit_filter(filter,this,&filter_token);
+    if(filter_result!=WEAPON_XP_OK||!filter_token){
+        report_attach_failure(filter_result,"Revolverator XP could not register a Weapon Experience hit filter");
+        return;
+    }
+
+    const auto* extension=weapon_xp_get_v5(query);
+    constexpr auto lifecycle_events=WEAPON_XP_EVENT_MASK(WEAPON_XP_LEVEL_LOADED)|
+                                    WEAPON_XP_EVENT_MASK(WEAPON_XP_STOPPING);
+    unsigned listener_token{};
+    int listener_result=WEAPON_XP_FULL;
+    if(extension&&extension->subscribe_filtered){
+        listener_result=extension->subscribe_filtered(
+            lifecycle_events,WEAPON_XP_SESSION_ITEM,provider_event,this,&listener_token);
+    }
+    if(listener_result==WEAPON_XP_FULL){
+        listener_result=base->subscribe(provider_event,this,&listener_token);
+    }
+    if(listener_result!=WEAPON_XP_OK||!listener_token){
+        // The filter must never outlive a successful STOPPING subscription.
+        candidate->unregister_hit_filter(filter_token);
+        report_attach_failure(listener_result,"Revolverator XP could not subscribe to Weapon Experience lifecycle events");
+        return;
+    }
+
+    query_=query;
+    provider_=candidate;
+    provider_v5_=extension;
+    filter_token_=filter_token;
+    listener_token_=listener_token;
+    integration_error_=nullptr;
 }
 void NativeArsenalXP::detach()noexcept{
     const auto* provider=provider_;const auto query=query_;
@@ -286,7 +324,7 @@ void NativeArsenalXP::confirm_hit(unsigned target,unsigned hit){
     }
     *slot={token,payload,hit,context.level_epoch,tick_,true,false};
 }
-int NativeArsenalXP::native_reward(unsigned target)const{
+int NativeArsenalXP::legacy_nominal_bolts(unsigned target)const{
     if(!valid(target,256)||!rewarded_enemy(read<short>(target+0xa6)))return -1;
     const int group=read<unsigned char>(target+0xb1);
     const int save_id=read<short>(target+0xb2);
@@ -303,6 +341,36 @@ int NativeArsenalXP::native_reward(unsigned target)const{
     }
     return std::max(0,base);
 }
+
+std::optional<weapon_xp_balance_v5> NativeArsenalXP::balance_after_kill(
+    unsigned target,weapon_xp_balance_v5 balance,unsigned cap)const{
+    if(provider_v5_&&provider_v5_->get_native_reward&&provider_v5_->evaluate_progress){
+        std::uint32_t bolts=0;
+        if(provider_v5_->get_native_reward(target,&bolts)!=WEAPON_XP_OK)return std::nullopt;
+        weapon_xp_progress_v5 result{};
+        result.size=sizeof result;
+        // Preserve the historical balancing preset with the Rotatore's own balance.
+        if(provider_v5_->evaluate_progress(&rules_,&balance,bolts,&result)!=WEAPON_XP_OK||
+           result.size<sizeof result||result.xp<balance.xp||result.xp>cap||
+           result.xp_quarters>=quarters_per_xp||
+           (result.xp==cap&&result.xp_quarters!=0)||
+           (result.xp==balance.xp&&result.xp_quarters<balance.xp_quarters))return std::nullopt;
+        balance.xp=result.xp;
+        balance.xp_quarters=result.xp_quarters;
+        return balance;
+    }
+
+    // The v4 provider predates the shared reward and progression helpers.
+    const int bolts=legacy_nominal_bolts(target);
+    if(bolts<0)return std::nullopt;
+    const auto award=std::uint64_t(std::min(unsigned(bolts),configuration_.kill_xp_cap))*
+        unsigned(std::lround(configuration_.xp_rate*quarters_per_xp))*rules_.xp_multiplier;
+    const auto total=award+balance.xp_quarters;
+    balance.xp+=unsigned(std::min<std::uint64_t>(total/quarters_per_xp,cap-balance.xp));
+    balance.xp_quarters=balance.xp==cap?0:unsigned(total%quarters_per_xp);
+    return balance;
+}
+
 void NativeArsenalXP::death_before(unsigned target){
     if(api_->loaded_level()!=level_||level_<0||level_>18)return;
     Accepted* accepted=nullptr;
@@ -318,34 +386,12 @@ void NativeArsenalXP::death_before(unsigned target){
     const auto before=weapon_level(state.xp,rules_);
     const auto cap=rules_.thresholds[WEAPON_XP_LEVEL_COUNT-1];
     if(state.xp>=cap){quarters_=0;observed_xp_=state.xp;return;}
-    unsigned fraction;
-    if(provider_v5_&&provider_v5_->get_native_reward&&provider_v5_->evaluate_progress){
-        std::uint32_t bolts=0;
-        if(provider_v5_->get_native_reward(target,&bolts)!=WEAPON_XP_OK)return;
-        const weapon_xp_balance_v5 balance{sizeof(weapon_xp_balance_v5),state.xp,quarters_};
-        weapon_xp_progress_v5 progress{};
-        progress.size=sizeof progress;
-        // Use the historical Walloper rules as a copied preset while keeping
-        // the Rotatore's balance, receipts and level-up queue in its own registry.
-        if(provider_v5_->evaluate_progress(&rules_,&balance,bolts,&progress)!=WEAPON_XP_OK||
-           progress.size<sizeof progress||progress.xp<state.xp||progress.xp>cap||
-           progress.xp_quarters>=quarters_per_xp||
-           (progress.xp==cap&&progress.xp_quarters!=0)||
-           (progress.xp==state.xp&&progress.xp_quarters<quarters_))return;
-        state.xp=progress.xp;
-        fraction=progress.xp_quarters;
-    }else{
-        const int bolts=native_reward(target);
-        if(bolts<0)return;
-        // The v4 companion predates the shared reward and progression helpers.
-        const auto amount=std::uint64_t(std::min(unsigned(bolts),configuration_.kill_xp_cap))*
-            unsigned(std::lround(configuration_.xp_rate*quarters_per_xp))*rules_.xp_multiplier;
-        const auto total=amount+quarters_;
-        state.xp+=unsigned(std::min<std::uint64_t>(total/quarters_per_xp,cap-state.xp));
-        fraction=state.xp==cap?0:unsigned(total%quarters_per_xp);
-    }
+    const weapon_xp_balance_v5 balance{sizeof balance,state.xp,quarters_};
+    const auto next=balance_after_kill(target,balance,cap);
+    if(!next)return;
+    state.xp=next->xp;
     if(!arsenal_.registry().set_state(arsenal::RevolveratorKey,state))return;
-    quarters_=fraction;observed_xp_=state.xp;
+    quarters_=next->xp_quarters;observed_xp_=state.xp;
     queue_level_up(before,weapon_level(state.xp,rules_),state.xp);
 }
 void NativeArsenalXP::queue_level_up(unsigned before,unsigned after,unsigned xp)noexcept{

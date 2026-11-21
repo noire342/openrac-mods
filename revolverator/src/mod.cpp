@@ -759,7 +759,7 @@ extern "C" OPENRAC_MOD_EXPORT int openrac_mod_load(const openrac_api* api,openra
   }
   hook("rac1.moby.snagglebeast.update","void(u32)",reinterpret_cast<void*>(snagglebeast),reinterpret_cast<void**>(&snagglebeast_original));
   session->xp.frame();
-  if(!session->xp.compatible())throw std::runtime_error("Revolverator " REVOLVERATOR_VERSION " requires Weapon XP API v4 when Weapon XP is enabled; update both mod packages");
+  if(const auto* error=session->xp.integration_error())throw std::runtime_error(error);
   if(api->on_frame(mod,+[](void*){if(session)session->frame();},nullptr))throw std::runtime_error("Frame registration failed");
   runtime_hooks->commit();
   api->log(mod,OPENRAC_LOG_INFO,"Revolverator " REVOLVERATOR_VERSION ": Golden Novalis upgrade, charge-scaled impact explosions, weighted throw, independent arsenal saves, copy-only API v3");

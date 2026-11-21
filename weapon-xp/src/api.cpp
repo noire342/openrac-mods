@@ -277,7 +277,7 @@ const weapon_xp_api_v1* Runtime::query(std::uint32_t abi) {
     if (abi == WEAPON_XP_ABI_V1) {
         return &service;
     }
-    static const weapon_xp_api_v2 external{
+    static const weapon_xp_api_v2 abi_v2{
         {sizeof(weapon_xp_api_v2),
          WEAPON_XP_ABI_V2,
          service.weapon_count,
@@ -304,96 +304,99 @@ const weapon_xp_api_v1* Runtime::query(std::uint32_t abi) {
         }
     };
     if (abi == WEAPON_XP_ABI_V2) {
-        return &external.base;
+        return &abi_v2.base;
     }
-    static const weapon_xp_api_v3 extension{
-        external,
-        +[](weapon_xp_configuration_v3* out) -> std::int32_t {
-            if (!s_instance || !s_instance->m_ready) {
-                return WEAPON_XP_NOT_READY;
+    static const weapon_xp_api_v3 abi_v3 = [] {
+        weapon_xp_api_v3 table{
+            abi_v2,
+            +[](weapon_xp_configuration_v3* out) -> std::int32_t {
+                if (!s_instance || !s_instance->m_ready) {
+                    return WEAPON_XP_NOT_READY;
+                }
+                try {
+                    return s_instance->get_configuration(out);
+                } catch (...) {
+                    return WEAPON_XP_IO_ERROR;
+                }
+            },
+            +[](std::int32_t item, weapon_xp_rules_v3* out) -> std::int32_t {
+                if (!s_instance || !s_instance->m_ready) {
+                    return WEAPON_XP_NOT_READY;
+                }
+                try {
+                    return s_instance->get_rules(item, out);
+                } catch (...) {
+                    return WEAPON_XP_IO_ERROR;
+                }
+            },
+            +[](const weapon_xp_configuration_v3* in, std::uint64_t revision) -> std::int32_t {
+                if (!s_instance || !s_instance->m_ready) {
+                    return WEAPON_XP_NOT_READY;
+                }
+                try {
+                    return s_instance->set_configuration(in, revision);
+                } catch (...) {
+                    return WEAPON_XP_IO_ERROR;
+                }
+            },
+            +[](const weapon_xp_rules_v3* in,
+                std::uint32_t count,
+                std::uint64_t revision) -> std::int32_t {
+                if (!s_instance || !s_instance->m_ready) {
+                    return WEAPON_XP_NOT_READY;
+                }
+                try {
+                    return s_instance->set_rules(in, count, revision);
+                } catch (...) {
+                    return WEAPON_XP_IO_ERROR;
+                }
+            },
+            +[](std::uint64_t revision) -> std::int32_t {
+                if (!s_instance || !s_instance->m_ready) {
+                    return WEAPON_XP_NOT_READY;
+                }
+                try {
+                    return s_instance->reload_rules(revision);
+                } catch (...) {
+                    return WEAPON_XP_IO_ERROR;
+                }
+            },
+            +[]() -> std::int32_t {
+                if (!s_instance || !s_instance->m_ready) {
+                    return WEAPON_XP_NOT_READY;
+                }
+                if (s_instance->callback_busy()) {
+                    return WEAPON_XP_BUSY;
+                }
+                s_instance->save();
+                return s_instance->m_dirty ? WEAPON_XP_IO_ERROR : WEAPON_XP_OK;
+            },
+            +[](char* buffer, std::uint32_t capacity) -> std::int32_t {
+                if (!s_instance || !s_instance->m_ready) {
+                    return WEAPON_XP_NOT_READY;
+                }
+                if (!buffer || !capacity) {
+                    return WEAPON_XP_INVALID_ARGUMENT;
+                }
+                const auto& text = s_instance->m_rules_error;
+                const auto length = std::min<std::size_t>(text.size(), capacity - 1);
+                std::memcpy(buffer, text.data(), length);
+                buffer[length] = 0;
+                return static_cast<std::int32_t>(text.size() + 1);
             }
-            try {
-                return s_instance->get_configuration(out);
-            } catch (...) {
-                return WEAPON_XP_IO_ERROR;
-            }
-        },
-        +[](std::int32_t item, weapon_xp_rules_v3* out) -> std::int32_t {
-            if (!s_instance || !s_instance->m_ready) {
-                return WEAPON_XP_NOT_READY;
-            }
-            try {
-                return s_instance->get_rules(item, out);
-            } catch (...) {
-                return WEAPON_XP_IO_ERROR;
-            }
-        },
-        +[](const weapon_xp_configuration_v3* in, std::uint64_t revision) -> std::int32_t {
-            if (!s_instance || !s_instance->m_ready) {
-                return WEAPON_XP_NOT_READY;
-            }
-            try {
-                return s_instance->set_configuration(in, revision);
-            } catch (...) {
-                return WEAPON_XP_IO_ERROR;
-            }
-        },
-        +[](const weapon_xp_rules_v3* in,
-            std::uint32_t count,
-            std::uint64_t revision) -> std::int32_t {
-            if (!s_instance || !s_instance->m_ready) {
-                return WEAPON_XP_NOT_READY;
-            }
-            try {
-                return s_instance->set_rules(in, count, revision);
-            } catch (...) {
-                return WEAPON_XP_IO_ERROR;
-            }
-        },
-        +[](std::uint64_t revision) -> std::int32_t {
-            if (!s_instance || !s_instance->m_ready) {
-                return WEAPON_XP_NOT_READY;
-            }
-            try {
-                return s_instance->reload_rules(revision);
-            } catch (...) {
-                return WEAPON_XP_IO_ERROR;
-            }
-        },
-        +[]() -> std::int32_t {
-            if (!s_instance || !s_instance->m_ready) {
-                return WEAPON_XP_NOT_READY;
-            }
-            if (s_instance->callback_busy()) {
-                return WEAPON_XP_BUSY;
-            }
-            s_instance->save();
-            return s_instance->m_dirty ? WEAPON_XP_IO_ERROR : WEAPON_XP_OK;
-        },
-        +[](char* buffer, std::uint32_t capacity) -> std::int32_t {
-            if (!s_instance || !s_instance->m_ready) {
-                return WEAPON_XP_NOT_READY;
-            }
-            if (!buffer || !capacity) {
-                return WEAPON_XP_INVALID_ARGUMENT;
-            }
-            const auto& text = s_instance->m_rules_error;
-            const auto length = std::min<std::size_t>(text.size(), capacity - 1);
-            std::memcpy(buffer, text.data(), length);
-            buffer[length] = 0;
-            return static_cast<std::int32_t>(text.size() + 1);
-        }
-    };
-    static const weapon_xp_api_v3 versioned = [] {
-        auto table = extension;
-        table.v2.base.size = sizeof(weapon_xp_api_v3);
+        };
+        table.v2.base.size = sizeof(table);
         table.v2.base.abi_version = WEAPON_XP_ABI_V3;
         return table;
     }();
-    if(abi==WEAPON_XP_ABI_V3)return &versioned.v2.base;
-    static const weapon_xp_api_v4 ownership=[] {
-        weapon_xp_api_v4 table{};table.v3=versioned;
-        table.v3.v2.base.size=sizeof(table);table.v3.v2.base.abi_version=WEAPON_XP_ABI_V4;
+    if (abi == WEAPON_XP_ABI_V3) {
+        return &abi_v3.v2.base;
+    }
+    static const weapon_xp_api_v4 abi_v4 = [] {
+        weapon_xp_api_v4 table{};
+        table.v3 = abi_v3;
+        table.v3.v2.base.size = sizeof(table);
+        table.v3.v2.base.abi_version = WEAPON_XP_ABI_V4;
         table.register_hit_filter=+[](weapon_xp_hit_filter_v4 filter,void* user,std::uint32_t* token)->std::int32_t{
             if(!s_instance||!s_instance->m_ready)return WEAPON_XP_NOT_READY;
             if(s_instance->callback_busy())return WEAPON_XP_BUSY;
@@ -420,10 +423,10 @@ const weapon_xp_api_v1* Runtime::query(std::uint32_t abi) {
         };
         return table;
     }();
-    if (abi == WEAPON_XP_ABI_V4) return &ownership.v3.v2.base;
-    static const weapon_xp_api_v5 progression = [] {
+    if (abi == WEAPON_XP_ABI_V4) return &abi_v4.v3.v2.base;
+    static const weapon_xp_api_v5 abi_v5 = [] {
         weapon_xp_api_v5 table{};
-        table.v4 = ownership;
+        table.v4 = abi_v4;
         table.v4.v3.v2.base.size = sizeof(table);
         table.v4.v3.v2.base.abi_version = WEAPON_XP_ABI_V5;
         table.subscribe_filtered = +[](std::uint32_t mask, std::int32_t item,
@@ -469,7 +472,7 @@ const weapon_xp_api_v1* Runtime::query(std::uint32_t abi) {
         };
         return table;
     }();
-    return &progression.v4.v3.v2.base;
+    return &abi_v5.v4.v3.v2.base;
 }
 
 }  // namespace weaponxp

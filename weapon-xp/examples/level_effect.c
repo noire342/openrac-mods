@@ -1,18 +1,9 @@
 /* SPDX-License-Identifier: MIT */
-#include "weapon_xp_api.h"
+#include "level_effect.h"
 #include <stddef.h>
 #include <string.h>
 
 enum { pyrocitor = 16, italian = 5 };
-
-/* One consumer instance. This example coalesces repeated hit observations
- * to the latest position before the consumer's next game-thread tick. */
-typedef struct blarg_effect_example {
-    const weapon_xp_api_v5* xp;
-    uint32_t names, events;
-    uint32_t effect_pending;
-    float effect_position[3];
-} blarg_effect_example;
 
 static int32_t blarg_name(void* user, const weapon_xp_name_context_v5* name,
                           char* out, uint32_t capacity) {
@@ -32,6 +23,7 @@ static void pyrocitor_event(void* user, const weapon_xp_event_v1* event) {
         state->names = state->events = state->effect_pending = 0;
     } else if (event->kind == WEAPON_XP_HIT && event->item_id == pyrocitor &&
                event->new_level == WEAPON_XP_LEVEL_COUNT) {
+        // Keep the latest position until the consuming mod's next tick.
         memcpy(state->effect_position, event->target_position, sizeof state->effect_position);
         state->effect_pending = 1;
     } else if (event->kind == WEAPON_XP_LEVEL_LOADED) {
@@ -39,15 +31,12 @@ static void pyrocitor_event(void* user, const weapon_xp_event_v1* event) {
     }
 }
 
-/* Call on a normal game frame. The query came from the already loaded DLL.
- * Retry later if its runtime reports NOT_READY. */
 int32_t blarg_effect_attach(blarg_effect_example* state, weapon_xp_query_fn query) {
-    if (!state || !query) return WEAPON_XP_INVALID_ARGUMENT;
-    if (state->xp) return WEAPON_XP_BUSY;
-    const weapon_xp_api_v1* base = query(WEAPON_XP_ABI_V5);
-    if (!base || base->abi_version != WEAPON_XP_ABI_V5 ||
-        base->size < sizeof(weapon_xp_api_v5)) return WEAPON_XP_NOT_READY;
-    const weapon_xp_api_v5* api = (const weapon_xp_api_v5*)base;
+    if (!state) return WEAPON_XP_INVALID_ARGUMENT;
+    if (state->xp) return WEAPON_XP_OK;
+    if (!query) return WEAPON_XP_NOT_READY;
+    const weapon_xp_api_v5* api = weapon_xp_get_v5(query);
+    if (!api) return WEAPON_XP_NOT_FOUND;
     int32_t result = api->register_name_provider(blarg_name, state, &state->names);
     if (result != WEAPON_XP_OK) return result;
     const uint32_t mask = WEAPON_XP_EVENT_MASK(WEAPON_XP_HIT)
@@ -62,7 +51,6 @@ int32_t blarg_effect_attach(blarg_effect_example* state, weapon_xp_query_fn quer
     return WEAPON_XP_OK;
 }
 
-/* Run outside XP callbacks. Supply the consuming mod's own cosmetic effect. */
 void blarg_effect_tick(blarg_effect_example* state, void (*spawn)(const float position[3])) {
     if (state->effect_pending && spawn) {
         state->effect_pending = 0;
@@ -72,7 +60,7 @@ void blarg_effect_tick(blarg_effect_example* state, void (*spawn)(const float po
 
 void blarg_effect_detach(blarg_effect_example* state) {
     if (state->xp) {
-        state->xp->v4.v3.v2.base.unsubscribe(state->events);
+        weapon_xp_v5_base(state->xp)->unsubscribe(state->events);
         state->xp->unregister_name_provider(state->names);
     }
     memset(state, 0, sizeof *state);

@@ -90,8 +90,11 @@ bool NativeUpgrades::request_presentation(int item) {
 void NativeUpgrades::rename(Binding& b, int level, bool enabled) {
     const auto revision = m_name_providers ? m_name_providers->revision() : 0;
     const int displayed_level = enabled ? level : 0;
-    if ((b.level == displayed_level && b.name_revision == revision && b.language == m_language) ||
-        read<unsigned>(b.entry) != (b.projected ? b.replacement : b.original)) return;
+    const bool name_up_to_date =
+        b.level == displayed_level && b.name_revision == revision && b.language == m_language;
+    if (name_up_to_date) return;
+    const auto expected_pointer = b.projected ? b.replacement : b.original;
+    if (read<unsigned>(b.entry) != expected_pointer) return;
 
     if (b.language != m_language && valid(b.original, kNameSize)) {
         // A language change can update the original string inside the same bank.
@@ -99,7 +102,7 @@ void NativeUpgrades::rename(Binding& b, int level, bool enabled) {
         const auto* end = static_cast<const char*>(std::memchr(text, 0, kNameSize - 5));
         if (end && end != text) b.name.assign(text, end);
     }
-    std::string name = displayed_level > 1 ? b.name + " v" + std::to_string(level) : b.name;
+    std::string name = displayed_level > 1 ? b.name + " v" + std::to_string(displayed_level) : b.name;
     bool project = displayed_level > 1;
     if (enabled && m_name_providers) {
         const weapon_xp_name_context_v5 context{

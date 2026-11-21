@@ -1,5 +1,8 @@
 # Weapon Experience native C API
 
+Start with the [first-hook walkthrough](QUICK_START.md) to set up a mod that
+renames the Pyrocitor at level 10 and reacts to its hits.
+
 The MIT header `include/weapon_xp_api.h` is the authoritative plain-C contract. Resolve
 `openrac_weapon_xp_query` from the already loaded provider; never load a second instance.
 Declare `requires: [{"id":"weapon-xp","version":">=0.6.0"}]` for a v3 consumer.
@@ -9,7 +12,9 @@ must use their platform's loader handle. Sandboxed Luau cannot call this native 
 `query(1)` through `query(5)` return their own sizes and version numbers.
 Each table contains the earlier function pointers in the same order.
 Unsupported versions return null. Check the requested version and size before
-reading a function pointer.
+reading a function pointer. `weapon_xp_get_v5(query)` performs this check
+for v5. `weapon_xp_v5_base(api)` gives access to v1 operations such as
+`unsubscribe`.
 Initialize each input/output struct's `size`. Calls and callbacks use the game thread.
 Do not retain a service after STOPPING/provider unload; unsubscribe when the consumer unloads.
 
@@ -136,12 +141,13 @@ this ordering and keeps support for providers with the v4 contract.
 - `subscribe_filtered(mask, item, listener, user, &token)` subscribes to v1
   events without consuming v1 listener slots. Combine defined event kinds
   using `WEAPON_XP_EVENT_MASK(kind)` and bitwise OR. Reserved event kinds
-  and unknown bits are rejected. Use a supported native item ID, `-1` for
-  session events, or `WEAPON_XP_ANY_ITEM` for both.
+  and unknown bits are rejected. Use a supported native item ID,
+  `WEAPON_XP_SESSION_ITEM` for session events, or `WEAPON_XP_ANY_ITEM` for both.
 - Use the v1 `unsubscribe` function for either subscription. Filtered listeners
   get up to 16 slots and receive only matching events. If you retain provider
   pointers, subscribe to STOPPING using the session or any-item filter and
-  clear those pointers when notified.
+  clear those pointers when notified. A weapon-specific filter cannot receive
+  STOPPING, even if the mask includes that event.
 - For a level-specific effect, inspect `event->new_level` and `event->item_id`.
   Enqueue the effect with copied data, such as `target_position`, and run it
   on your mod's next game-thread frame. HIT is an outgoing native observation.
@@ -164,9 +170,10 @@ Leave enough space for the terminator within the supplied capacity.
 The first valid proposal wins. At most 16 providers can be installed.
 Invalid proposals and throwing callbacks leave the default name available.
 
-Keep the callback deterministic for the same item, level, locale and default
-name. Native presentations cache the result until these inputs or the
-provider list change. The `versioned_names` setting controls this feature.
+Keep the callback deterministic for the same context. Both name strings
+are borrowed for the duration of the callback. Native presentations
+refresh names when the level, language or provider list changes, or the text
+bank is rebound. The `versioned_names` setting controls this feature.
 When disabled, the game shows its stock names. Providers may unregister
 during callbacks. Calls that mutate XP, configuration or registrations return
 BUSY during dispatch. Unregister a provider before its consumer unloads.

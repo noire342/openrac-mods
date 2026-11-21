@@ -28,6 +28,8 @@ struct Fixture {
     weapon_xp_listener_v1 listener{};void* listener_user{};
     Provider mode=V4;unsigned registers{},unregisters{},subscriptions{},unsubscriptions{},warnings{},native_calls{},next_target{};
     int level=1,registration_result=WEAPON_XP_OK,configuration_result=WEAPON_XP_OK;
+    unsigned filtered_subscriptions{};
+    int subscription_result=WEAPON_XP_OK,filtered_subscription_result=WEAPON_XP_OK;
     int presentation_result=WEAPON_XP_OK,presentation_active=0,last_presentation_item=-1;
     unsigned presentation_requests{};
     unsigned reward_calls{},evaluation_calls{},name_calls{},reward_target{};
@@ -39,6 +41,11 @@ struct Fixture {
     static constexpr unsigned hero=0x13f350,body=0x300000,held=0x300100;
     template<class T>void put(unsigned at,const T& value){std::memcpy(memory.data()+at,&value,sizeof value);}
     template<class T>T get(unsigned at)const{T value{};std::memcpy(&value,memory.data()+at,sizeof value);return value;}
+    int subscribe(int result,weapon_xp_listener_v1 fn,void* user,unsigned* token){
+        if(result!=WEAPON_XP_OK)return result;
+        listener=fn;listener_user=user;*token=42;
+        return WEAPON_XP_OK;
+    }
     Fixture():arsenal(&api,registry,view){
         live=this;api.memory=memory.data();api.game="rac1";api.version="ntsc";
         api.loaded_level=+[]{return live->level;};api.relocate_data=+[](unsigned at){return at;};
@@ -59,7 +66,8 @@ struct Fixture {
             require(token==41,"consumer unregisters its own filter token");++live->unregisters;live->filter=nullptr;return WEAPON_XP_OK;
         };
         provider.v3.v2.base.subscribe=+[](weapon_xp_listener_v1 fn,void* user,unsigned* token)->int{
-            ++live->subscriptions;live->listener=fn;live->listener_user=user;*token=42;return WEAPON_XP_OK;
+            ++live->subscriptions;
+            return live->subscribe(live->subscription_result,fn,user,token);
         };
         provider.v3.v2.base.unsubscribe=+[](unsigned token)->int{
             require(token==42,"consumer unsubscribes its own listener token");++live->unsubscriptions;live->listener=nullptr;return WEAPON_XP_OK;
@@ -78,6 +86,14 @@ struct Fixture {
         extension.v4=provider;
         extension.v4.v3.v2.base.size=sizeof extension;
         extension.v4.v3.v2.base.abi_version=WEAPON_XP_ABI_V5;
+        extension.subscribe_filtered=+[](std::uint32_t mask,int item,weapon_xp_listener_v1 fn,
+                                         void* user,unsigned* token)->int{
+            constexpr auto expected=WEAPON_XP_EVENT_MASK(WEAPON_XP_LEVEL_LOADED)|
+                                    WEAPON_XP_EVENT_MASK(WEAPON_XP_STOPPING);
+            require(mask==expected&&item==WEAPON_XP_SESSION_ITEM,"v5 listens only to lifecycle events");
+            ++live->filtered_subscriptions;
+            return live->subscribe(live->filtered_subscription_result,fn,user,token);
+        };
         extension.get_native_reward=+[](std::uint32_t target,std::uint32_t* out)->int{
             ++live->reward_calls;
             live->reward_target=target;
@@ -174,6 +190,39 @@ int main(){
      require(xp.ready()&&f.registers==1&&f.subscriptions==1,"stable service attaches one filter and one lifecycle listener");
      require(xp.flags()==f.configuration.flags&&xp.rules().thresholds[9]==46000,"rules and flags are copied from the provider");}
      require(f.unregisters==1&&f.unsubscriptions==1,"consumer unload releases both tokens exactly once");}
+    {
+        Fixture f;
+        f.mode=Fixture::V5;
+        f.subscription_result=WEAPON_XP_FULL;
+        auto xp=std::make_unique<NativeArsenalXP>(&f.api,nullptr,f.arsenal,Fixture::resolve);
+        xp->frame();
+        require(xp->ready()&&f.filtered_subscriptions==1&&f.subscriptions==0,
+                "v5 uses its separate lifecycle capacity when the legacy pool is full");
+    }
+    {
+        Fixture f;
+        f.mode=Fixture::V5;
+        f.filtered_subscription_result=f.subscription_result=WEAPON_XP_FULL;
+        auto xp=std::make_unique<NativeArsenalXP>(&f.api,nullptr,f.arsenal,Fixture::resolve);
+        xp->frame();
+        require(!xp->ready()&&!xp->compatible()&&f.filter==nullptr&&f.unregisters==1,
+                "failure to receive STOPPING rolls back the filter");
+        f.subscription_result=WEAPON_XP_OK;
+        xp->frame();
+        require(xp->ready()&&xp->compatible()&&f.subscriptions==2&&f.filter&&f.listener,
+                "a freed legacy slot can be used if filtered slots remain full");
+    }
+    {
+        Fixture f;
+        f.subscription_result=WEAPON_XP_BUSY;
+        auto xp=std::make_unique<NativeArsenalXP>(&f.api,nullptr,f.arsenal,Fixture::resolve);
+        xp->frame();
+        require(!xp->ready()&&xp->compatible()&&f.filter==nullptr&&f.unregisters==1&&f.warnings==0,
+                "a busy v4 lifecycle subscription leaves no partial attachment");
+        f.subscription_result=WEAPON_XP_OK;
+        xp->frame();
+        require(xp->ready(),"v4 attachment can recover from temporary subscription failure");
+    }
     {Fixture f;f.provider.v3.v2.base.size=offsetof(weapon_xp_api_v4,request_acquisition_presentation);
      auto xp_owner=std::make_unique<NativeArsenalXP>(&f.api,nullptr,f.arsenal,Fixture::resolve);auto& xp=*xp_owner;xp.frame();
      require(xp.ready()&&xp.compatible(),"the original v4 filter prefix remains compatible without the new optional tail");
