@@ -39,6 +39,7 @@ public:
     void remember_weapon_purchase(unsigned key);
     bool presenting_custom_purchase() const;
     unsigned purchase_scene_weapon() const;
+    unsigned purchase_scene_body() const;
     bool showing_custom_ammo() const;
     bool has_custom_rows()const;
     unsigned icon_bank_for_row(unsigned row)const;
@@ -94,6 +95,7 @@ private:
     bool native_icon_captured_=false;
 
     bool supported() const;
+    unsigned purchase_scene_actor(unsigned short object_class) const;
     void restore_menu();
     bool preview_valid(const PreviewLease& preview) const;
 };

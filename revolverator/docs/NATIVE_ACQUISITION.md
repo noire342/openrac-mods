@@ -30,7 +30,15 @@ base/Gold renderer alias without requiring that it was equipped before the scene
 `pose_item` visits the native scene's class 180 actor after asynchronous scene
 loading. It applies the custom renderer even when the ordinary held-item hook
 does not run. Its rotor preserves the authored root/wrist animation while
-neutralizing the original glove's finger joints; it never moves Ratchet's bones.
+neutralizing the original glove's finger joints.
+
+The scene keys also contain an inherited forearm scale that collapses
+Ratchet's right hand under the retail glove. The acquisition-pose adapter
+publishes private copies of the two current keys for the scene's Ratchet,
+restoring the forearm scale while preserving the rest of each key. The
+adapter is shared by the physical vendor and the Golden and XP presenter.
+It restores only pointers it still owns after rendering. The original keys
+and other actors are untouched.
 
 Call `request()` once for each acquisition/purchase/level event. It returns false
 when the bounded 64-event queue is full. Call `frame(safe, external_active)` every

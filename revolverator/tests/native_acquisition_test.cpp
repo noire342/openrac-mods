@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #include "native_acquisition.hpp"
+#include "native_acquisition_hand.hpp"
 #include <array>
 #include <cmath>
 #include <cstdio>
@@ -91,6 +92,35 @@ struct Fixture {
 };
 }
 int main(){
+    {Fixture f;
+     GuestArena poses;poses.reserve(0x610000,8192);
+     NativeAcquisitionHand hand(&f.api,poses);
+     require(f.acquisition.scene_body()==0,"no scene actor is exposed while idle");
+     f.begin();
+     require(f.acquisition.scene_body()==Actor,"only the owned acquisition actor receives its hand pose");
+     constexpr unsigned Class=0x500000,KeyA=0x640000,KeyB=0x641000,Scale=0x10+111*8;
+     put(Actor+0x24,Class);put<unsigned char>(Class+8,111);
+     const std::array<unsigned short,5> layout{{57,888,2,904,0}};
+     const std::array<unsigned short,4> hidden{{0,0,1,0x8036}},unrelated{{0,0,0,0x8029}};
+     for(const unsigned key:{KeyA,KeyB}){
+         put(key+6,layout);put(key+Scale,hidden);put(key+Scale+8,unrelated);
+     }
+     put(Actor+0x68,KeyA);put(Actor+0x6c,KeyB);
+     hand.publish(Actor);
+     const unsigned copy=get<unsigned>(Actor+0x68);
+     require(copy!=KeyA&&get<unsigned>(Actor+0x6c)!=KeyB,"both interpolated keys use scoped copies");
+     require(get<std::array<unsigned short,4>>(copy+Scale)==std::array<unsigned short,4>{4096,4096,4096,0x8036},
+             "only the inherited forearm collapse is removed");
+     require(get<std::array<unsigned short,4>>(KeyA+Scale)==hidden&&get<std::array<unsigned short,4>>(copy+Scale+8)==unrelated,
+             "original data and unrelated authored scales are preserved");
+     put(Actor+0x6c,KeyA);
+     hand.restore();
+     require(get<unsigned>(Actor+0x68)==KeyA&&get<unsigned>(Actor+0x6c)==KeyA,
+             "restoration leaves a new animation key written by the game alone");
+     put<unsigned short>(KeyA+8,7);
+     hand.publish(Actor);
+     require(get<unsigned>(Actor+0x68)==KeyA,"a malformed key is never projected");
+     f.end();}
     {Fixture f(false,true);
      require(!f.acquisition.request(1)&&!f.acquisition.request(11),"invalid level captions are refused before enqueue");
      require(f.acquisition.request(2)&&f.acquisition.request(3),"distinct level events are retained by the bounded queue");

@@ -29,6 +29,7 @@ public:
     void frame(bool safe,bool external_active);
     bool active()const noexcept{return preparing_||presenting_;}
     bool presenting()const noexcept{return presenting_;}
+    unsigned scene_body() const;
     bool pending()const noexcept{return requests_!=0;}
     // Filter the raw native pad report BEFORE the original ProcessReport call.
     void filter_report(unsigned char* report,int size)const noexcept;

@@ -97,13 +97,19 @@ bool NativeVendor::presenting_custom_purchase()const{
     return read<int>(base)==3&&read<int>(base+last_purchase_offset)==item_id;
 }
 unsigned NativeVendor::purchase_scene_weapon()const{
+    return purchase_scene_actor(NativeWeaponAlias::source_class);
+}
+unsigned NativeVendor::purchase_scene_body()const{
+    return purchase_scene_actor(0);
+}
+unsigned NativeVendor::purchase_scene_actor(unsigned short object_class)const{
     if(!presenting_custom_purchase())return 0;
     const auto scene=level(exit_scene);
     const int count=read<short>(scene+0x44);
     if(count<1||count>14)return 0;
     for(int i=0;i<count;++i){
         const auto actor=read<unsigned>(scene+0x178+unsigned(i)*4);
-        if(valid(actor,256)&&read<unsigned short>(actor+0xa6)==NativeWeaponAlias::source_class&&
+        if(valid(actor,256)&&read<unsigned short>(actor+0xa6)==object_class&&
            read<unsigned char>(actor+0x20)<0x80)return actor;
     }
     return 0;

@@ -95,7 +95,7 @@ std::string NativeRuntimeHooks::diagnostic() const {
         if (api_->api_minor >= vendor_icon_strip_interface) {
             return "Official OpenRAC hook chains including the vendor icon strip, with a native preview-pose adapter";
         }
-        return "Official OpenRAC hook chains with typed native icon-strip and preview-pose adapters";
+        return "Official OpenRAC hook chains with typed native presentation adapters";
     }
     arsenal_hooks_diagnostics_v1 info{};
     info.size = sizeof info;
@@ -105,17 +105,27 @@ std::string NativeRuntimeHooks::diagnostic() const {
     return std::string(info.message) + (info.hook_id[0] ? std::string(" [") + info.hook_id + "]" : "") +
         " (" + std::to_string(info.last_status) + ")";
 }
+int NativeRuntimeHooks::bind_acquisition_pose(void* replacement,void** original){
+    if(!official_)return OPENRAC_HOOK_UNKNOWN;
+    return bind_private("rac1.acquisition.pose","void(u32)",replacement,original);
+}
 int NativeRuntimeHooks::bind_private(const char* id,const char* signature,void* replacement,void** original){
     const bool strip=id&&!std::strcmp(id,"rac1.vendor.icon_strip.draw");
     const bool pose=id&&!std::strcmp(id,"rac1.menu.preview.pose");
-    if(!strip&&!pose)return OPENRAC_HOOK_UNKNOWN;
+    const bool acquisition=id&&!std::strcmp(id,"rac1.acquisition.pose");
+    if(!strip&&!pose&&!acquisition)return OPENRAC_HOOK_UNKNOWN;
     if(!signature||std::strcmp(signature,strip?"void()":"void(u32)"))return OPENRAC_HOOK_SIGNATURE;
 #if defined(_WIN32)
-    auto& bridge=bridges_[strip?0:1];
+    const std::size_t index=strip?0:pose?1:2;
+    auto& bridge=bridges_[index];
     if(bridge.target||!replacement||!original||!api_->function||!api_->version)return OPENRAC_HOOK_UNKNOWN;
+    // The acquisition actor callback runs after the cutscene resolves the
+    // current keys, before the renderer snapshots the skinning pose.
+    constexpr const char* pal[]={"func_00239A00","func_00225E00","func_L00_002353B8"};
+    constexpr const char* ntsc[]={"FUN_002386e8","FUN_00224b70","FUN_L00_00234b38"};
     const char* symbol=nullptr;
-    if(!std::strcmp(api_->version,"pal"))symbol=strip?"func_00239A00":"func_00225E00";
-    if(!std::strcmp(api_->version,"ntsc"))symbol=strip?"FUN_002386e8":"FUN_00224b70";
+    if(!std::strcmp(api_->version,"pal"))symbol=pal[index];
+    if(!std::strcmp(api_->version,"ntsc"))symbol=ntsc[index];
     auto* target=symbol?api_->function(symbol):nullptr;
     MEMORY_BASIC_INFORMATION region{};
     if(!target||!VirtualQuery(target,&region,sizeof region)||region.State!=MEM_COMMIT||region.Type!=MEM_IMAGE||

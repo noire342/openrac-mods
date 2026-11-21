@@ -16,6 +16,7 @@
 #include "native_compatibility_modules.hpp"
 #include "native_gold_vendor.hpp"
 #include "native_acquisition.hpp"
+#include "native_acquisition_hand.hpp"
 #include "revolverator_api.h"
 #include <memory>
 #include <exception>
@@ -34,7 +35,7 @@ struct Session {
  const openrac_api* api;openrac_mod* mod;GuestArena arena,core_arena;arsenal::Registry registry;
  NativeAmmunition ammunition;NativeAmmoAlias alias;NativeWeaponVisual visuals;NativeVendor vendor;NativeVendorIcons vendor_icons;NativeEquipAudio equip_audio;NativeWorld world;Controller controller;Presentation presentation;
  NativeArsenal arsenal;NativeWeaponMenu menu;NativeArsenalSave saves;NativeArsenalXP xp;
- NativeGoldVendor gold_vendor;NativeAcquisition acquisition;
+ NativeGoldVendor gold_vendor;NativeAcquisition acquisition;NativeAcquisitionHand acquisition_hand;
  bool primary=false;unsigned epoch=0;int level=-1;
  PrimaryButton primary_button;
  bool golden()const{const auto* state=registry.state(arsenal::RevolveratorKey);return state&&state->owned&&state->golden;}
@@ -46,13 +47,14 @@ struct Session {
   +[](void* user,unsigned actor){auto& s=*static_cast<Session*>(user);
    const bool applied=s.visuals.publish_preview(NativeWeaponVisual::Preview::Acquisition,actor,true,s.golden());
    if(!applied&&s.api->setting_bool(s.mod,"trace"))s.api->log(s.mod,OPENRAC_LOG_WARN,"Acquisition weapon is not ready for the Rotatore model");},
-  +[](void* user,unsigned level){static_cast<Session*>(user)->presentation.notify_acquisition(level);}}){
+  +[](void* user,unsigned level){static_cast<Session*>(user)->presentation.notify_acquisition(level);}}),
+  acquisition_hand(a,arena){
   registry.register_weapon({arsenal::RevolveratorKey,"noire342.revolverator",18,60037,NativeAmmunition::capacity,15000,12});vendor.set_arsenal(&arsenal);
  }
  ~Session(){before_load();}
  void before_load(){
   primary_button.reset();
-  acquisition.reset();gold_vendor.reset();
+  acquisition_hand.reset();acquisition.reset();gold_vendor.reset();
   controller.cancel();visuals.reset();world.reset();menu.reset();arsenal.reset();presentation.reset();vendor.reset();alias.reset();ammunition.reset();core_arena.reset();arena.reset();xp.reset();animations.clear();events.clear();
  }
  void prepare_level(){
@@ -105,6 +107,7 @@ struct Session {
   restore_context();
  }
  void frame(){
+  acquisition_hand.restore();
   if(world.level_transitioning())return;
   const int current=api->loaded_level();
   if(current!=level){before_load();level=current;++epoch;primary=false;}
@@ -171,6 +174,7 @@ using RestoreData=int(*)(unsigned,int,unsigned);
 using Restore=void(*)(int);
 Update walloper_original{},relay_original{},ammo_original{},nanotech_original{};Pad pad_original{};Load load_original{};
 Update gold_offer_original{},snagglebeast_original{};
+Update acquisition_pose_original{};
 Advance motion_input_original{};void(*planar_velocity_original)(float){};
 GetHit hit_original{};Death death_original{};Advance animation_original{};
 BuildVendor vendor_original{};
@@ -411,6 +415,13 @@ void preview_pose(unsigned moby){
   }
  }
 }
+void acquisition_pose(unsigned moby){
+ acquisition_pose_original(moby);
+ if(!session)return;
+ auto& s=*session;
+ const auto actor=s.acquisition.presenting()?s.acquisition.scene_body():s.vendor.purchase_scene_body();
+ if(actor&&moby==actor)s.acquisition_hand.publish(actor);
+}
 template<MenuCall* Original>int draw_selected_preview(unsigned screen){
  if(!session)return (*Original)(screen);
  auto& s=*session;const auto key=s.menu.selected_key();
@@ -644,6 +655,9 @@ extern "C" OPENRAC_MOD_EXPORT int openrac_mod_load(const openrac_api* api,openra
   MenuHook<11,&NativeWeaponMenu::equipped_call>::install("rac1.menu.equipped_preview.update");
   MenuHook<12,&NativeWeaponMenu::equipped_call>::install("rac1.menu.equipped_preview.draw");
   hook("rac1.menu.preview.pose","void(u32)",reinterpret_cast<void*>(preview_pose),reinterpret_cast<void**>(&preview_pose_original));
+  if(runtime_hooks->bind_acquisition_pose(reinterpret_cast<void*>(acquisition_pose),
+      reinterpret_cast<void**>(&acquisition_pose_original))!=OPENRAC_HOOK_OK&&api->setting_bool(mod,"trace"))
+   api->log(mod,OPENRAC_LOG_WARN,"Rotatore acquisition hand pose unavailable on this game build");
   hook("rac1.hud.quick_select.init","void(u32)",reinterpret_cast<void*>(quick_init),reinterpret_cast<void**>(&quick_init_original));
   hook("rac1.hud.quick_select.update","void(u32)",reinterpret_cast<void*>(quick_update),reinterpret_cast<void**>(&quick_update_original));
   hook("rac1.hud.quick_select.draw","i32(u32)",reinterpret_cast<void*>(quick_draw),reinterpret_cast<void**>(&quick_draw_original));

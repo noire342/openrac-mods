@@ -36,6 +36,16 @@ bool NativeAcquisition::same_level()const{
 bool NativeAcquisition::owns_scene()const{
     return same_level()&&read<unsigned>(vendor_+0x28)==buffer_;
 }
+unsigned NativeAcquisition::scene_body()const{
+    if(!presenting_||!owns_scene())return 0;
+    const int count=read<short>(scene_+0x44);
+    if(count<1||count>14)return 0;
+    for(int i=0;i<count;++i){
+        const auto actor=read<unsigned>(scene_+0x178+unsigned(i)*4);
+        if(valid(actor,256)&&read<unsigned short>(actor+0xa6)==0&&read<unsigned char>(actor+0x20)<0x80)return actor;
+    }
+    return 0;
+}
 bool NativeAcquisition::bindings_ready(){
     present_=reinterpret_cast<Present>(find_function("FUN_L01_002aea70"));
     place_=reinterpret_cast<Place>(find_function("FUN_L00_00216f90"));

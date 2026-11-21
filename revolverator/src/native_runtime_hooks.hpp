@@ -17,6 +17,7 @@ public:
     NativeRuntimeHooks(const NativeRuntimeHooks&) = delete;
     NativeRuntimeHooks& operator=(const NativeRuntimeHooks&) = delete;
     int bind(const char* id, const char* signature, void* replacement, void** original);
+    int bind_acquisition_pose(void* replacement, void** original);
     void commit();
     std::string diagnostic() const;
 private:
@@ -26,7 +27,7 @@ private:
     bool official_{};
     bool claimed_{};
     struct NativeBridge {void* target{};void* consumer{};bool enabled{};};
-    std::array<NativeBridge,2> bridges_{};
+    std::array<NativeBridge,3> bridges_{};
     int bind_private(const char*,const char*,void*,void**);
     void release_private() noexcept;
 };
