@@ -13,9 +13,11 @@ scopes equipment changes during acquisition scenes and save operations to
 the mod's own state. Challenge Mode carries over the Rotatore's Golden upgrade,
 ammunition, XP and favourite when the slot is available.
 
-The [0.4.8 release page](https://github.com/noire342/openrac-mods/releases/tag/revolverator-v0.4.8)
+The [0.4.9 release page](https://github.com/noire342/openrac-mods/releases/tag/revolverator-v0.4.9)
 includes the installable Windows package, corresponding source and validation
-receipt. This version integrates with [Weapon Experience 0.7.0](https://github.com/noire342/openrac-mods/releases/tag/weapon-xp-v0.7.0)
+receipt. The Gadgetron shows the Revolverator's 20-round capacity during ammo
+purchases. Attempting an attack at zero rounds plays the game's original click.
+Revolverator integrates with [Weapon Experience 0.7.0](https://github.com/noire342/openrac-mods/releases/tag/weapon-xp-v0.7.0)
 through API v5 for shared XP rules and localized level names. Existing API v4
 providers are supported.
 
@@ -43,8 +45,8 @@ contains no copied game models, textures or HUD artwork.
 
 1. Use the official OpenRAC launcher on Windows x64, with **mod interface 1.12
    or newer** and your own extracted PAL or NTSC-U copy of Ratchet & Clank.
-2. Download `revolverator-0.4.8-windows-x86_64.zip` from that release and import
-   it with **Mods → Add a mod → File**. If the catalog already shows 0.4.8,
+2. Download `revolverator-0.4.9-windows-x86_64.zip` from that release and import
+   it with **Mods → Add a mod → File**. If the catalog already shows 0.4.9,
    you can install or update from there.
 3. Enable the mod and start the game. The first start prepares its local
    graphics cache automatically. No separate Python installation, graphics

@@ -1,11 +1,10 @@
 # Release packaging and provenance
 
-The Windows archive is revolverator-0.4.8-windows-x86_64.zip with
+The Windows archive is revolverator-0.4.9-windows-x86_64.zip with
 openrac-mod.json at its root. The manifest names author **noire342**,
-version 0.4.8, GPL-3.0-or-later and minimum mod interface 1.12. Use
-`revolverator-v0.4.8` as the release tag. The receipt identifies the exact
-binaries and records the Weapon Experience integration and native regression
-checks for this release.
+version 0.4.9, GPL-3.0-or-later and minimum mod interface 1.12. Use
+`revolverator-v0.4.9` as the release tag. The receipt identifies the exact
+binaries and records the Gadgetron ammo purchase and native audio checks.
 
 ## Installable files
 
