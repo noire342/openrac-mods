@@ -68,6 +68,10 @@ int main(){
     require(pal.data(0x13f350)==0x13f450&&pal.data(0x13d4c0)==0x13d5c8,"Hero and ownership have different region deltas");
     require(pal.data(0x1b3200)==0x1b3580&&pal.data(0x1b3580)==0x1b3900&&pal.data(0x1b3900)==0x1b3c80,"class resources, update functions and ID slots retain separate bindings");
     require(pal.level(0,0x1c8ff0)==0x1c92f0&&pal.level(0,0x1ca4c0)==0x1ca7c0,"vendor preview and state are level data");
+    require(pal.data(0x15ed5c)==0x15ee5c&&pal.level(0,0x197300)==0x197680,
+            "empty-ammo audio binds the current PAL sound bank and resident class data");
+    require(pal.level(0,0x160008)==0x1600c8&&pal.level(0,0x1afbc0)==0x1aff40&&
+            pal.level(0,0x1afe60)==0x1b01e0,"the sound fallback binds the complete PAL switchable class table");
     require(pal.level(1,0x16cce0)==0x16cd60&&pal.level(1,0x1ca940)==0x1cabc0,"acquisition keeps its Level1 provenance");
     require(pal.level(0,0x15f7c8)==0x15f8a8&&pal.level(0,0x15f91c)==0x15f9f4&&
             pal.level(0,0x15f91c+16)==0x15fa04,"adjacent HUD policies use their exact fields rather than one broad delta");
