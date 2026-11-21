@@ -14,6 +14,13 @@ constexpr unsigned hero_state_offset=0x2084,hero_control_mode_offset=0x208c,
 constexpr unsigned moby_destination_sequence_offset=0x53;
 constexpr int hero_idle_state=0,hero_held_attack_state=0x20;
 constexpr int walloper_hero_sequence=0x67,walloper_release_tick=18;
+constexpr int hoven_level=12,blarg_gun_joint=1;
+constexpr unsigned blarg_gun_class=499,trooper_attachment_offset=0x248;
+constexpr unsigned moby_spawn_frame_offset=0x38;
+constexpr unsigned moby_alpha_offset=0x23,moby_class_pointer=0x24,moby_flags_offset=0x34;
+constexpr unsigned moby_update_offset=0x74,moby_collision_offset=0x94,moby_collision_disable_offset=0x98;
+constexpr unsigned class_type_offset=0x46,creature_class_type=5,aim_target_flag=0x20;
+constexpr unsigned hidden_moby_flags=0x81;
 struct Stack {
  const openrac_api* api;unsigned saved{},at{},size{};
  Stack(const openrac_api* a,unsigned n):api(a),size(n){at=api->stack_push(n,&saved);}
@@ -49,7 +56,28 @@ bool NativeWorld::identity_valid(Target t)const{
  return t&&api_->loaded_level()==level_&&Memory::valid(t.address,256)&&token(t.address)==t
   &&read<unsigned char>(t.address+0x20)<0x80;
 }
-bool NativeWorld::valid(Target t)const{return identity_valid(t)&&(capturable_class(int(t.klass))||crates_.live_crate(t));}
+bool NativeWorld::capturable_enemy(Target t)const{
+ if(capture_excluded_class(t.klass))return false;
+ if(capturable_class(int(t.klass)))return true;
+ if(!(read<std::uint16_t>(t.address+moby_flags_offset)&aim_target_flag))return false;
+ // The same target contract the Morph-o-Ray uses: a creature class, the
+ // native aim flag and live health metadata. Creature type alone includes NPCs.
+ const auto klass=read<unsigned>(t.address+moby_class_pointer);
+ if(!Memory::valid(klass,class_type_offset+sizeof(std::uint16_t))||
+    read<std::uint16_t>(klass+class_type_offset)!=creature_class_type)return false;
+ const auto health=read<unsigned>(t.pvars);
+ const auto hp=read<float>(health);
+ return std::isfinite(hp)&&hp>0.f;
+}
+bool NativeWorld::valid(Target t)const{return identity_valid(t)&&(capturable_enemy(t)||crates_.live_crate(t));}
+bool NativeWorld::enemy_can_be_latched(Target t)const{
+ return read<unsigned>(t.address+moby_collision_offset)&&!read<unsigned>(t.address+moby_collision_disable_offset)&&
+        read<std::uint8_t>(t.address+moby_alpha_offset)&&
+        !(read<std::uint16_t>(t.address+moby_flags_offset)&hidden_moby_flags);
+}
+bool NativeWorld::golden_damage_target(Target t)const{
+ return golden_damage_class(t.klass)||capturable_enemy(t);
+}
 bool NativeWorld::try_capture_gag(const Frame& frame){
  if(flight_count())return false;
  const auto boss=gag_.candidate(frame);
@@ -61,14 +89,14 @@ bool NativeWorld::try_capture_gag(const Frame& frame){
 void NativeWorld::each_enemy(const void* context,void(*fn)(const void*,Target),bool include_crates)const{
  const auto first=read<unsigned>(global(0x15ff18)),last=read<unsigned>(global(0x15ff20));
  if(!Memory::valid(first,256)||last<first||last-first>4096*256||!Memory::valid(last-256,256))return;
- for(auto m=first;m<last;m+=256){const auto t=token(m);if(identity_valid(t)&&(capturable_class(int(t.klass))||(include_crates&&destructible_crate_class(int(t.klass)))))fn(context,t);}
+ for(auto m=first;m<last;m+=256){const auto t=token(m);if(identity_valid(t)&&(capturable_enemy(t)||(include_crates&&destructible_crate_class(int(t.klass)))))fn(context,t);}
 }
 void NativeWorld::each_damageable(const void* context,void(*fn)(const void*,Target))const{
  const auto first=read<unsigned>(global(0x15ff18)),last=read<unsigned>(global(0x15ff20));
  if(!Memory::valid(first,256)||last<first||last-first>4096*256||!Memory::valid(last-256,256))return;
  for(auto m=first;m<last;m+=256){
   const auto t=token(m);
-  if(identity_valid(t)&&golden_damage_class(t.klass))fn(context,t);
+  if(identity_valid(t)&&golden_damage_target(t))fn(context,t);
  }
 }
 float NativeWorld::collision_radius(Target t)const{
@@ -108,7 +136,8 @@ std::optional<Target> NativeWorld::find_target(Vec3 origin,float yaw,float reach
  Search search{this,origin,yaw,reach,{},std::numeric_limits<float>::max()};
  each_enemy(&search,+[](const void* ctx,Target target){
   auto& s=*const_cast<Search*>(static_cast<const Search*>(ctx));auto& w=*s.self;
-  if(w.flying(target)||(!capturable_class(int(target.klass))&&!w.crates_.can_carry(target)))return;
+  if(w.flying(target))return;
+  if(destructible_crate_class(int(target.klass))?!w.crates_.can_carry(target):!w.enemy_can_be_latched(target))return;
   const auto pos=w.read<Vec3>(target.address+0x10);const auto delta=pos-s.origin;
   const float distance=delta.x*delta.x+delta.y*delta.y;
   if(!finite(pos)||std::abs(delta.z)>2.f||distance>s.reach*s.reach)return;
@@ -141,14 +170,22 @@ std::optional<Target> NativeWorld::find_target(Vec3 origin,float yaw,float reach
 bool NativeWorld::capture(Target t){
  if(lease_.target||!valid(t)||flying(t)||!can_launch())return false;
  if(!(site_.target==t)||!finite(site_.point))return false;
- if(capturable_crate_class(t.klass)&&!crates_.detach(t))return false;
- lease_={};lease_.target=t;lease_.collision=read<unsigned>(t.address+0x94);
- lease_.disabled=read<unsigned>(t.address+0x98);lease_.origin=read<Vec3>(t.address+0x10);
+ const bool crate=capturable_crate_class(t.klass);
+ if(crate?!crates_.detach(t):!enemy_can_be_latched(t))return false;
+ lease_={};lease_.target=t;lease_.collision=read<unsigned>(t.address+moby_collision_offset);
+ // The native dispatcher accepts a null per-instance callback, while
+ // animation still runs. This lease follows the actor token, not its pool slot.
+ if(!crate){
+  lease_.native_update=read<unsigned>(t.address+moby_update_offset);
+  if(lease_.native_update)write<unsigned>(t.address+moby_update_offset,0);
+ }
+ lease_.attachment=trooper_gun(t);
+ lease_.disabled=read<unsigned>(t.address+moby_collision_disable_offset);lease_.origin=read<Vec3>(t.address+0x10);
  lease_.angles=read<Vec3>(t.address+0x40);lease_.spin_angle=read<float>(hero()+0x98);
  lease_.grip=capture_grip(lease_.origin,lease_.angles,site_.point,site_.approach,lease_.spin_angle);
  const auto q=lease_.grip.original;
  lease_.local_sphere=rotate({-q[0],-q[1],-q[2],q[3]},read<Vec3>(t.address)*(1.f/1024.f)-lease_.origin);
- write<unsigned>(t.address+0x94,0);write<unsigned>(t.address+0x98,1);
+ write<unsigned>(t.address+moby_collision_offset,0);write<unsigned>(t.address+moby_collision_disable_offset,1);
  if(trace_){char s[240];std::snprintf(s,sizeof s,"captured class=%u moby=%08x local-grip=(%.3f,%.3f,%.3f)",t.klass,t.address,lease_.grip.local_point.x,lease_.grip.local_point.y,lease_.grip.local_point.z);log(s);}
  if(audio_)audio_->emit(WeaponAudioCue::Capture);
  return true;
@@ -188,21 +225,37 @@ void NativeWorld::move(Target t,Vec3 p,float yaw){
  const auto pose=attach_to_tip(lease->grip,p,lease->spin_angle,std::clamp(lease->hold_time/.25f,0.f,1.f));
  move_origin(*lease,pose.origin,pose.angles);
 }
+Target NativeWorld::trooper_gun(Target trooper)const{
+ if(level_!=hoven_level||trooper.klass!=hoven_blarg_trooper_class||
+    !Memory::valid(trooper.pvars,trooper_attachment_offset+sizeof(unsigned)))return {};
+ const auto gun=token(read<unsigned>(trooper.pvars+trooper_attachment_offset));
+ // The native spawner copies the parent's spawn frame to this child.
+ if(gun.klass!=blarg_gun_class||!identity_valid(gun)||
+    read<std::uint64_t>(gun.address+moby_spawn_frame_offset)!=read<std::uint64_t>(trooper.address+moby_spawn_frame_offset))return {};
+ return gun;
+}
 void NativeWorld::move_origin(const Lease& lease,Vec3 p,Vec3 angles){
  const auto t=lease.target;
  const Vec3 centre=p+rotate(rotation_from_euler(angles),lease.local_sphere);
  write(t.address+0x10,p);write(t.address,centre*1024.f);write(t.address+0x40,angles);
  basis_(t.address+0xc0,t.address+0x40);
+ if(lease.attachment&&lease.attachment==trooper_gun(t)){
+  using UpdateAttachment=void(*)(unsigned,unsigned,int);
+  const auto update=reinterpret_cast<UpdateAttachment>(find_function("FUN_L12_0027b9c0"));
+  if(update)update(t.address,lease.attachment.address,blarg_gun_joint);
+ }
 }
 void NativeWorld::restore_lease(Lease& lease,bool cancelled){
  const auto t=lease.target;if(!t)return;
- if(valid(t)){
+ if(identity_valid(t)){
   // A launched actor is already in the world. Only a cancelled carry needs
   // a placement before native collision is restored.
   const auto position=cancelled&&!lease.flying?drop_fallback(lease,true):read<Vec3>(t.address+0x10);
   move_origin(lease,position,lease.angles);
-  if(read<unsigned>(t.address+0x94)==0)write(t.address+0x94,lease.collision);
-  if(read<unsigned>(t.address+0x98)==1)write(t.address+0x98,lease.disabled);
+  if(!read<unsigned>(t.address+moby_collision_offset))write(t.address+moby_collision_offset,lease.collision);
+  if(read<unsigned>(t.address+moby_collision_disable_offset)==1)write(t.address+moby_collision_disable_offset,lease.disabled);
+  if(lease.native_update&&!read<unsigned>(t.address+moby_update_offset))
+   write(t.address+moby_update_offset,lease.native_update);
  }
  lease={};
 }
@@ -287,7 +340,7 @@ void NativeWorld::drop(Target t){
  if(!lease_.target||!(lease_.target==t)||lease_.flying)return;
  const auto position=drop_position(lease_);
  if(!(lease_.target==t))return;
- if(!lease_valid()){lease_={};return;}
+ if(!lease_valid()){restore_lease(lease_,false);return;}
  Lease carried=lease_;lease_={};
  const Vec3 ground=position?*position:drop_fallback(carried);
  const bool crate=capturable_crate_class(t.klass);
@@ -387,7 +440,7 @@ std::optional<Contact> NativeWorld::sweep_impact(Target t,Vec3 from,Vec3 to){
  return std::nullopt;
 }
 bool NativeWorld::hit(Target t,float damage,Vec3 direction,unsigned attacker,bool explosive){
- const bool allowed=explosive?golden_damage_class(t.klass):capturable_class(int(t.klass))||destructible_crate_class(int(t.klass));
+ const bool allowed=explosive?golden_damage_target(t):capturable_enemy(t)||destructible_crate_class(int(t.klass));
  if(!identity_valid(t)||!allowed||!finite(direction)||!std::isfinite(damage)||damage<=0||
     !Memory::valid(attacker,256)||t.address==body())return false;
  Stack stack(api_,48);if(!stack.at)return false;
@@ -500,7 +553,8 @@ void NativeWorld::explode(Target target,const ImpactContext& result,const Golden
   centre=centre+unit(result.normal)*.06f; // Lift terrain contacts out of the surface.
  GoldenBlastPlan plan(blast,centre);
  plan.consider(target,centre,0,true,true);
- if(result.other&&identity_valid(*result.other)&&!flying(*result.other)&&!frozen(result.other->address))
+ if(result.other&&identity_valid(*result.other)&&golden_damage_target(*result.other)&&
+    !flying(*result.other)&&!frozen(result.other->address))
   plan.consider(*result.other,damage_centre(*result.other),collision_radius(*result.other),true,true);
  struct Search {NativeWorld* self;GoldenBlastPlan* plan;Vec3 centre;float radius;unsigned ignore;};
  Search search{this,&plan,centre,blast.radius,target.address};
@@ -647,7 +701,8 @@ bool NativeWorld::blocks_native_hit(Target victim,unsigned hit)const{
  const auto origin=read<unsigned short>(hit+0x2a);
  if(throw_strike_active()&&flags==0x30000&&read<unsigned char>(hit+0x29)==3&&
     (origin==180||origin==2017||origin==2018)&&read<float>(hit+0x2c)==3.f)return identity_valid(victim);
- return capturable_class(int(victim.klass))&&valid(victim)&&origin!=2017&&(flags&0x30000)!=0;
+ return identity_valid(victim)&&capturable_enemy(victim)&&enemy_can_be_latched(victim)&&
+        origin!=2017&&(flags&0x30000)!=0;
 }
 Frame NativeWorld::snapshot(bool primary,unsigned epoch)const{
  Frame f;f.epoch=epoch;f.seconds=read<float>(global(0x15ed7c));

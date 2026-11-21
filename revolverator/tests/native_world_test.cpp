@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #include "native_world.hpp"
+#include "damage_targets.hpp"
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -132,6 +133,7 @@ struct Fixture {
  Target actor(unsigned at,unsigned klass,Vec3 centre,unsigned stamp){
   put(at+0x10,centre);put(at,centre*1024.f);put(at+12,358.4f);
   put<unsigned char>(at+0x20,0);put<unsigned short>(at+0xa6,static_cast<unsigned short>(klass));
+  put<std::uint8_t>(at+0x23,0x80);
   put(at+0x78,0x80000u+(at&0xffff));put(at+0x38,stamp);put(at+0x94,7u);put(at+0x98,0u);
   return {at,get<unsigned>(at+0x78),klass,stamp};
  }
@@ -152,6 +154,45 @@ struct Fixture {
 };
 }
 int main(){
+ {
+  Fixture f;
+  constexpr unsigned moby_callback=0x74,native_callback=0x2b9500,foreign_callback=0x2b9580;
+  constexpr unsigned class_record=0x100000,health=0x110000;
+  const auto enemy=f.enemy(0,612,{1.3f,0,0}); // Constructorbot, absent from the old capture and blast tables.
+  f.put(enemy.address+0x24,class_record);
+  f.put<std::uint16_t>(class_record+0x46,5);
+  f.put(enemy.address+moby_callback,native_callback);
+  require(!f.world.valid(enemy),"a creature tag alone does not make an NPC capturable");
+  f.put<std::uint16_t>(enemy.address+0x34,0x20);
+  f.put(enemy.pvars,health);
+  f.put(health,2.f);
+  f.put<std::uint16_t>(enemy.address+0x34,0x21);
+  require(!f.world.find_target({},0,2),"an invisible actor cannot be latched through native aim metadata");
+  f.put<std::uint16_t>(enemy.address+0x34,0x20);
+  require(f.world.find_target({},0,2)==enemy&&f.world.capture(enemy),"native enemy metadata admits regular enemies without class-specific hooks");
+  require(f.get<unsigned>(enemy.address+moby_callback)==0,"hold suspends only the captured actor callback");
+  f.world.release(enemy,true);
+  require(f.get<unsigned>(enemy.address+moby_callback)==native_callback,"release restores the captured actor callback");
+  f.launch(enemy);
+  f.world.impact_result(enemy,f.impact());
+  require(f.packet(enemy.address)!=nullptr,"a Golden throw damages a regular enemy admitted by native aim metadata");
+  require(f.world.find_target({},0,2)==enemy&&f.world.capture(enemy),"released regular enemies can be captured again");
+  f.put(enemy.address+moby_callback,foreign_callback);
+  f.world.release(enemy,true);
+  require(f.get<unsigned>(enemy.address+moby_callback)==foreign_callback,"release preserves a newer actor callback");
+  require(f.world.find_target({},0,2)==enemy&&f.world.capture(enemy),"the same actor can be captured with its new callback");
+  const auto boss=f.actor(enemy.address,1051,{1.3f,0,0},80);
+  f.put(boss.address+0x34,std::uint16_t{0x20});
+  f.put(boss.address+moby_callback,native_callback);
+  f.world.discarded(enemy);
+  require(!f.world.valid(boss)&&f.get<unsigned>(boss.address+moby_callback)==native_callback,
+          "capture exceptions win over native aim metadata and pool reuse is untouched");
+  for(const unsigned klass:{36u,455u,541u,568u,668u,871u,1632u,1906u}){
+   const auto scripted=f.actor(enemy.address,klass,{1.3f,0,0},80+klass);
+   require(!f.world.valid(scripted),"linked actors, mines and scripted props remain uncapturable even with aim metadata");
+  }
+  require(capturable_class(hoven_anklebiter_class),"the Hoven anklebiter is capturable");
+ }
  {
   Fixture f;auto frame=f.frame();f.world.set_active(true);f.world.observe_frame(frame);
   f.put(hero+0x2084,0x20);

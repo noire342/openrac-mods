@@ -1,6 +1,6 @@
 # Heavy enemies: native melee, no capture
 
-The capture allowlist excludes these native actors:
+The capture policy excludes these native enemies:
 
 | Native actor | Class | Example level |
 | --- | ---: | --- |
@@ -16,6 +16,14 @@ game. Their ordinary Walloper hits are forwarded unchanged, leaving native
 armor, hit reactions, vulnerability windows, damage and death handling intact.
 Capture immunity does not grant immunity to Golden impact explosions.
 
+Regular enemies can be captured using the game's creature, aim and health
+metadata. This covers enemies such as the Hoven Anklebiter without requiring
+an individual AI hook for every enemy. Existing class bindings also cover
+enemies with different native targeting data, such as the Blarg Commander.
+Bosses and scripted targets such as turrets, mines, spawners and allied
+Gadgebots retain their native behavior. A carry lease suspends only the live
+actor's update and restores it when control returns to the game.
+
 Tanks and Toxic Crabs were already outside the capture allowlist. Version 0.3.2
 removes Alien Snapper1048 from it, and adds the distinct Blarg Commander1371.
 The Commander has its own official native update hook, so its native motion
@@ -29,7 +37,7 @@ generations cannot suppress native damage either.
 
 The IDs come from the official RaC1 moby-class records, not display names or
 size guesses. In particular, Scoutbot252 is not BomberTank253, and
-Extermibot623 is not Extermitank625. All other capture classes remain unchanged.
+Extermibot623 and Extermitank625 are distinct classes.
 
 Host regressions cover targeting, rejected capture, native-hit forwarding,
 unchanged actor state, Gold blast eligibility, stale targets and selection of a

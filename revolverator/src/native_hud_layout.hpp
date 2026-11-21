@@ -65,7 +65,9 @@ inline constexpr unsigned channel_x = 0x50;
 inline constexpr unsigned channel_y = 0x54;
 inline constexpr unsigned channel_pending = 0x68;
 inline constexpr unsigned channel_visibility = 0x70;
+inline constexpr unsigned channel_text_fade = 0x71;
 inline constexpr unsigned channel_ammunition = 0x74;
+inline constexpr unsigned channel_display_timer = 0x7c;
 inline constexpr unsigned ammo_format = 0x15f7c8;
 inline constexpr unsigned ammo_fade_frames = 0x15f91c;
 

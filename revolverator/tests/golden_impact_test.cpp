@@ -74,7 +74,6 @@ int main(){
   require(!plan.consider(projectile,{0,0,0},0,true,true),"duplicate target omitted");
   require(!plan.consider(recycled,{0,0,0},0,true,true),"same address cannot receive two native hits");
   require(!plan.consider({0x21000,1,459,1},{1,0,0},0,false),"occluded enemy omitted");
-  require(!plan.consider({0x22000,1,13,1},{1,0,0},0,true),"visible NPC omitted");
   require(plan.consider({0x23000,1,1106,1},{7,0,0},2,true),"large boss surface inside radius admitted");
   require(!plan.consider({0x24000,1,459,1},{7,0,0},0,true),"actor outside blast omitted");
   require(plan.size()==2&&finite(plan.hits()[0].direction)&&near(plan.hits()[0].damage,16),"zero-distance target produces finite full-strength packet");

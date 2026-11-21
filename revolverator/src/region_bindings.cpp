@@ -18,6 +18,7 @@ namespace {
 }
 struct FunctionName { const char* ntsc; const char* pal; };
 constexpr FunctionName functions[] = {
+    {"FUN_L12_0027b9c0","func_L12_0027C9B8"}, // Hoven bone attachment transform.
     {"FUN_001f96f8","func_001F9850"}, // ScaleTicks, for the authored Walloper contact frame.
     {"FUN_001efa68","func_001EFE10"},
     {"FUN_001f4280","func_001F4630"},

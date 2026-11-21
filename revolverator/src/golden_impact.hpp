@@ -42,7 +42,8 @@ struct GoldenBlastHit {
 // Native PostHit has a 64-record ring. A single burst admits at most 48 distinct
 // nearby actors, reserving room for unrelated native hits in this same tick.
 // The thrown actor and actual contact are retained; the nearest remaining
-// visible actors win. No game memory or native functions are used here.
+// visible actors win. The caller supplies damageable actors. No game memory
+// or native functions are used here.
 class GoldenBlastPlan final {
 public:
     static constexpr std::size_t maximum_hits=48;

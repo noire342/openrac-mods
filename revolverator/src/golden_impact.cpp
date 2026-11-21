@@ -13,7 +13,8 @@ bool golden_damage_class(unsigned klass){
     // story NPCs, Ratchet, pickups and moving scenery have those too.
     switch(klass){
     case 28:case 29:case 30:case 31:case 35:case 36:case 44:case 52:case 63:
-    case 123:case 133:case 211:case 217:case 252:case 253:case 294:case 326:
+    case hoven_anklebiter_class:case hoven_blarg_trooper_class:
+    case 123:case 133:case 211:case 217:case 252:case 253:case 326:
     case 333:case 340:case 344:case 347:case 427:case 459:case 563:case 572:
     case 573:case 577:case 578:case 580:case 623:case 625:case 631:case 638:
     case 749:case 865:case 866:case 1023:case 1048:case 1051:case 1059:
@@ -44,7 +45,7 @@ std::optional<GoldenBlast> GoldenImpact::consume(Target projectile,ImpactReason 
     return explode?std::optional<GoldenBlast>{blast}:std::nullopt;
 }
 bool GoldenBlastPlan::consider(Target target,Vec3 position,float radius,bool visible,bool primary){
-    if(!target||!visible||!golden_damage_class(target.klass)||!finite(centre_)||
+    if(!target||!visible||!finite(centre_)||
        !finite(position)||!std::isfinite(radius)||radius<0)return false;
     for(std::size_t i=0;i<size_;++i)if(hits_[i].target.address==target.address)return false;
     const Vec3 delta=position-centre_;

@@ -52,6 +52,7 @@ private:
  void apply_identity();
  void bind_icon();
  void reset_icons(bool reuse_storage);
+ void detach_ammo_hud();
  void rect(int x,int y,int w,int h,unsigned color)const;
  void text(int x,int y,const char* s,unsigned color,int pixels=10)const;
 };

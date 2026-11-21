@@ -127,8 +127,7 @@ void Presentation::frame(bool equipped,bool alive){
  // icon. Keep its scheduler's18 identity and scope the render-only bank below.
  if(!equipped||!icon_copy_||!Memory::valid(slot,channel_size)||read<int>(slot+channel_next_id)!=walloper_hud_bank||
      (read<int>(slot+channel_pending)!=0&&read<int>(slot+channel_current_id)!=walloper_hud_bank)){
-  if(slot_&&old_callback_&&read<unsigned>(slot_+channel_callback)==callback_)write(slot_+channel_callback,old_callback_);
-  slot_=old_callback_=callback_=0;
+  detach_ammo_hud();
   return;
  }
  const auto callback=read<unsigned>(slot+channel_callback),relay=guest_callback(unsigned(current),relays[unsigned(current)]);
@@ -311,7 +310,21 @@ void Presentation::after_hud(unsigned e,const Controller& c){
  const int fill=charge>=1.f?maximum_fill:std::clamp(int(maximum_fill*charge),0,maximum_fill-1);
  rect(left+1,y+22,fill,height-1,color);
 }
+void Presentation::detach_ammo_hud(){
+ const int current=slot_?read<int>(slot_+channel_current_id):0;
+ if(slot_&&owns(slot_)&&(current==walloper_hud_bank||current==animation_terminator)){
+  // Retire the departing cartridge tile before returning to the native draw.
+  // Otherwise its remaining fade requests a frame absent from the carrier bank.
+  write<std::uint8_t>(slot_+channel_visibility,0);
+  write<std::uint8_t>(slot_+channel_text_fade,0);
+  write<int>(slot_+channel_display_timer,0);
+ }
+ if(slot_&&old_callback_&&api_->loaded_level()==level_&&
+    read<unsigned>(slot_+channel_callback)==callback_)write(slot_+channel_callback,old_callback_);
+ slot_=old_callback_=callback_=0;
+}
 void Presentation::reset_icons(bool reuse_storage){
+ detach_ammo_hud();
  hd_.reset(reuse_storage);
  if(!reuse_storage)spare_icons_=spare_icon_capacity_=0;
  if(api_->loaded_level()==level_){
@@ -333,9 +346,7 @@ void Presentation::reset_icons(bool reuse_storage){
     spare_icons_=icon_copy_;spare_icon_capacity_=icon_capacity_;
    }
   }
-  if(slot_&&old_callback_&&read<unsigned>(slot_+channel_callback)==callback_)write(slot_+channel_callback,old_callback_);
  }
- slot_=old_callback_=callback_=0;
  icon_state_=icon_defs_=icon_refs_=icon_copy_=icon_defs_copy_=icon_defs_count_=0;
  icon_capacity_=0;
  icon_baseline_.clear();icon_definitions_baseline_.clear();

@@ -123,8 +123,9 @@ private:
  std::uint64_t golden_explosions_{},golden_hits_{};
  int level_=-1;
  struct Lease {
-  Target target{};unsigned collision{},disabled{};Vec3 origin{},angles{},local_sphere{};
+  Target target{},attachment{};unsigned collision{},disabled{};Vec3 origin{},angles{},local_sphere{};
   CaptureGrip grip{};float hold_time{},spin_angle{};bool flying{};
+  unsigned native_update{};
  } lease_;
  struct Flight {Target target{};Lease lease{};Shot shot{};GoldenImpact impact{};};
  std::array<Flight,maximum_flights> flights_{};
@@ -133,6 +134,10 @@ private:
  std::size_t deferred_head_{},deferred_size_{},frame_hits_{};
  std::uint64_t cancellation_generation_{};
  struct Site {Target target{};Vec3 point{},approach{};} site_;
+ Target trooper_gun(Target trooper)const;
+ bool capturable_enemy(Target target)const;
+ bool enemy_can_be_latched(Target target)const;
+ bool golden_damage_target(Target target)const;
  void move_origin(const Lease& lease,Vec3 position,Vec3 angles);
  void restore_lease(Lease& lease,bool cancelled);
  std::optional<Vec3> drop_position(const Lease& lease)const;

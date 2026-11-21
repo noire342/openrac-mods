@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #include "controller.hpp"
+#include "damage_targets.hpp"
 #include <algorithm>
 #include <cmath>
 namespace revolverator {
@@ -13,7 +14,8 @@ bool capturable_class(int klass){
  // ToxicCrab1202, AlienSnapper1048 and tanks253/625/1454 stay on the native
  // Walloper hit path. BlargCommander1371 is a separate capturable enemy.
  switch(klass){
- case 35:case 1059:case 123:case 252:case 294:case 427:case 459:case 563:
+ case hoven_anklebiter_class:case hoven_blarg_trooper_class:
+ case 35:case 1059:case 123:case 252:case 427:case 459:case 563:
  case 573:case 1382:case 577:case 580:case 623:case 1371:return true;
  default:return false; // Never catch NPCs, scenery, turrets, vehicles or bosses.
  }
@@ -118,7 +120,7 @@ void Controller::launch(const Frame& f){
  const float power=charge(),blast=blast_charge(),speed=13.f+power*9.f;
  *flight={target_,point_,{std::cos(f.yaw)*speed,std::sin(f.yaw)*speed,2.f+power*1.5f},0,power,blast,f.yaw,++sequence_};
  const auto victim=target_;target_={};phase_=Phase::Recovery;timer_=0;release_recovery_=true;
- const bool overheated=capturable_class(int(victim.klass))&&temperature_.thrown();
+ const bool overheated=!capturable_crate_class(victim.klass)&&temperature_.thrown();
  const auto generation=reset_generation_;
  ++counters_.throws;world_.launched(victim,power,blast);world_.animate(Motion::Release);
  if(overheated&&generation==reset_generation_)world_.drill_overheat();
@@ -145,7 +147,7 @@ void Controller::tick(const Frame& f){
  if(!f.playing){cancel();return;}
  if(!std::isfinite(f.seconds)||f.seconds<=0||f.seconds>.1f){cancel();return;}
  const float dt=f.seconds;
- temperature_.advance(dt,holding_enemy(phase_)&&capturable_class(int(target_.klass)));
+ temperature_.advance(dt,holding_enemy(phase_)&&!capturable_crate_class(target_.klass));
  timer_+=dt;
  if(phase_==Phase::Recovery&&timer_+.000001f>=recovery_seconds()){
   phase_=Phase::Idle;timer_=0;release_recovery_=false;
@@ -196,7 +198,7 @@ void Controller::tick(const Frame& f){
    break;
   }
   spin_time_+=dt;
-  if(capturable_class(int(target_.klass)))temperature_.spin(spin_time_,settings_.full_charge,settings_.maximum_spin);
+  if(!capturable_crate_class(target_.klass))temperature_.spin(spin_time_,settings_.full_charge,settings_.maximum_spin);
   const float power=charge();angle_=std::remainder(angle_+dt*(24.f+power*18.f),6.283185307f);
   point_=world_.carry_anchor(angle_).value_or(f.position+Vec3{0,0,settings_.orbit_height});
   world_.move(target_,point_,angle_);

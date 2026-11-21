@@ -303,7 +303,10 @@ int main(){
   require(presentation.owns(Slot),"a queued refresh of the active ammo bank cannot bypass the custom relay");
   presentation.frame(false);
   require(!presentation.owns(Slot)&&f.get<unsigned>(Slot+hud::channel_callback)==NativeCode,"a different weapon restores its native callback");
+  require(f.get<unsigned char>(Slot+hud::channel_visibility)==0,
+          "the retired cartridge tile cannot draw with the stock icon on unequip");
   f.put<int>(Slot+hud::channel_pending,0);presentation.frame(true);
+  f.put<unsigned char>(Slot+hud::channel_visibility,fully_visible);
   IdleWorld world;Controller controller(world);
   presentation.set_experience(true,4,.5f,true);presentation.after_hud(Slot,controller);
   require(f.sprites.size()==1&&f.quads>0&&f.rectangles>0,"custom XP decorations never overlay a weapon glyph on the ammunition icon");
@@ -368,6 +371,14 @@ int main(){
  }
  {
   Fixture f;Presentation presentation(&f.api,nullptr,&f.arena);presentation.frame(true);
+  f.put<int>(Slot+hud::channel_current_id,other_weapon_hud_bank);
+  f.put<int>(Slot+hud::channel_next_id,other_weapon_hud_bank);
+  presentation.frame(false,false);
+  require(f.get<unsigned char>(Slot+hud::channel_visibility)==fully_visible,
+          "retiring the custom HUD preserves another weapon's native fade");
+ }
+ {
+  Fixture f;Presentation presentation(&f.api,nullptr,&f.arena);presentation.frame(true);
   const unsigned used=f.arena.used();
   constexpr unsigned respawn_cycles = 30;
   constexpr std::uint16_t resident_sprite_gs_block = 42;
@@ -376,7 +387,11 @@ int main(){
    const auto custom=f.get<HudTables>(State+hud::bank_header);
    f.put(Cached+hud::bank_header,custom);
    f.put(custom[cached_image_index]+gs_block_field,resident_sprite_gs_block);
+   f.put<unsigned char>(Slot+hud::channel_visibility,fully_visible);
+   f.put<int>(Slot+hud::channel_display_timer,fully_visible);
    presentation.frame(false,false);
+   require(f.get<unsigned char>(Slot+hud::channel_visibility)==0&&f.get<int>(Slot+hud::channel_display_timer)==0,
+           "death retires the cartridge fade before withdrawing its sprite bank");
    require(f.get<HudTables>(State+hud::bank_header)==stock_tables&&
            f.get<HudTables>(Cached+hud::bank_header)==stock_tables,
            "the checkpoint owns the original sprite tables throughout death");

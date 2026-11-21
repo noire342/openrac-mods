@@ -747,6 +747,7 @@ extern "C" OPENRAC_MOD_EXPORT int openrac_mod_load(const openrac_api* api,openra
   enemy<9>("rac1.moby.peckbot.update");enemy<10>("rac1.moby.extermibot.update");enemy<11>("rac1.moby.blarg_commander.update");
   enemy<12>("rac1.moby.sharkigator_35.update");enemy<13>("rac1.moby.sharkigator_1059.update");
   enemy<14>("rac1.moby.crate.update");
+  enemy<15>("rac1.moby.hoven_troll.update");
   hook("rac1.moby.nanotech_ball.update","void(u32)",reinterpret_cast<void*>(nanotech_ball),reinterpret_cast<void**>(&nanotech_original));
   if(session->world.enable_crate_capture()){
    api->log(mod,OPENRAC_LOG_INFO,"Revolverator can carry ordinary crates with native crate updates");
