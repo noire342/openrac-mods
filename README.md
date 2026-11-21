@@ -60,13 +60,13 @@ the game's memory cards. Load it after other level-loading hooks, including XP,
 if managing `plugins.json` by hand. Full details and validation limits are in the
 module READMEs and [validation notes](docs/VALIDATION.md).
 
-## Install Rotatore / Revolverator 0.4.7
+## Install Rotatore / Revolverator 0.4.8
 
 1. Set up official OpenRAC on Windows x64 with **mod interface 1.12 or newer**
    with your own **PAL Europe v2.00 / SCES_509.16** data, the reference region.
    NTSC-U has a separate supported binding profile. Use **Check and play** if
    the client asks to refresh the extracted levels.
-2. Download the Windows ZIP from the [0.4.7 release](https://github.com/noire342/openrac-mods/releases/tag/revolverator-v0.4.7).
+2. Download the Windows ZIP from the [0.4.8 release](https://github.com/noire342/openrac-mods/releases/tag/revolverator-v0.4.8).
    Import it with **Mods → Add a mod → File**.
 3. Enable Revolverator and start normally. Italian UI calls the weapon
    **Rotatore**; **Revolverator unlocked from the start** enables an immediate trial.
@@ -107,8 +107,8 @@ for installation and controls.
 
 | Component | Current source | Role |
 |---|---|---|
-| [Revolverator](revolverator/README.md) | 0.4.7, PAL reference | Additional weapon, charge-gated throws, drill heat, Gold upgrade, contact sparks and API v3 |
-| [Weapon Experience](weapon-xp/README.md) |0.6.4 | Optional API v4 progression companion with PAL HUD/camera corrections |
+| [Revolverator](revolverator/README.md) | 0.4.8, PAL reference | Additional weapon, charge-gated throws, drill heat, Gold upgrade, contact sparks and API v3 |
+| [Weapon Experience](weapon-xp/README.md) | [0.7.0 Windows x64](https://github.com/noire342/openrac-mods/releases/tag/weapon-xp-v0.7.0) | Persistent weapon levels with an API for custom rules, names and level effects |
 | [Skill Points: RetroAchievements](skill-points-ra/README.md) |0.1.3 | Native menu, offline rules and read-only/event C API v1 |
 | [Cinematic Journeys](cinematic-journeys/README.md) |0.1.1 | Cutscene protection and configurable original flight animation |
 | [Clank Unleashed](clank-unleashed/README.md) |0.1.0-preview.5 PAL | Independent native Clank control, Gadgebot wheel and optional electrical reserve |
@@ -116,11 +116,9 @@ for installation and controls.
 | [Arsenal compatibility](arsenal-compat/README.md) |0.1.0 | Private bundled native-hook utility |
 | [File overlay](arsenal-file-overlay/README.md) |0.1.0 | Private bundled read-only manifest alias utility |
 
-Weapon Experience is optional. If enabled with Revolverator, use the matching
-0.6.4 companion; stable 0.6.1 does not implement its ownership API.
-Update the companion too: the earlier 0.6.3-arsenal package does not include
-these PAL HUD/camera fixes.
-The existing stable 0.6.1 release archives remain available for independent use.
+Weapon Experience is optional. Use **0.7.0** with Revolverator to share
+progression and display-name rules through API v5. API v4 providers,
+including Weapon Experience 0.6.4, retain their existing integration.
 Damage/ammunition bonuses default off. Revolverator's base capacity is 20;
 normal purchase starts at Hoven for 15,000 bolts, pickups give 2, ammo costs 25 bolts per round.
 `start_unlocked` defaults off and does not refill an already owned weapon.

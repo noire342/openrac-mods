@@ -5,6 +5,10 @@ NTSC-U. The v5 integration was tested in-game on both with official OpenRAC
 1.1.1 for Windows. Earlier regional checks are described in
 [PAL validation](docs/PAL.md).
 
+Download the Windows ZIP and matching source from the
+[0.7.0 release](https://github.com/noire342/openrac-mods/releases/tag/weapon-xp-v0.7.0).
+Import the Windows ZIP through **Mods → Add a mod → File** in OpenRAC.
+
 Twelve weapons gain ten persistent levels. The default is progression only: original
 damage, ammo capacity, projectiles, aiming, colors, particles and weapon behavior.
 All former level-based special abilities and cosmetic weapon modifications have been removed.
