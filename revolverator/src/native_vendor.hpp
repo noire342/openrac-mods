@@ -35,6 +35,11 @@ public:
     void set_arsenal(NativeArsenal* arsenal){arsenal_=arsenal;}
     unsigned selected_key()const;
     bool selected_custom()const;
+    unsigned weapon_purchase_key(int native_item) const;
+    void remember_weapon_purchase(unsigned key);
+    bool presenting_custom_purchase() const;
+    unsigned purchase_scene_weapon() const;
+    bool showing_custom_ammo() const;
     bool has_custom_rows()const;
     unsigned icon_bank_for_row(unsigned row)const;
     void set_preview_class(unsigned klass){preview_class_=klass;}
@@ -67,6 +72,7 @@ private:
     NativeArsenal* arsenal_{};
     unsigned build_previous_=18;
     bool rebuild_selected_custom_=false;
+    bool purchased_custom_=false;
     static constexpr int custom_row_marker=0x52564f31;
     static bool custom_row(const Row& row){return row.item==item_id && row.unused==custom_row_marker;}
     unsigned price_address_=0;

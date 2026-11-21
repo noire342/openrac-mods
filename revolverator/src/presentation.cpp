@@ -107,11 +107,15 @@ void Presentation::frame(bool equipped){
  hd_.frame();
  // NativeAmmunition owns the native ammo price/capacity fields and enables the
  // game's own ammo HUD. Presentation never overwrites those economy values.
- if(!equipped)return;
  const auto slot=global(0x199b60);
  // Native ammo HUD requests60000+item, independently of the item-definition
  // icon. Keep its scheduler's18 identity and scope the render-only bank below.
- if(!Memory::valid(slot,0x90)||read<int>(slot+0x20)!=60018||read<int>(slot+0x68)!=0)return;
+ if(!equipped||!icon_copy_||!Memory::valid(slot,0x90)||read<int>(slot+0x20)!=60018||
+    (read<int>(slot+0x68)!=0&&read<int>(slot)!=60018)){
+  if(slot_&&old_callback_&&read<unsigned>(slot_+0x18)==callback_)write(slot_+0x18,old_callback_);
+  slot_=old_callback_=callback_=0;
+  return;
+ }
  const auto callback=read<unsigned>(slot+0x18),relay=guest_callback(unsigned(current),relays[unsigned(current)]);
  if(!relay||!relay_||api_->function_at(relay)!=relay_)return;
  if(callback==relay){slot_=slot;callback_=relay;return;}
@@ -180,18 +184,23 @@ void Presentation::bind_icon(){
  }
 }
 bool Presentation::owns(unsigned e)const{return slot_==e&&callback_&&api_->loaded_level()==level_&&read<unsigned>(e+0x18)==callback_&&read<int>(e+0x20)==60018;}
-void Presentation::before_hud(unsigned){
- // Preserve the native formatted ammo numerator/denominator.
-}
-void Presentation::draw_base(unsigned e,void(*previous_relay)(unsigned)){
+void Presentation::draw_base(unsigned e,void(*previous_relay)(unsigned),std::optional<unsigned> vendor_ammo){
  (void)previous_relay;
  HudTableScope tables(*this);
  const int before=read<int>(e);
- if(before==60018)write<int>(e,custom_icon_bank);
+ // The stock bank can have no suitable HUD frame. The selector and callback
+ // own this draw even if native initialization resolved the active ID to FFFF.
+ const bool custom=owns(e)||before==60018;
+ if(custom)write<int>(e,custom_icon_bank);
+ const int previous_ammo=read<int>(e+0x74);
+ // During the vendor fade the cursor can already have selected a stock item.
+ // The counter still represents the custom purchase until its native draw ends.
+ if(custom&&vendor_ammo)write<int>(e+0x74,int(*vendor_ammo));
  // The shared relay may already belong to native Walloper XP decorations.
  // Custom progression owns its own decorations, so draw the native base once.
  hud_(e);
- if(before==60018&&read<int>(e)==int(custom_icon_bank))write<int>(e,before);
+ if(custom&&vendor_ammo&&read<int>(e+0x74)==int(*vendor_ammo))write(e+0x74,previous_ammo);
+ if(custom&&read<int>(e)==int(custom_icon_bank))write<int>(e,before);
 }
 int Presentation::draw_quick_selector(unsigned e,int(*original)(unsigned),const std::array<arsenal::WeaponKey,8>& bindings){
  if(!original)return 0;

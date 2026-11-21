@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (c) 2026 noire342
 #include "native_vendor.hpp"
+#include "arsenal_state.hpp"
 #include "native_weapon_alias.hpp"
 #include <array>
 #include <cstdint>
@@ -71,6 +72,22 @@ struct Fixture {
 };
 }
 int main(){
+    {Fixture f;NativeVendor vendor(&f.api,f.weapon_alias,f.arena);
+     constexpr unsigned scene=0x16c860;
+     f.rows({{18,0,0,0,0},{18,0,0,0x52564f31,0}},1);f.previews();vendor.frame();
+     f.put(menu,1);
+     require(vendor.weapon_purchase_key(18)==0,"highlighting a row cannot reinterpret an unrelated grant");
+     f.put(menu+0x5c,4);f.put(menu+0x40,1);
+     require(vendor.weapon_purchase_key(18)==0,"the PDA is not the physical weapon vendor");
+     f.put(menu+0x40,0);
+     require(vendor.weapon_purchase_key(7)==0,"a matching purchase phase cannot capture a story gadget grant");
+     require(vendor.weapon_purchase_key(18)==arsenal::RevolveratorKey,"only the confirmed marked row identifies a drill purchase");
+     vendor.remember_weapon_purchase(vendor.weapon_purchase_key(18));
+     f.put(menu+0x48,18);f.put(menu+0x58,0);f.put(menu,3);
+     f.put<short>(scene+0x44,2);f.put(scene+0x178,preview_list);f.put(scene+0x17c,monitor);
+     require(vendor.purchase_scene_weapon()==monitor,"the confirmed purchase owns the scene weapon after a cursor change");
+     f.put(menu,1);vendor.remember_weapon_purchase(vendor.weapon_purchase_key(18));f.put(menu,3);
+     require(vendor.purchase_scene_weapon()==0,"a subsequent stock purchase does not borrow the custom scene");}
     {Fixture f;NativeVendor vendor(&f.api,f.weapon_alias,f.arena);const auto inventory=f.inventory();const auto stock_before=f.saved_stock();
      const auto metadata=f.get<std::array<std::uint8_t,24>>(price);
      f.rows({{10,1,0,12,101},{18,0,0,13,102},{15,0,0,14,103}},2);

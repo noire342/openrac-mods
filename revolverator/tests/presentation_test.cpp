@@ -30,6 +30,7 @@ struct Fixture {
  openrac_api api{};GuestArena arena;
  std::array<unsigned,5> cached_original{{0x450000,0x451000,0x452000,0x453000,0x454000}};
  int level=1,native_calls=0,previous_xp_calls=0,quick_calls=0,rectangles=0,quads=0,heap_calls=0;
+ int drawn_ammo=0;
  bool steal_cached_image=false,change_current_bank=false,cache_available=true;
  std::vector<Sprite> sprites;
  std::vector<std::array<int,4>> drawn_rectangles;
@@ -57,6 +58,7 @@ struct Fixture {
  static void sprite(int frame,int,int,int width,int height,int){live->sprites.push_back({frame,width,height});}
  static int native_hud(unsigned element){
   auto& f=*live;++f.native_calls;verify_cache();
+  f.drawn_ammo=f.get<int>(element+0x74);
   require(f.get<int>(element)==int(Presentation::custom_icon_bank),"only the current native draw uses the custom icon bank");
   require(f.get<int>(element+0x20)==60018,"the native next-item scheduler remains Walloper transport18");
   // The retail HUD requests bank(60000 + item), frame3. A native Walloper
@@ -235,6 +237,12 @@ int main(){
   require(f.get<int>(Slot)==60018&&f.get<int>(Slot+0x20)==60018,"current render bank restores without altering the next-item scheduler");
   require(f.get<std::array<unsigned,5>>(Cached+0x18)==f.cached_original,"overlay HUD table mapping restores after the bounded draw");
   require(f.sprites.size()==1&&f.sprites[0].frame==int(FrameCount+3)&&f.sprites[0].width==32&&f.sprites[0].height==32,"the visible native HUD sprite is the32px cartridge");
+  f.put(Slot+0x18,NativeCode);f.put<int>(Slot+0x68,1);
+  presentation.frame(true);
+  require(presentation.owns(Slot),"a queued refresh of the active ammo bank cannot bypass the custom relay");
+  presentation.frame(false);
+  require(!presentation.owns(Slot)&&f.get<unsigned>(Slot+0x18)==NativeCode,"a different weapon restores its native callback");
+  f.put<int>(Slot+0x68,0);presentation.frame(true);
   IdleWorld world;Controller controller(world);
   presentation.set_experience(true,4,.5f,true);presentation.after_hud(Slot,controller);
   require(f.sprites.size()==1&&f.quads>0&&f.rectangles>0,"custom XP decorations never overlay a weapon glyph on the ammunition icon");
@@ -253,6 +261,10 @@ int main(){
   require(f.get<unsigned>(copied_refs+FrameCount*4)==drill&&f.get<unsigned>(copied_refs+(FrameCount+3)*4)==ammo,
           "quick-select hiding restores drill references without modifying ammunition");
   require(f.get<std::array<unsigned,5>>(Cached+0x18)==f.cached_original,"quick-select cached HUD views restore after drawing");
+  f.put<int>(Slot+0x74,0);
+  presentation.draw_base(Slot,Fixture::previous_xp,20u);
+  require(f.drawn_ammo==20&&f.get<int>(Slot+0x74)==0,
+          "the vendor counter reads its own ammo as the cursor moves, without altering native state");
   presentation.reset();
   require(f.get<std::array<unsigned,5>>(State+0x18)==std::array<unsigned,5>{{Header,Defs,Refs,Images,Palettes}},"owned header and HUD tables restore together");
   require(f.get<unsigned>(Slot+0x18)==NativeCode&&f.get<unsigned>(TextBank)==Name&&f.get<unsigned>(TextBank+16)==Description,"native callback and localized entries restore on teardown");

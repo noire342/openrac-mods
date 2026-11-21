@@ -18,6 +18,10 @@ constexpr unsigned vendor_sounds=0x1c2108;
 constexpr unsigned rows_offset=0xd0;
 constexpr unsigned count_offset=0x210;
 constexpr unsigned selection_offset=0x58;
+constexpr unsigned purchase_state_offset=0x5c;
+constexpr unsigned last_purchase_offset=0x48;
+constexpr unsigned pda_offset=0x40;
+constexpr unsigned exit_scene=0x16c860;
 constexpr unsigned vendor_item_slots=0x1c8ff0;
 constexpr unsigned game_mode=0x15f5c4;
 }
@@ -42,6 +46,9 @@ void NativeVendor::frame() {
     const int current=api_->loaded_level();
     if(current!=level_){reset();level_=current;}
     if(!supported())return;
+    const auto base=level(vendor_menu);
+    if(read<int>(level(game_mode))!=5||read<int>(base+last_purchase_offset)!=item_id)
+        purchased_custom_=false;
     if(!native_icon_captured_){
         const auto at=global(0x1863d0)+item_id*76+0x38;
         if(valid(at,2)){native_icon_bank_=read<unsigned short>(at);native_icon_captured_=true;}
@@ -70,6 +77,45 @@ bool NativeVendor::selected_custom()const{
     const auto base=level(vendor_menu);const int count=read<int>(base+count_offset),selected=read<int>(base+selection_offset);
     return count>0&&count<=16&&selected>=0&&selected<count&&
         custom_row(read<Row>(base+rows_offset+unsigned(selected)*sizeof(Row)));
+}
+unsigned NativeVendor::weapon_purchase_key(int native_item)const{
+    if(!supported()||read<int>(level(game_mode))!=5||native_item<=0)return 0;
+    const auto base=level(vendor_menu);
+    if(read<int>(base)!=1||read<int>(base+pda_offset)!=0||read<int>(base+purchase_state_offset)!=4)return 0;
+    const int selected=read<int>(base+selection_offset),count=read<int>(base+count_offset);
+    if(selected<0||selected>=count||count>16)return 0;
+    const auto row=read<Row>(base+rows_offset+unsigned(selected)*sizeof(Row));
+    if(row.is_ammo!=0||row.item!=native_item)return 0;
+    return custom_row(row)?arsenal::RevolveratorKey:unsigned(native_item);
+}
+void NativeVendor::remember_weapon_purchase(unsigned key){
+    if(key)purchased_custom_=key==arsenal::RevolveratorKey;
+}
+bool NativeVendor::presenting_custom_purchase()const{
+    if(!purchased_custom_||!supported()||read<int>(level(game_mode))!=5)return false;
+    const auto base=level(vendor_menu);
+    return read<int>(base)==3&&read<int>(base+last_purchase_offset)==item_id;
+}
+unsigned NativeVendor::purchase_scene_weapon()const{
+    if(!presenting_custom_purchase())return 0;
+    const auto scene=level(exit_scene);
+    const int count=read<short>(scene+0x44);
+    if(count<1||count>14)return 0;
+    for(int i=0;i<count;++i){
+        const auto actor=read<unsigned>(scene+0x178+unsigned(i)*4);
+        if(valid(actor,256)&&read<unsigned short>(actor+0xa6)==NativeWeaponAlias::source_class&&
+           read<unsigned char>(actor+0x20)<0x80)return actor;
+    }
+    return 0;
+}
+bool NativeVendor::showing_custom_ammo()const{
+    if(!supported()||read<int>(level(game_mode))!=5)return false;
+    // The purchase counter can still be fading after the cursor moves off.
+    if(purchased_custom_)return true;
+    if(!selected_custom())return false;
+    const auto base=level(vendor_menu);
+    const int selected=read<int>(base+selection_offset);
+    return read<Row>(base+rows_offset+unsigned(selected)*sizeof(Row)).is_ammo==1;
 }
 bool NativeVendor::has_custom_rows()const{
     if (!supported()) return false;
@@ -279,6 +325,6 @@ void NativeVendor::reset() {
     menu_={};level_=-1;price_address_=0;original_price_=0;price_owned_=false;
     for(auto& preview:weapon_previews_){preview.pose.reset(true);preview.actor=0;}
     previews_={};preview_model_address_=0;original_preview_model_=0;preview_model_owned_=false;
-    native_icon_bank_=0;native_icon_captured_=false;
+    native_icon_bank_=0;native_icon_captured_=false;purchased_custom_=false;
 }
 }

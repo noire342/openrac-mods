@@ -201,6 +201,7 @@ unsigned RegionBindings::level(unsigned overlay,unsigned canonical) const {
         case 0x0015f92cu:return 0x0015fa04u;
         case 0x0015fa90u:return 0x0015fb48u;
         case 0x00166c80u:return 0x00166d80u;
+        case 0x0016c860u:return 0x0016c960u; // Physical Gadgetron exit scene.
         case 0x00173e58u:return 0x00173f58u;
         case 0x00173e60u:return 0x00173f60u;
         case 0x00173e80u:return 0x00173f80u;

@@ -7,6 +7,7 @@
 #include "arsenal_identity_view.hpp"
 #include "arsenal_state.hpp"
 #include <array>
+#include <optional>
 #include <vector>
 namespace revolverator {
 class Presentation:public Memory,public ArsenalIdentityView {
@@ -22,8 +23,7 @@ public:
  static constexpr unsigned custom_icon_bank=60037;
  void frame(bool equipped);
  bool owns(unsigned element)const;
- void before_hud(unsigned element);
- void draw_base(unsigned element,void(*previous_relay)(unsigned));
+ void draw_base(unsigned element,void(*previous_relay)(unsigned),std::optional<unsigned> vendor_ammo={});
  void after_hud(unsigned element,const Controller& controller);
  int draw_quick_selector(unsigned element,int(*original)(unsigned),const std::array<arsenal::WeaponKey,8>& bindings);
  void reset();

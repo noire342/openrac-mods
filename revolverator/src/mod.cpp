@@ -68,7 +68,7 @@ struct Session {
  }
  void restore_context(){
   if(native_save_depth)arsenal.project(arsenal::NativeWalloperKey);
-  else if(acquisition.active())arsenal.project(arsenal::RevolveratorKey);
+  else if(acquisition.active()||vendor.presenting_custom_purchase())arsenal.project(arsenal::RevolveratorKey);
   else if(world.read<int>(world.mode())==5)arsenal.project(vendor.selected_key());
   else arsenal.restore_gameplay();
  }
@@ -118,6 +118,8 @@ struct Session {
   }
   visuals.set_mode(world.read<int>(world.mode()));
   ammunition.frame();alias.frame();vendor.set_preview_class(alias.ready()?NativeAmmoAlias::native_class:225);vendor.frame();menu.frame();
+  if(const auto actor=vendor.purchase_scene_weapon())
+   visuals.publish_preview(NativeWeaponVisual::Preview::Acquisition,actor,true,golden());
   world.set_active(arsenal.revolverator_active());
   world.set_golden(golden());presentation.set_golden(golden());
   auto f=world.snapshot(primary,epoch);
@@ -143,7 +145,8 @@ struct Session {
   }
   world.set_drill_head_scale(visuals.controller().radial_scale(),visuals.controller().axial_scale());
   arsenal.commit();
-  presentation.frame(f.equipped);
+  const int mode=world.read<int>(world.mode());
+  presentation.frame(mode==5?vendor.showing_custom_ammo():arsenal.revolverator_active());
  }
 };
 std::unique_ptr<NativeAssetBundle> weapon_assets;
@@ -252,7 +255,10 @@ void pad(U32 address,U32 report,int size){
 }
 void relay(U32 element){
  if(session&&session->presentation.owns(element)){
-  session->presentation.before_hud(element);session->presentation.draw_base(element,relay_original);session->presentation.after_hud(element,session->controller);
+  auto& s=*session;
+  const auto* state=s.vendor.showing_custom_ammo()?s.registry.custom_state(arsenal::RevolveratorKey):nullptr;
+  s.presentation.draw_base(element,relay_original,state?std::optional<unsigned>{state->ammo}:std::nullopt);
+  s.presentation.after_hud(element,s.controller);
  }else relay_original(element);
 }
 void walloper(U32 moby){
@@ -262,8 +268,8 @@ void walloper(U32 moby){
  auto& s=*session;canonicalize_weapon(moby);
  const bool held=moby==s.world.weapon();
  const bool custom=held?s.arsenal.revolverator_active():
-  s.arsenal.projected()==arsenal::RevolveratorKey&&
-   (s.world.read<int>(s.world.mode())==5||s.acquisition.presenting());
+  moby==s.vendor.purchase_scene_weapon()||
+   (s.acquisition.presenting()&&s.arsenal.projected()==arsenal::RevolveratorKey);
  if(!custom){
   if(held)s.visuals.publish_held(moby,false,s.golden());
   else s.visuals.publish_preview(NativeWeaponVisual::Preview::Acquisition,moby,false,s.golden());
@@ -363,9 +369,10 @@ void give(int item,int equip){
  }
  auto& s=*session;auto& w=s.world;
  const bool carrier=item==int(arsenal::NativeWalloperKey);
- const bool custom=carrier&&(s.grant_override==arsenal::RevolveratorKey||
-  (w.read<int>(w.mode())==5&&s.vendor.selected_custom()));
+ const auto purchase=equip&&!s.grant_override?s.vendor.weapon_purchase_key(item):0;
+ const bool custom=carrier&&(s.grant_override==arsenal::RevolveratorKey||purchase==arsenal::RevolveratorKey);
  s.arsenal.give_item(item,equip,custom,give_original);
+ s.vendor.remember_weapon_purchase(purchase);
  if(carrier){
   s.restore_context();
   w.set_active(s.arsenal.revolverator_active());
