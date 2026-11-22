@@ -21,6 +21,13 @@ Revolverator integrates with [Weapon Experience 0.7.0](https://github.com/noire3
 through API v5 for shared XP rules and localized level names. Existing API v4
 providers are supported.
 
+The [0.5.0-preview.1 release](https://github.com/noire342/openrac-mods/releases/tag/revolverator-v0.5.0-preview.1)
+offers test builds for Linux x86-64, Apple silicon macOS and Android Arm64.
+These builds use the official OpenRAC mod interface 1.20 or newer. Download
+the ZIP for your platform and import it under **Mods → Add a mod → File**.
+The release notes list the checks run on each platform and what still needs
+in-game testing.
+
 Version 0.4.7 fixed the ammunition HUD when Ratchet switches to his wrench
 or dies. Regular enemies such as the Hoven Anklebiter can be caught, and Hoven
 Blarg troopers keep their rifles through the spin and throw.
