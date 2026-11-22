@@ -97,6 +97,16 @@ if(UNIX AND NOT APPLE)
   # mod-to-mod service as well as the standard loader entry points.
   file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/revolverator.exports"
     "{ global: openrac_mod_query; openrac_mod_load; openrac_mod_unload; openrac_revolverator_query; local: *; };\n")
+elseif(APPLE)
+  # Limit the Mach-O exports to the same loader and service entry points.
+  set_target_properties(revolverator_core PROPERTIES
+    CXX_VISIBILITY_PRESET hidden VISIBILITY_INLINES_HIDDEN ON)
+  set(revolverator_exports "${CMAKE_CURRENT_BINARY_DIR}/revolverator.macos.exports")
+  file(GENERATE OUTPUT "${revolverator_exports}" CONTENT
+    "_openrac_mod_query\n_openrac_mod_load\n_openrac_mod_unload\n_openrac_revolverator_query\n")
+  target_link_options(revolverator PRIVATE "LINKER:-exported_symbols_list,${revolverator_exports}")
+  set_property(TARGET revolverator APPEND PROPERTY LINK_DEPENDS "${revolverator_exports}")
+  set_target_properties(revolverator PROPERTIES BUILD_WITH_INSTALL_NAME_DIR TRUE INSTALL_NAME_DIR "@rpath")
 endif()
 set(REVOLVERATOR_HD_ICON_DIR "" CACHE PATH "Locally generated native HD glyph data")
 if(EXISTS "${REVOLVERATOR_HD_ICON_DIR}/revolverator_hd_icon_data.hpp")
