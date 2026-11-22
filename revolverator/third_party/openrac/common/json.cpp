@@ -7,7 +7,6 @@
 #include "common/json.h"
 
 #include <cstdlib>
-#include <format>
 #include <fstream>
 #include <sstream>
 
@@ -63,7 +62,7 @@ public:
         }
         skip_space();
         if (m_at != m_text.size()) {
-            error = std::format("unexpected text at offset {}", m_at);
+            error = "unexpected text at offset " + std::to_string(m_at);
             return false;
         }
         return true;
@@ -73,7 +72,7 @@ private:
     static constexpr int kMaxDepth = 64;
 
     bool fail(std::string_view what) {
-        m_error = std::format("{} at offset {}", what, m_at);
+        m_error = std::string(what) + " at offset " + std::to_string(m_at);
         return false;
     }
 
@@ -332,13 +331,13 @@ bool parse(std::string_view text, Value& out, std::string& error) {
 bool parse_file(const std::string& path, Value& out, std::string& error) {
     std::ifstream file(path, std::ios::binary);
     if (!file) {
-        error = std::format("cannot read {}", path);
+        error = "cannot read " + path;
         return false;
     }
     std::ostringstream text;
     text << file.rdbuf();
     if (!parse(text.str(), out, error)) {
-        error = std::format("{}: {}", path, error);
+        error = path + ": " + error;
         return false;
     }
     return true;

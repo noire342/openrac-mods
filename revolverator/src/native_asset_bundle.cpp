@@ -7,15 +7,17 @@
 #include <array>
 #include <atomic>
 #include <cerrno>
-#include <charconv>
 #include <chrono>
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
 #include <fstream>
+#include <iomanip>
 #include <iterator>
 #include <limits>
+#include <locale>
 #include <map>
+#include <sstream>
 #include <stdexcept>
 #include <string_view>
 #include <system_error>
@@ -83,11 +85,11 @@ public:
         case Value::Type::Number:{
             const double number=input.number();
             if(!std::isfinite(number))throw std::runtime_error("asset bundle: non-finite JSON number");
-            std::array<char,64> buffer{};
-            const auto result=std::to_chars(buffer.data(),buffer.data()+buffer.size(),number,
-                std::chars_format::general,std::numeric_limits<double>::max_digits10);
-            if(result.ec!=std::errc{})throw std::runtime_error("asset bundle: cannot serialize JSON number");
-            out_.append(buffer.data(),result.ptr);break;
+            std::ostringstream text;
+            text.imbue(std::locale::classic());
+            text << std::setprecision(std::numeric_limits<double>::max_digits10) << number;
+            if(!text)throw std::runtime_error("asset bundle: cannot serialize JSON number");
+            out_+=text.str();break;
         }
         case Value::Type::String:string(input.string());break;
         case Value::Type::Array:{

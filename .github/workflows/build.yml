@@ -119,10 +119,14 @@ jobs:
       - name: Configure Android mod
         if: matrix.platform == 'android-arm64'
         run: |
-          sdkmanager "ndk;$REVOLVERATOR_ANDROID_NDK"
+          sdk_root="${ANDROID_SDK_ROOT:-${ANDROID_HOME:?}}"
+          ndk="$sdk_root/ndk/$REVOLVERATOR_ANDROID_NDK"
+          if [ ! -f "$ndk/source.properties" ]; then
+            "$sdk_root/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$sdk_root" "ndk;$REVOLVERATOR_ANDROID_NDK"
+          fi
           cmake -S revolverator -B build-portable \
             -DCMAKE_BUILD_TYPE=Release -DOpenRACMod_DIR="$PWD/.sdk/rotatore-portable-sdk/sdk/cmake" \
-            -DCMAKE_TOOLCHAIN_FILE="$ANDROID_HOME/ndk/$REVOLVERATOR_ANDROID_NDK/build/cmake/android.toolchain.cmake" \
+            -DCMAKE_TOOLCHAIN_FILE="$ndk/build/cmake/android.toolchain.cmake" \
             -DANDROID_PLATFORM=android-28 -DANDROID_ABI=arm64-v8a -DANDROID_STL=c++_static -DBUILD_TESTING=OFF
       - name: Build
         run: cmake --build build-portable --parallel
