@@ -23,12 +23,15 @@ inline NativeAssetBundle::Paths android_asset_paths(const openrac_api* api, cons
     // The SDK's plugin list identifies the launcher data directory for this game.
     constexpr auto required = offsetof(openrac_api, plugins_folder) + sizeof(openrac_api{}.plugins_folder);
     std::array<char, 4096> plugins_folder{};
-    if (!api || api->api_major != 1 || api->api_minor < 14 || api->size < required ||
-        !api->plugins_folder || api->plugins_folder(plugins_folder.data(), plugins_folder.size()) <= 0)
+    if (!api || api->api_major != 1 || api->api_minor < 14 || api->size < required || !api->plugins_folder)
+        throw std::runtime_error("Revolverator: the Android launcher did not provide the game's plugin directory");
+    const auto length = api->plugins_folder(plugins_folder.data(), plugins_folder.size());
+    if (length <= 0 || static_cast<std::size_t>(length) >= plugins_folder.size())
         throw std::runtime_error("Revolverator: the Android launcher did not provide the game's plugin directory");
 
-    const fs::path plugins = plugins_folder.data();
-    if (!plugins.is_absolute() || plugins.filename() != "plugins")
+    const std::string_view folder(plugins_folder.data(), static_cast<std::size_t>(length));
+    const fs::path plugins(folder);
+    if (folder.find('\0') != std::string_view::npos || !plugins.is_absolute() || plugins.filename() != "plugins")
         throw std::runtime_error("Revolverator: unexpected Android launcher plugin directory");
     const auto data = plugins.parent_path();
 
