@@ -74,7 +74,7 @@ def collect(module: Path, source: Path) -> tuple[str, str, dict[str, bytes]]:
     arsenal = manifest['extensions']['noire342.arsenal']
     if manifest.get('assets') != 'generated-levels' or 'bundledUtilities' in arsenal:
         raise ValueError('Expected the official loader asset path in the portable manifest')
-    if 'rac1.vendor.icon_strip.draw' not in arsenal.get('compatibilityHooks', []):
+    if 'rac1.vendor.icon_strip.draw' not in manifest.get('hooks', []):
         raise ValueError('The portable manifest must declare the official Gadgetron icon-strip hook')
 
     plugins = manifest.get('plugin', {})
