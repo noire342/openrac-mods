@@ -725,10 +725,11 @@ extern "C" OPENRAC_MOD_EXPORT const revolverator_api_v1* openrac_revolverator_qu
 }
 extern "C" OPENRAC_MOD_EXPORT int openrac_mod_load(const openrac_api* api,openrac_mod* mod){
  try{
-  if(!api||!api->memory||!api->game||std::strcmp(api->game,"rac1")||!RegionBindings::for_version(api->version))throw std::runtime_error("Revolverator requires Ratchet & Clank PAL Europe v2.00 or NTSC-U and matching Arsenal Compatibility");
+  if(!api||!api->memory||!api->game||std::strcmp(api->game,"rac1")||!RegionBindings::for_version(api->version))throw std::runtime_error("Revolverator requires Ratchet & Clank PAL Europe v2.00 or NTSC-U");
 #ifndef _WIN32
-  if(api->api_major!=1||api->api_minor<20)
-   throw std::runtime_error("Revolverator requires OpenRAC mod interface 1.20 or newer on this platform for the native vendor icon strip.");
+  static_assert(OPENRAC_MOD_TARGET_MINOR==NativeRuntimeHooks::vendor_icon_strip_interface);
+  if(!NativeRuntimeHooks::supports_official_vendor_strip(*api))
+   throw std::runtime_error("Revolverator requires OpenRAC mod interface 1.20 or newer and native hook chains on this platform.");
 #endif
 #ifdef __ANDROID__
   const auto asset_paths=android_asset_paths(api,api->version);

@@ -96,6 +96,7 @@ int main() {
     CHECK(rollbacks == 2 && commits == 2);
     for(unsigned minor:{12u,13u,20u,21u}){
         api.api_major=1;api.api_minor=static_cast<unsigned short>(minor);official=true;
+        CHECK(NativeRuntimeHooks::supports_official_vendor_strip(api)==(minor>=20));
         const auto prior_resolves=resolver_calls,prior_claims=claims,prior_binds=binds,prior_commits=commits,prior_rollbacks=rollbacks,prior_sdk=sdk_calls;
         {
             NativeRuntimeHooks hooks(&api,nullptr,query);void* next{};
@@ -115,6 +116,8 @@ int main() {
     CHECK(throws([&] { NativeRuntimeHooks hooks(&api,nullptr,absent); }).find("Arsenal Compatibility")!=std::string::npos);
     api.api_major=2;api.api_minor=12;
     CHECK(throws([&] { NativeRuntimeHooks hooks(&api,nullptr,absent); }).find("Arsenal Compatibility")!=std::string::npos);
+    api.api_minor=20;
+    CHECK(!NativeRuntimeHooks::supports_official_vendor_strip(api));
 #if defined(_WIN32)
     api.api_major=1;api.api_minor=13;api.version="pal";api.function=strip_lookup;missing_strip=true;
     void* strip_next{};

@@ -11,6 +11,10 @@ namespace revolverator {
 // official hook chains remain owned by OpenRAC.
 class NativeRuntimeHooks {
 public:
+    static constexpr unsigned vendor_icon_strip_interface = 20;
+    static bool supports_official_vendor_strip(const openrac_api& api) noexcept {
+        return api.api_major == OPENRAC_MOD_API_MAJOR && api.api_minor >= vendor_icon_strip_interface && api.hook;
+    }
     using Resolver = openrac_arsenal_hooks_query_fn;
     NativeRuntimeHooks(const openrac_api*, openrac_mod*, Resolver = nullptr);
     ~NativeRuntimeHooks();

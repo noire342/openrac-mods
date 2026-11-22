@@ -6,11 +6,14 @@ import ctypes
 import json
 from pathlib import Path
 import subprocess
-import sys
+import argparse
 
-library = Path(sys.argv[1]).resolve(strict=True)
-manifest = json.loads((Path(__file__).resolve().parents[1] /
-    'revolverator/openrac-mod.json').read_text(encoding='utf-8-sig'))
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('library', type=Path)
+parser.add_argument('manifest', type=Path, help='Generated package manifest for this library')
+args = parser.parse_args()
+library = args.library.resolve(strict=True)
+manifest = json.loads(args.manifest.read_text(encoding='utf-8-sig'))
 expected_api = tuple(int(part) for part in manifest['api'].split('.'))
 symbols = subprocess.check_output(['nm', '-D', '--defined-only', str(library)], text=True)
 names = {line.split()[-1] for line in symbols.splitlines()}
@@ -22,7 +25,7 @@ provider = ctypes.CDLL(str(library))
 query = provider.openrac_revolverator_query
 query.argtypes = [ctypes.c_uint32]
 query.restype = ctypes.c_void_p
-if any(query(version) is not None for version in [0, 1, 2, 0xffffffff]):
+if any(query(version) is not None for version in [0, 1, 2, 3, 0xffffffff]):
     raise RuntimeError('The service must be unavailable without a loaded session')
 
 class ModInfo(ctypes.Structure):

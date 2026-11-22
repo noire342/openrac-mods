@@ -14,7 +14,6 @@
 
 namespace revolverator {
 namespace {
-constexpr unsigned vendor_icon_strip_interface = 20;
 const arsenal_hooks_api_v1* existing_provider(std::uint32_t version) {
 #if defined(_WIN32)
     const auto image = GetModuleHandleW(L"arsenal_compat.dll");
@@ -68,7 +67,7 @@ int NativeRuntimeHooks::bind(const char* id, const char* signature, void* replac
     if (official_ && id) {
         const bool icon_strip = std::strcmp(id, "rac1.vendor.icon_strip.draw") == 0;
         const bool preview_pose = std::strcmp(id, "rac1.menu.preview.pose") == 0;
-        if (preview_pose || (icon_strip && api_->api_minor < vendor_icon_strip_interface)) {
+        if (preview_pose || (icon_strip && !supports_official_vendor_strip(*api_))) {
             return bind_private(id, signature, replacement, original);
         }
     }
@@ -92,10 +91,14 @@ void NativeRuntimeHooks::commit() {
 
 std::string NativeRuntimeHooks::diagnostic() const {
     if (official_) {
-        if (api_->api_minor >= vendor_icon_strip_interface) {
+#ifdef _WIN32
+        if (supports_official_vendor_strip(*api_)) {
             return "Official OpenRAC hook chains including the vendor icon strip, with a native preview-pose adapter";
         }
         return "Official OpenRAC hook chains with typed native presentation adapters";
+#else
+        return "Official OpenRAC hook chains";
+#endif
     }
     arsenal_hooks_diagnostics_v1 info{};
     info.size = sizeof info;
