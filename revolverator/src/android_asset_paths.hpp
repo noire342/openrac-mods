@@ -43,7 +43,7 @@ inline NativeAssetBundle::Paths android_asset_paths(const openrac_api* api, cons
         !python_home || !fs::path(python_home).is_absolute())
         throw std::runtime_error("Revolverator: use the official Android launcher to prepare local graphics");
 
-    return {data / "port" / version, {}, data / "cache/revolverator/assets",
+    return {data / "port" / version, plugins / "revolverator", data / "cache/revolverator/assets",
             fs::path(native_dir) / "libopenrac-python.so", true};
 }
 

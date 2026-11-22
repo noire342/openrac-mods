@@ -13,6 +13,9 @@
 #include "native_arsenal_xp.hpp"
 #include "native_runtime_hooks.hpp"
 #include "native_asset_bundle.hpp"
+#ifdef __ANDROID__
+#include "android_asset_paths.hpp"
+#endif
 #include "native_compatibility_modules.hpp"
 #include "native_gold_vendor.hpp"
 #include "native_acquisition.hpp"
@@ -727,10 +730,17 @@ extern "C" OPENRAC_MOD_EXPORT int openrac_mod_load(const openrac_api* api,openra
   if(api->api_major!=1||api->api_minor<20)
    throw std::runtime_error("Revolverator requires OpenRAC mod interface 1.20 or newer on this platform for the native vendor icon strip.");
 #endif
+#ifdef __ANDROID__
+  const auto asset_paths=android_asset_paths(api,api->version);
+#endif
   // Move legacy save companions before preparing graphics: a failed graphics
   // setup should not leave the game's native card unreadable.
   session=std::make_unique<Session>(api,mod);
+#ifdef __ANDROID__
+  weapon_assets=std::make_unique<NativeAssetBundle>(asset_paths,4u,api->version);
+#else
   weapon_assets=std::make_unique<NativeAssetBundle>(api->api_minor>=10?4u:3u,api->version);
+#endif
   session->visuals.set_glow_root(weapon_assets->glow_root());
 #ifdef _WIN32
   compatibility_modules=std::make_unique<NativeCompatibilityModules>(api,mod,weapon_assets->configuration());

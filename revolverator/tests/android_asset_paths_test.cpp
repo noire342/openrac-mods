@@ -53,6 +53,7 @@ int main() {
     for (const auto* version : {"pal", "ntsc"}) {
         const auto paths = android_asset_paths(&api, version);
         require(paths.levels_root == data / "port" / version, "use the selected disc's extracted levels");
+        require(paths.mod_root == data / "plugins/revolverator", "use the loader's installed mod directory");
         require(paths.cache_root == data / "cache/revolverator/assets", "keep the cache outside the plugin and levels");
         require(paths.preparation_python == native / "libopenrac-python.so", "use the launcher-bundled interpreter");
         require(paths.use_openrac_assets, "use the official OpenRAC asset path");
