@@ -16,6 +16,8 @@
 #define NOMINMAX
 #include <windows.h>
 #include <shellapi.h>
+#elif defined(__APPLE__)
+#include "darwin_process_paths.hpp"
 #endif
 
 namespace revolverator {
@@ -30,6 +32,8 @@ std::vector<Path> arguments(){
 #elif defined(__linux__)
     std::ifstream file("/proc/self/cmdline",std::ios::binary);std::string value;
     while(std::getline(file,value,'\0'))result.emplace_back(value);
+#elif defined(__APPLE__)
+    result=darwin_process_arguments();
 #endif
     return result;
 }
