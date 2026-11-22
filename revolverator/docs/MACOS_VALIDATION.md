@@ -1,6 +1,6 @@
 # macOS validation
 
-The OpenRAC 1.1.0 download includes the Ratchet & Clank game binaries for Apple silicon. The launcher app itself is universal. Use a `macos-arm64` package for the bundled game. [OpenRAC installation guide](https://openrac.dev/install) · [OpenRAC 1.1.0 build matrix](https://github.com/OpenRAC/OpenRAC/blob/9b6573caf0dc708689be1783b5e4ac831118777b/.github/workflows/launcher.yml#L165-L176)
+The OpenRAC 1.1.0 download includes the Ratchet & Clank game binaries for Apple silicon. The launcher app itself is universal. Use a `macos-arm64` package and mod interface 1.20 or newer for the bundled game. [OpenRAC installation guide](https://openrac.dev/install) · [OpenRAC 1.1.0 build matrix](https://github.com/OpenRAC/OpenRAC/blob/9b6573caf0dc708689be1783b5e4ac831118777b/.github/workflows/launcher.yml#L165-L176)
 
 ## Build and package
 
