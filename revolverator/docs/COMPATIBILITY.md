@@ -5,17 +5,21 @@ and the hooks, function bindings and asset-mount capabilities declared by the
 mod. PAL Europe v2.00 is the native reference disc. NTSC-U uses its separate
 binding profile.
 
-The manifest declares a minimum interface, not a fixed client release.
-A later OpenRAC version is accepted when it continues to expose the required
-compatible capabilities. An exact executable hash in a validation receipt
-identifies what was tested; it does not mean every later client must have
-that same hash.
+Linux x86-64, Apple silicon macOS and Android Arm64 builds require mod
+interface **1.20 or newer**. They use the official vendor icon-strip hook and
+the OpenRAC loader's class asset mount. Their manifests declare those
+capabilities at build time.
+
+Each manifest declares a minimum interface. A newer client is compatible
+when it continues to expose the required hooks, bindings and ABI. An
+executable hash in a validation receipt identifies the build used for that
+test. See each release for the platforms validated and published.
 
 ## Hooks and assets
 
 NativeRuntimeHooks uses the official typed hook chain for the vendor icon strip
 on interface 1.20 and newer. Earlier supported interfaces use a narrow bridge
-for that callback. The weapon-preview pose uses its own bridge. The typed
+for that callback. On Windows, the weapon-preview pose uses its own bridge. The typed
 void() and void(u32) bridges resolve named game-function
 exports and validate that they belong to executable pages of the main client
 image before activation. They use no fixed RVA or executable hash. The mod
@@ -23,14 +27,14 @@ owns activation and rollback.
 
 The vendor icon strip delegates to the game when the list contains only stock
 items. Revolverator draws the strip when the list includes a Revolverator row.
-The manifest's required hook list still describes interface 1.12. On interface
-1.20 the loader may log a warning for the additional icon-strip hook. The
-runtime checks the interface before registering that hook.
+The Windows manifest's required hook list describes interface 1.12. On
+newer Windows clients the runtime can register the additional icon-strip
+hook when the SDK exposes it. Portable manifests declare it directly.
 
 The public package does not need a separate compatibility-provider mod card.
 The original provider route is retained only for historical source compatibility.
 
-The bundled asset adapter's v2 entry point validates the API prefix, major1 /
+The bundled Windows asset adapter's v2 entry point validates the API prefix, major 1 /
 minor12-or-newer boundary, game, supported disc, memory and function/hook
 capabilities. It mounts session-owned manifest aliases through the operating
 system's typed CreateFileW export. This modern route accepts compatible later

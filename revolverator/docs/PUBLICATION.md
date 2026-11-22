@@ -5,16 +5,16 @@ The release is prepared for the official [OpenRAC mod publication workflow](http
 ## Release
 
 - Set the manifest version and author; use **noire342** for display credit.
-- Declare minimum mod interface 1.12, supported regions/platforms and real
-  dependencies. Do not pin compatibility to one client release number.
+- Declare mod interface 1.12 or newer on Windows and 1.20 or newer for
+  portable packages, along with each platform's required capabilities.
 - Build, run host checks and validate the exact installable package in the
   official client. Check first-start asset derivation, contact sparks and the
   Gaspar Pilot's Helmet pickup, which exercises a native acquisition while
   Revolverator's item-grant hook is active.
 - Keep game files out of the ZIP and source archive; retain authored recipes,
   AI attribution, corresponding native source and third-party notices.
-- Publish a stable versioned tag with the Windows ZIP, corresponding
-  source, observed validation and SHA256SUMS.
+- Publish a stable versioned tag with one ZIP per validated platform,
+  corresponding source, observed validation and SHA256SUMS.
 - Download every public asset and verify hashes, archive contents, required
   scripts and the exact native-validated DLL before announcing availability.
 
