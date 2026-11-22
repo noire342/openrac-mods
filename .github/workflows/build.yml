@@ -101,6 +101,7 @@ jobs:
             platform: linux-x86_64
           - os: macos-15
             platform: macos-arm64
+            configure_flags: -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0
           - os: ubuntu-24.04
             platform: android-arm64
     env:
@@ -114,7 +115,7 @@ jobs:
         run: python revolverator/tools/fetch_build_sdk.py --interface 1.20
       - name: Configure desktop mod
         if: matrix.platform != 'android-arm64'
-        run: cmake -S revolverator -B build-portable -DCMAKE_BUILD_TYPE=Release -DOpenRACMod_DIR="$PWD/.sdk/rotatore-portable-sdk/sdk/cmake" -DBUILD_TESTING=ON
+        run: cmake -S revolverator -B build-portable -DCMAKE_BUILD_TYPE=Release -DOpenRACMod_DIR="$PWD/.sdk/rotatore-portable-sdk/sdk/cmake" -DBUILD_TESTING=ON ${{ matrix.configure_flags || '' }}
       - name: Configure Android mod
         if: matrix.platform == 'android-arm64'
         run: |
