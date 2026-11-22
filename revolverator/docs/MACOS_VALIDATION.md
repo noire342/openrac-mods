@@ -4,7 +4,7 @@ The OpenRAC 1.1.0 download includes the Ratchet & Clank game binaries for Apple 
 
 ## Build and package
 
-1. Build with `CMAKE_OSX_ARCHITECTURES=arm64`. Run the CTest suite on a macOS runner.
+1. Build with `CMAKE_OSX_ARCHITECTURES=arm64` and `CMAKE_OSX_DEPLOYMENT_TARGET=12.0` to match the deployment target of the PAL and NTSC-U binaries in the official OpenRAC 1.1.0 archive. Run the CTest suite on a macOS runner.
 2. Check the packaged library with `file`, `otool -L` and `codesign --verify`. Use `nm -gU` to verify the exported `openrac_mod_query`, `openrac_mod_load`, `openrac_mod_unload` and `openrac_revolverator_query` symbols.
 3. Check that `openrac-mod.json` is at the archive root and that its `macos-arm64` entry resolves to `lib/macos-arm64/revolverator.dylib`. The release archive should carry the tools for preparing the weapon assets from the player's disc and the authored assets used by those tools.
 
