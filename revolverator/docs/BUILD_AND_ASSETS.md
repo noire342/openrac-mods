@@ -1,10 +1,13 @@
 # Building Revolverator
 
 The source uses CMake 3.20 or newer, a C++20 compiler and the OpenRAC mod SDK.
-The public manifest requires mod interface 1.12 or newer. The module's build
-helper pins the exact upstream source archive supplying that SDK and verifies
-its SHA256 before extracting only the MIT SDK subtree. This development step
-is separate from the player's automatic local-asset preparation.
+The Windows package requires mod interface **1.12 or newer**. Portable
+packages require **1.20 or newer** for the official Gadgetron icon-strip hook.
+Newer clients are supported when they continue to expose the required capabilities
+through the compatible mod interface. The build helper pins SDK archives for
+reproducible builds, checks their SHA-256 and extracts the MIT SDK.
+
+## Windows
 
 ~~~powershell
 python revolverator/tools/fetch_build_sdk.py
@@ -24,10 +27,35 @@ or a normal development Python installation:
 python revolverator/tests/runtime_asset_preparation_test.py
 ~~~
 
-Host tests exercise controller, attachment, rotor, contact effects, ammunition,
-inventory, native menu, save sidecars, regional bindings and optional XP. They
-do not replace native gameplay or rendered-image checks. Linux source tests
-do not establish native gameplay support for a Windows-only release.
+## Linux and macOS
+
+Use a native x86-64 Linux or Apple silicon macOS build host.
+
+~~~bash
+python3 revolverator/tools/fetch_build_sdk.py --interface 1.20
+cmake -S revolverator -B build-portable -DCMAKE_BUILD_TYPE=Release \
+  -DOpenRACMod_DIR="$PWD/.sdk/rotatore-portable-sdk/sdk/cmake" -DBUILD_TESTING=ON
+cmake --build build-portable --parallel
+ctest --test-dir build-portable --output-on-failure
+~~~
+
+## Android
+
+Install Android NDK r28c and set `ANDROID_HOME` to the Android SDK directory.
+The official Android game loads an Arm64 NDK shared library.
+
+~~~bash
+python3 revolverator/tools/fetch_build_sdk.py --interface 1.20
+cmake -S revolverator -B build-android -DCMAKE_BUILD_TYPE=Release \
+  -DOpenRACMod_DIR="$PWD/.sdk/rotatore-portable-sdk/sdk/cmake" \
+  -DCMAKE_TOOLCHAIN_FILE="$ANDROID_HOME/ndk/28.2.13676358/build/cmake/android.toolchain.cmake" \
+  -DANDROID_PLATFORM=android-28 -DANDROID_ABI=arm64-v8a -DANDROID_STL=c++_static -DBUILD_TESTING=OFF
+cmake --build build-android --parallel
+~~~
+
+Build and test artifacts identify their target platform. A successful build
+checks the compiler and packaging contract. Runtime validation separately
+checks load status, controls, menus, graphics and saves on the target client.
 
 ## Parked sound experiment
 
@@ -46,14 +74,20 @@ excludes it entirely; see [audio](AUDIO.md).
 
 ## Public package
 
-Include the weapon DLL, its required asset-mount adapter, original authored
-ammunition art, preparation scripts and license notices. Required scripts are:
+Include the native weapon module, original authored ammunition art,
+preparation scripts and license notices. The Windows archive also includes
+its file-overlay adapter. Portable clients use the OpenRAC loader's class
+asset mount. Required scripts are:
 
 - tools/prepare_runtime_assets.py
 - tools/build_model_pack.py
 - tools/build_golden_assets.py
 - tools/build_tip_glow.py
 - tools/build_vent_glow.py
+
+Create a portable archive with `tools/package_portable_runtime.py`. Pass the
+chosen build's `package/revolverator` directory to `--module`. The packager
+checks its manifest, shared-library platform and authored asset hashes.
 
 Do not include copied assets/graphics, copied or recoloured game atlases,
 embedded game-derived HD icon headers, extracted levels, ISOs, RAM dumps,

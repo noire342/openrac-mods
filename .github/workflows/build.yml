@@ -13,6 +13,9 @@ jobs:
       matrix:
         os: [windows-latest, ubuntu-24.04]
         mod: [weapon-xp, revolverator, arsenal-compat, arsenal-file-overlay, skill-points-ra, cinematic-journeys, robot-salvage]
+        exclude:
+          - os: ubuntu-24.04
+            mod: revolverator
         include:
           - mod: robot-salvage
             skill_points: 'OFF'
@@ -82,14 +85,63 @@ jobs:
         run: cmake --build build --config Release --parallel
       - name: Test
         run: ctest --test-dir build -C Release --output-on-failure
-      - name: Verify Revolverator ELF service
-        if: runner.os == 'Linux' && matrix.mod == 'revolverator'
-        run: python tools/check_revolverator_exports.py build/revolverator/revolverator.so
       - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: test-results-${{ matrix.mod }}-${{ matrix.os }}
           path: build/Testing/Temporary/LastTest.log
+  revolverator-portable:
+    name: revolverator / ${{ matrix.platform }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            platform: linux-x86_64
+          - os: macos-15
+            platform: macos-arm64
+          - os: ubuntu-24.04
+            platform: android-arm64
+    env:
+      REVOLVERATOR_ANDROID_NDK: '28.2.13676358'
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Fetch Revolverator interface 1.20 SDK
+        run: python revolverator/tools/fetch_build_sdk.py --interface 1.20
+      - name: Configure desktop mod
+        if: matrix.platform != 'android-arm64'
+        run: cmake -S revolverator -B build-portable -DCMAKE_BUILD_TYPE=Release -DOpenRACMod_DIR="$PWD/.sdk/rotatore-portable-sdk/sdk/cmake" -DBUILD_TESTING=ON
+      - name: Configure Android mod
+        if: matrix.platform == 'android-arm64'
+        run: |
+          sdkmanager "ndk;$REVOLVERATOR_ANDROID_NDK"
+          cmake -S revolverator -B build-portable \
+            -DCMAKE_BUILD_TYPE=Release -DOpenRACMod_DIR="$PWD/.sdk/rotatore-portable-sdk/sdk/cmake" \
+            -DCMAKE_TOOLCHAIN_FILE="$ANDROID_HOME/ndk/$REVOLVERATOR_ANDROID_NDK/build/cmake/android.toolchain.cmake" \
+            -DANDROID_PLATFORM=android-28 -DANDROID_ABI=arm64-v8a -DANDROID_STL=c++_static -DBUILD_TESTING=OFF
+      - name: Build
+        run: cmake --build build-portable --parallel
+      - name: Run native host tests
+        if: matrix.platform != 'android-arm64'
+        run: ctest --test-dir build-portable --output-on-failure
+      - name: Verify Revolverator ELF service
+        if: matrix.platform == 'linux-x86_64'
+        run: python tools/check_revolverator_exports.py build-portable/revolverator.so build-portable/package/revolverator/openrac-mod.json
+      - name: Check manifest and package mod
+        run: |
+          python .sdk/rotatore-portable-sdk/sdk/tools/package_mod.py --check build-portable/package/revolverator/openrac-mod.json
+          python revolverator/tools/package_portable_runtime.py --module build-portable/package/revolverator --output dist-portable
+      - uses: actions/upload-artifact@v7
+        with:
+          name: revolverator-build-${{ matrix.platform }}
+          path: |
+            dist-portable/*-${{ matrix.platform }}.zip
+            build-portable/Testing/Temporary/LastTest.log
+          if-no-files-found: error
   standalone-current-sdk:
     name: ${{ matrix.mod }} / SDK 1.10.1 / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
