@@ -230,5 +230,42 @@ void pal_checks(){
       for(const auto& [key,value]:native["classes"]["moby"].members())require(same(value,staged["classes"]["moby"][key]),"PAL original classes remain unchanged");}
      f.unchanged();}
 }
+#ifndef _WIN32
+void openrac_asset_checks(){
+    Fixture f("pal");
+    for(unsigned i=0;i<19;++i)f.replace(i,"\"format\":3","\"format\":20");
+    auto paths=f.paths();
+    paths.use_openrac_assets=true;
+    const auto root=f.mod/"generated-levels";
+    fs::create_directory(root);
+    {
+        NativeAssetBundle bundle(paths,4,"pal");
+        require(bundle.configuration().empty()&&fs::is_symlink(root),"SDK asset root needs no file adapter");
+        for(unsigned i=0;i<19;++i){
+            const auto overlay=read_json(root/name(i)/"classes.json");
+            const auto& classes=overlay["moby"];
+            require(classes.members().size()==(i==1?5u:4u),"only additive classes are published");
+            require(classes["2017"]["scale"].number()==read_json(f.levels/name(i)/"manifest.json")["classes"]["moby"]["180"]["scale"].number(),
+                "SDK staging preserves the donor class scale");
+            require(fs::is_regular_file(fs::u8path(classes["2018"]["mesh"].string())),"class points at its local Golden model");
+        }
+        rejects([&]{NativeAssetBundle concurrent(paths,4,"pal");},"an active renderer owns the SDK asset root");
+        require(fs::is_regular_file(root/"level_00/classes.json"),"second start preserves the active mount");
+        f.unchanged();
+    }
+    require(!fs::exists(root)&&fs::is_empty(f.cache),"clean shutdown removes the owned SDK mount");
+    fs::create_directory(root);
+    f.write(root/"foreign.txt","keep this");
+    rejects([&]{NativeAssetBundle blocked(paths,4,"pal");},"do not replace a nonempty asset root");
+    require(read(root/"foreign.txt")=="keep this"&&fs::is_empty(f.cache),"failed mount preserves foreign assets and removes its staging");
+    f.unchanged();
 }
-int main(){serializer_checks();command_line_checks();staging_checks();staging_checks("pal");rejection_checks();pal_checks();std::printf("native asset bundle: %d checks passed\n",checks);}
+#endif
+}
+int main(){
+    serializer_checks();command_line_checks();staging_checks();staging_checks("pal");rejection_checks();pal_checks();
+#ifndef _WIN32
+    openrac_asset_checks();
+#endif
+    std::printf("native asset bundle: %d checks passed\n",checks);
+}

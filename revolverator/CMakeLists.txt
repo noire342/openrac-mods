@@ -32,6 +32,12 @@ target_sources(revolverator PRIVATE src/native_contact_sparks.cpp)
 target_sources(revolverator PRIVATE src/native_crates.cpp)
 target_include_directories(revolverator PRIVATE third_party/openrac)
 target_compile_features(revolverator PRIVATE cxx_std_20)
+get_target_property(revolverator_package revolverator OPENRAC_MOD_PACKAGE_DIR)
+file(COPY assets/ammunition DESTINATION "${revolverator_package}/assets")
+file(COPY tools/prepare_runtime_assets.py tools/build_model_pack.py tools/build_golden_assets.py
+  tools/build_tip_glow.py tools/build_vent_glow.py
+  DESTINATION "${revolverator_package}/tools")
+file(COPY docs/ DESTINATION "${revolverator_package}/docs")
 if(WIN32)
   target_link_libraries(revolverator PRIVATE shell32)
   add_library(revolverator_minhook STATIC third_party/minhook/src/buffer.c third_party/minhook/src/hook.c
@@ -56,23 +62,25 @@ if(WIN32)
   if(MSVC)
     target_compile_options(revolverator_file_overlay PRIVATE /W4 /EHsc)
   endif()
-  get_target_property(revolverator_package revolverator OPENRAC_MOD_PACKAGE_DIR)
   add_custom_command(TARGET revolverator_file_overlay POST_BUILD
     COMMAND "${CMAKE_COMMAND}" -E make_directory "${revolverator_package}/lib/${OPENRAC_MOD_PLATFORM}"
     COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:revolverator_file_overlay>"
       "${revolverator_package}/lib/${OPENRAC_MOD_PLATFORM}/arsenal_file_overlay.dll"
     VERBATIM)
   add_dependencies(revolverator revolverator_file_overlay)
-  file(COPY assets/ammunition DESTINATION "${revolverator_package}/assets")
-  file(COPY tools/prepare_runtime_assets.py tools/build_model_pack.py tools/build_golden_assets.py
-    tools/build_tip_glow.py tools/build_vent_glow.py
-    DESTINATION "${revolverator_package}/tools")
-  file(COPY docs/ DESTINATION "${revolverator_package}/docs")
   file(COPY third_party/minhook/LICENSE.txt third_party/minhook/AUTHORS.txt
     DESTINATION "${revolverator_package}/licenses/minhook")
   file(COPY "${revolverator_overlay_source}/LICENSE" "${revolverator_overlay_source}/README.md"
     "${revolverator_overlay_source}/docs/LICENSE-MIT.md"
     DESTINATION "${revolverator_package}/licenses/file-overlay")
+else()
+  # The loader opens this asset root after the mod's preparation callback.
+  set(package_manifest "${revolverator_package}/openrac-mod.json")
+  file(READ "${package_manifest}" manifest)
+  string(JSON manifest SET "${manifest}" assets "\"generated-levels\"")
+  string(JSON manifest REMOVE "${manifest}" extensions "noire342.arsenal" bundledUtilities)
+  file(WRITE "${package_manifest}" "${manifest}\n")
+  file(MAKE_DIRECTORY "${revolverator_package}/generated-levels")
 endif()
 if(UNIX AND NOT APPLE)
   # The SDK supplies a restrictive ELF version script. Include the optional
@@ -162,6 +170,7 @@ if(BUILD_TESTING)
   add_executable(revolverator_native_asset_bundle_test tests/native_asset_bundle_test.cpp src/native_asset_bundle.cpp third_party/openrac/common/json.cpp)
   target_include_directories(revolverator_native_asset_bundle_test PRIVATE src third_party/openrac)
   target_compile_features(revolverator_native_asset_bundle_test PRIVATE cxx_std_20)
+  target_link_libraries(revolverator_native_asset_bundle_test PRIVATE ${CMAKE_DL_LIBS})
   if(WIN32)
     target_link_libraries(revolverator_native_asset_bundle_test PRIVATE shell32)
   endif()

@@ -33,6 +33,8 @@ public:
         // Optional explicit interpreter for isolated constructor tests. Normal
         // runtime discovery always uses Python from the running official client.
         std::filesystem::path preparation_python{};
+        // Expose additive classes through the SDK's manifest asset directory.
+        bool use_openrac_assets = false;
     };
 
     // Windows: derive roots from the actual process command line, this module
@@ -55,8 +57,11 @@ private:
     std::filesystem::path cache_root_;
     std::filesystem::path session_;
     std::filesystem::path configuration_;
+    std::filesystem::path asset_link_;
+    int asset_lock_ = -1;
     std::string glow_root_="assets";
     std::vector<std::filesystem::path> files_;
+    std::vector<std::filesystem::path> level_directories_;
     bool owns_session_ = false;
 };
 }

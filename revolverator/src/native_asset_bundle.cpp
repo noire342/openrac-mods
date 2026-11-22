@@ -11,6 +11,7 @@
 #include <chrono>
 #include <cmath>
 #include <cstdint>
+#include <cstdlib>
 #include <fstream>
 #include <iterator>
 #include <limits>
@@ -25,8 +26,15 @@
 #include <windows.h>
 #include <shellapi.h>
 #else
+#include <dlfcn.h>
 #include <fcntl.h>
+#include <signal.h>
+#include <spawn.h>
+#include <sys/file.h>
+#include <sys/wait.h>
+#include <thread>
 #include <unistd.h>
+extern char** environ;
 #endif
 
 namespace revolverator {
@@ -134,13 +142,15 @@ std::string disc_version(const char* version){
         throw std::runtime_error("asset bundle: only PAL and NTSC-U disc versions are supported");
     return version;
 }
-std::string manifest_json(const Value& root,unsigned level,const Path& drill,const Path& golden,const Path& ammunition,const std::string& version){
+std::map<std::string,std::string> class_additions(const Value& root,unsigned level,const Path& drill,
+        const Path& golden,const Path& ammunition,const std::string& version,bool use_openrac_assets){
     if(!root.is_object()||!root["format"].is_number()||
-       (root["format"].number()!=3&&root["format"].number()!=4)||
+       (use_openrac_assets?root["format"].number()<4:
+        (root["format"].number()!=3&&root["format"].number()!=4))||
        !root["game"].is_string()||root["game"].string()!="rac1"||
        !root["version"].is_string()||root["version"].string()!=version||
        !root["level"].is_number()||root["level"].number()!=double(level))
-        throw std::runtime_error("asset bundle: expected R&C1 "+version+" format3/4 "+level_name(level));
+        throw std::runtime_error("asset bundle: expected R&C1 "+version+" extracted manifest for "+level_name(level));
     const auto& classes=root["classes"];const auto& mobys=classes["moby"];
     if(!classes.is_object()||!mobys.is_object()||!mobys["180"].is_object()||!mobys["225"].is_object())
         throw std::runtime_error("asset bundle: missing native class180/225 in "+level_name(level));
@@ -159,8 +169,22 @@ std::string manifest_json(const Value& root,unsigned level,const Path& drill,con
         if(!mobys["304"].is_object())throw std::runtime_error("asset bundle: Novalis Gold case304 is missing");
         additions.emplace("2019",clone(mobys["304"],golden.parent_path()/"moby_2019.glb","revolverator_golden_shop_display"));
     }
-    const auto added=patched(mobys,additions);
+    return additions;
+}
+std::string manifest_json(const Value& root,const std::map<std::string,std::string>& additions){
+    const auto& classes=root["classes"];
+    const auto added=patched(classes["moby"],additions);
     return patched(root,{{"classes",patched(classes,{{"moby",added}})}})+'\n';
+}
+std::string classes_json(const std::map<std::string,std::string>& additions){
+    std::string text="{\"moby\":{";
+    bool first=true;
+    for(const auto& [id,entry]:additions){
+        if(!first)text+=',';
+        first=false;
+        text+=json_quote(id)+':'+entry;
+    }
+    return text+"}}\n";
 }
 bool component_equal(const Path& a,const Path& b){
 #ifdef _WIN32
@@ -184,6 +208,22 @@ bool regular_owned_directory(const Path& path){
 #endif
     return true;
 }
+#ifndef _WIN32
+struct FileLock {
+    int fd=-1;
+    FileLock(const FileLock&)=delete;
+    FileLock& operator=(const FileLock&)=delete;
+    FileLock()=default;
+    ~FileLock(){if(fd>=0)close(fd);}
+    void acquire(const Path& path,int mode,const char* reason){
+        fd=open(path.c_str(),O_RDWR|O_CREAT|O_CLOEXEC|O_NOFOLLOW,0600);
+        if(fd<0)throw std::runtime_error(reason);
+        int result;
+        do{result=flock(fd,mode);}while(result<0&&errno==EINTR);
+        if(result<0)throw std::runtime_error(reason);
+    }
+};
+#endif
 unsigned long process_id(){
 #ifdef _WIN32
     return GetCurrentProcessId();
@@ -199,15 +239,29 @@ Path environment_path(const wchar_t* name){
     if(!written||written>=needed)throw std::runtime_error("asset bundle: environment changed during discovery");
     value.resize(written);return Path(value);
 }
-Path module_root(){
-    static const unsigned char anchor=0;
+Path module_path(const void* anchor){
     HMODULE module{};
     if(!GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS|GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-        reinterpret_cast<LPCWSTR>(&anchor),&module))throw std::runtime_error("asset bundle: cannot identify own module");
+        reinterpret_cast<LPCWSTR>(anchor),&module))throw std::runtime_error("asset bundle: cannot identify own module");
     std::wstring filename(32768,L'\0');
     const DWORD length=GetModuleFileNameW(module,filename.data(),static_cast<DWORD>(filename.size()));
     if(!length||length>=filename.size())throw std::runtime_error("asset bundle: own module path is unavailable");
-    filename.resize(length);Path parent=Path(filename).parent_path();
+    filename.resize(length);return Path(filename);
+}
+#else
+Path environment_path(const char* name){
+    const char* value=std::getenv(name);
+    return value&&*value?Path(value):Path{};
+}
+Path module_path(const void* anchor){
+    Dl_info image{};
+    if(!dladdr(anchor,&image)||!image.dli_fname)throw std::runtime_error("asset bundle: cannot identify own module");
+    return fs::canonical(image.dli_fname);
+}
+#endif
+Path module_root(){
+    static const unsigned char anchor=0;
+    auto parent=module_path(&anchor).parent_path();
     for(unsigned depth=0;depth<5&&!parent.empty();++depth){
         const auto manifest=parent/"openrac-mod.json";
         if(fs::is_regular_file(manifest)){
@@ -217,6 +271,18 @@ Path module_root(){
         const auto next=parent.parent_path();if(next==parent)break;parent=next;
     }
     throw std::runtime_error("asset bundle: own plugin assets directory was not found");
+}
+#if defined(__linux__) && !defined(__ANDROID__)
+Path find_python(Path executable){
+    auto parent=executable.parent_path();
+    for(unsigned depth=0;depth<9&&!parent.empty();++depth){
+        const auto candidate=parent/"python/bin/python3";
+        if(access(candidate.c_str(),X_OK)==0&&fs::is_regular_file(candidate))return candidate;
+        const auto next=parent.parent_path();if(next==parent)break;parent=next;
+    }
+    const Path system_python="/usr/bin/python3";
+    if(access(system_python.c_str(),X_OK)==0&&fs::is_regular_file(system_python))return system_python;
+    throw std::runtime_error("Revolverator: Python 3.10 or newer is required to derive art from your disc.");
 }
 #endif
 NativeAssetBundle::Paths process_paths(const char* version){
@@ -231,8 +297,20 @@ NativeAssetBundle::Paths process_paths(const char* version){
     if(local.empty())throw std::runtime_error("asset bundle: LOCALAPPDATA is unavailable");
     return {asset_bundle::levels_from_arguments(args,environment_path(L"OPENRAC_DATA"),version),module_root(),
         local/"OpenRAC/revolverator/assets"};
+#elif defined(__linux__) && !defined(__ANDROID__)
+    std::ifstream file("/proc/self/cmdline",std::ios::binary);
+    std::vector<Path> args;
+    for(std::string value;std::getline(file,value,'\0');)args.emplace_back(value);
+    auto cache=environment_path("XDG_CACHE_HOME");
+    if(!cache.is_absolute()){
+        const auto home=environment_path("HOME");
+        if(!home.is_absolute())throw std::runtime_error("asset bundle: no usable home or XDG cache path");
+        cache=home/".cache";
+    }
+    return {asset_bundle::levels_from_arguments(args,environment_path("OPENRAC_DATA"),version),module_root(),
+        cache/"openrac/revolverator/assets",find_python(fs::read_symlink("/proc/self/exe")),true};
 #else
-    throw std::runtime_error("asset bundle: native module discovery is supported on Windows only");
+    throw std::runtime_error("asset bundle: native module discovery is unavailable on this platform");
 #endif
 }
 
@@ -261,18 +339,20 @@ Path official_python(){
     throw std::runtime_error("Revolverator: the official client's bundled Python was not found. Update OpenRAC through its launcher.");
 }
 #endif
-Path prepared_graphics(const Path& levels,const Path& mod,const Path& cache,const char* version,const Path& interpreter){
+Path prepared_graphics(const Path& levels,const Path& mod,const Path& cache,const char* version,
+        const Path& interpreter,bool use_openrac_assets){
     // Explicit private companion packs remain supported for old QA fixtures.
     // Public packages omit this directory and always derive from local data.
     if(fs::is_directory(mod/"assets/graphics"))return mod/"assets/graphics";
     const auto script=mod/"tools/prepare_runtime_assets.py";require_file(script);
     require_file(mod/"tools/build_model_pack.py");require_file(mod/"tools/build_golden_assets.py");
     require_file(mod/"tools/build_tip_glow.py");require_file(mod/"tools/build_vent_glow.py");
-#ifdef _WIN32
-    const auto python=interpreter.empty()?official_python():absolute_path(interpreter);require_file(python);
     fs::create_directories(cache);
     const auto stamp=std::to_string(process_id())+"-"+std::to_string(std::chrono::steady_clock::now().time_since_epoch().count());
     const auto result=cache/("prepared-"+stamp+".txt"),log=cache/("prepare-"+stamp+".log");
+#ifdef _WIN32
+    (void)use_openrac_assets;
+    const auto python=interpreter.empty()?official_python():absolute_path(interpreter);require_file(python);
     const std::vector<Path> arguments{python,"-I",script,"--levels",levels,"--cache",cache/"derived","--version",version,"--result",result};
     std::wstring command;
     for(const auto& argument:arguments){if(!command.empty())command+=L' ';command+=quoted_argument(argument);}
@@ -297,15 +377,52 @@ Path prepared_graphics(const Path& levels,const Path& mod,const Path& cache,cons
     CloseHandle(process.hProcess);
     if(waited!=WAIT_OBJECT_0||code!=0||!fs::is_regular_file(result))
         throw std::runtime_error("Revolverator: local asset preparation failed. Use Check and play in the official launcher; diagnostics: "+utf8(log));
+#else
+    const auto python=absolute_path(interpreter);require_file(python);
+    FileLock cache_lock;
+    cache_lock.acquire(cache/".prepare.lock",LOCK_EX,"asset bundle: cannot lock local preparation cache");
+    std::vector<std::string> arguments{python.string(),"-B",
+#ifdef __ANDROID__
+        "-P","-s",  // Keep the launcher's PYTHONHOME for Android's stdlib.
+#else
+        "-I",
+#endif
+        script.string(),"--levels",levels.string(),
+        "--cache",(cache/"derived").string(),"--version",version,"--result",result.string()};
+    if(use_openrac_assets)arguments.emplace_back("--portable-assets");
+    std::vector<char*> argv;
+    for(auto& arg:arguments)argv.push_back(arg.data());
+    argv.push_back(nullptr);
+    posix_spawn_file_actions_t actions{};
+    if(posix_spawn_file_actions_init(&actions)!=0)throw std::runtime_error("asset bundle: cannot initialize preparation process");
+    struct SpawnActions {posix_spawn_file_actions_t& actions;~SpawnActions(){posix_spawn_file_actions_destroy(&actions);}} scoped{actions};
+    if(posix_spawn_file_actions_addopen(&actions,STDIN_FILENO,"/dev/null",O_RDONLY,0)!=0||
+       posix_spawn_file_actions_addopen(&actions,STDOUT_FILENO,log.c_str(),O_WRONLY|O_CREAT|O_EXCL,0600)!=0||
+       posix_spawn_file_actions_adddup2(&actions,STDOUT_FILENO,STDERR_FILENO)!=0)
+        throw std::runtime_error("asset bundle: cannot set up local preparation diagnostics");
+    pid_t process{};
+    if(posix_spawn(&process,python.c_str(),&actions,nullptr,argv.data(),environ)!=0)
+        throw std::runtime_error("Revolverator: could not start local asset preparation. Diagnostics: "+utf8(log));
+    int status{};
+    pid_t waited{};
+    const auto deadline=std::chrono::steady_clock::now()+std::chrono::minutes(2);
+    do{
+        waited=waitpid(process,&status,WNOHANG);
+        if(waited!=0&&!(waited<0&&errno==EINTR))break;
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    }while(std::chrono::steady_clock::now()<deadline);
+    if(waited==0||(waited<0&&errno==EINTR)){
+        kill(process,SIGKILL);
+        while(waitpid(process,&status,0)<0&&errno==EINTR){}
+    }
+    if(waited!=process||!WIFEXITED(status)||WEXITSTATUS(status)!=0||!fs::is_regular_file(result))
+        throw std::runtime_error("Revolverator: local asset preparation failed. Use Check and play in the official launcher; diagnostics: "+utf8(log));
+#endif
     const auto derived=fs::u8path(read_file(result));
     std::error_code ignored;fs::remove(result,ignored);
     if(!fs::is_directory(derived)||!within(fs::weakly_canonical(derived),fs::weakly_canonical(cache/"derived")))
         throw std::runtime_error("asset bundle: derived graphics are outside the owned local cache");
     require_file(derived/"READY.json");return derived;
-#else
-    (void)levels;(void)cache;(void)version;(void)interpreter;
-    throw std::runtime_error("asset bundle: automatic local asset preparation is supported by the Windows package");
-#endif
 }
 }
 
@@ -343,7 +460,15 @@ NativeAssetBundle::NativeAssetBundle(Paths paths,unsigned required_format,const 
         throw std::runtime_error("asset bundle: cache must be outside original levels and plugin assets");
     const auto ammo=mod/"assets/ammunition/model.glb";
     require_file(ammo);require_file(mod/"assets/ammunition/texture.png");
-    const auto graphics=prepared_graphics(levels,mod,cache,version,paths.preparation_python);
+    const bool use_openrac_assets=paths.use_openrac_assets;
+#ifndef _WIN32
+    FileLock mount_lock;
+    if(use_openrac_assets)mount_lock.acquire(mod/".revolverator-assets.lock",LOCK_EX|LOCK_NB,
+        "Revolverator: another OpenRAC session owns this installation's generated assets, or the mod directory is read-only.");
+#else
+    if(use_openrac_assets)throw std::runtime_error("asset bundle: expected the Windows asset adapter");
+#endif
+    const auto graphics=prepared_graphics(levels,mod,cache,version,paths.preparation_python,use_openrac_assets);
     const bool derived=graphics!=mod/"assets/graphics";
     if(derived)glow_root_="generated-glow/"+utf8(graphics.filename());
     struct Staged {Path original;std::string text;};
@@ -359,10 +484,11 @@ NativeAssetBundle::NativeAssetBundle(Paths paths,unsigned required_format,const 
         const auto original=levels/name/"manifest.json";
         require_file(original);
         const auto native=document(original);
-        if(required_format&&(!native["format"].is_number()||native["format"].number()!=double(required_format)))
+        if(required_format&&!use_openrac_assets&&(!native["format"].is_number()||native["format"].number()!=double(required_format)))
             throw std::runtime_error("Revolverator: this OpenRAC client requires level format "+
                 std::to_string(required_format)+". Use Check and play in the official launcher to read the levels again.");
-        manifests.push_back({original,manifest_json(native,level,drill,golden,ammo,disc)});
+        const auto additions=class_additions(native,level,drill,golden,ammo,disc,use_openrac_assets);
+        manifests.push_back({original,use_openrac_assets?classes_json(additions):manifest_json(native,additions)});
     }
     files_.reserve(20);
     try{
@@ -376,6 +502,29 @@ NativeAssetBundle::NativeAssetBundle(Paths paths,unsigned required_format,const 
             if(error)throw std::system_error(error,"asset bundle: cannot create owned session");
         }
         if(!owns_session_)throw std::runtime_error("asset bundle: cannot reserve a unique session");
+#ifndef _WIN32
+        if(use_openrac_assets){
+            level_directories_.reserve(manifests.size());
+            for(unsigned level=0;level<19;++level){
+                const auto directory=session_/level_name(level);
+                level_directories_.push_back(directory);
+                fs::create_directory(directory);
+                write_owned(directory/"classes.json",manifests[level].text);
+            }
+            const auto link=mod/"generated-levels";
+            const auto status=fs::symlink_status(link);
+            if(fs::is_symlink(status)){
+                const auto target=fs::read_symlink(link);
+                if(target.parent_path()!=cache_root_||!target.filename().string().starts_with("session"))
+                    throw std::runtime_error("asset bundle: generated-levels belongs to another installation");
+                fs::remove(link);
+            }else if(fs::is_directory(status)&&fs::is_empty(link))fs::remove(link);
+            asset_link_=link;
+            fs::create_directory_symlink(session_,link);
+            asset_lock_=std::exchange(mount_lock.fd,-1);
+            return;
+        }
+#endif
         std::string aliases="{\"format\":1,\"aliases\":[";
         for(unsigned level=0;level<19;++level){
             const auto replacement=session_/(level_name(level)+".json");
@@ -413,16 +562,32 @@ void NativeAssetBundle::write_owned(Path path,const std::string& text){
     }
 #endif
 }
-NativeAssetBundle::~NativeAssetBundle()noexcept{cleanup();}
+NativeAssetBundle::~NativeAssetBundle()noexcept{
+    cleanup();
+#ifndef _WIN32
+    if(asset_lock_>=0)close(asset_lock_);
+#endif
+}
 void NativeAssetBundle::cleanup()noexcept{
     if(!owns_session_)return;
     try{
         std::error_code error;
+#ifndef _WIN32
+        if(!asset_link_.empty()&&fs::is_symlink(fs::symlink_status(asset_link_,error))&&
+           !error&&fs::read_symlink(asset_link_,error)==session_&&!error)fs::remove(asset_link_,error);
+        error.clear();
+#endif
         if(session_.parent_path()!=cache_root_||!regular_owned_directory(session_)||fs::canonical(session_,error)!=session_||error)return;
         for(const auto& path:files_){
-            if(path.parent_path()!=session_)continue;
+            const auto parent=path.parent_path();
+            const bool class_file=parent.parent_path()==session_&&regular_owned_directory(parent)&&path.filename()=="classes.json";
+            if(parent!=session_&&!class_file)continue;
             const auto status=fs::symlink_status(path,error);
             if(!error&&fs::is_regular_file(status)&&!fs::is_symlink(status))fs::remove(path,error);
+            error.clear();
+        }
+        for(const auto& directory:level_directories_){
+            if(regular_owned_directory(directory))fs::remove(directory,error);
             error.clear();
         }
         fs::remove(session_,error); // Fails safely if any foreign entry remains.

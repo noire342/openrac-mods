@@ -3,9 +3,9 @@
 # Copyright (c) 2026 noire342
 """Derive Rotatore art locally from the player's extracted disc, using stdlib only.
 
-No game artwork is bundled with this script. The official Windows install's
-own Python runs it before the native manifest overlay is published. Inputs are
-read-only and the content-addressed cache is outside game and mod directories.
+No game artwork is bundled with this script. The mod runs it before mounting
+the new render classes. Inputs are read-only and the content-addressed cache
+is outside game and mod directories.
 The SDK reads props relative to the mod, so verified glow assets are also
 staged into a generated subdirectory of the installed package.
 """
@@ -128,7 +128,7 @@ def model_texture(blob: bytes, uri: str) -> bytes:
     document['images'][0]['uri']=uri
     return write_glb(document,bytearray(blob[offset+8:offset+8+length]))
 
-def prepare(levels: Path, cache: Path, version: str) -> Path:
+def prepare(levels: Path, cache: Path, version: str, portable_assets: bool = False) -> Path:
     levels=levels.resolve(strict=True);cache=cache.resolve()
     module=Path(__file__).resolve().parents[1]
     if cache.is_relative_to(levels) or cache.is_relative_to(module):
@@ -139,7 +139,9 @@ def prepare(levels: Path, cache: Path, version: str) -> Path:
     for i in range(19):
         path=beneath(levels/f'level_{i:02}'/'manifest.json',levels)
         blob=path.read_bytes();m=json.loads(blob)
-        if m.get('format') not in (3,4) or m.get('game')!='rac1' or m.get('version')!=version or m.get('level')!=i:
+        level_format=m.get('format')
+        supported_format=isinstance(level_format,int) and (level_format>=4 if portable_assets else level_format in (3,4))
+        if not supported_format or m.get('game')!='rac1' or m.get('version')!=version or m.get('level')!=i:
             raise ValueError('Expected consistent extracted native level manifests')
         inputs[str(path)]=digest(blob);manifests.append(m)
     source_info=manifests[12]['classes']['moby']['164']
@@ -224,7 +226,8 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--levels',type=Path,required=True);p.add_argument('--cache',type=Path,required=True)
     p.add_argument('--version',choices=('pal','ntsc'),required=True);p.add_argument('--result',type=Path,required=True)
-    a=p.parse_args();root=prepare(a.levels,a.cache,a.version)
+    p.add_argument('--portable-assets',action='store_true')
+    a=p.parse_args();root=prepare(a.levels,a.cache,a.version,a.portable_assets)
     stage_glow_assets(root, Path(__file__).resolve().parents[1])
     a.result.parent.mkdir(exist_ok=True,parents=True)
     a.result.write_text(str(root),encoding='utf-8')

@@ -208,12 +208,16 @@ using RestoreData=int(*)(unsigned,int,unsigned);
 using Restore=void(*)(int);
 Update walloper_original{},relay_original{},ammo_original{},nanotech_original{};Pad pad_original{};Load load_original{};
 Update gold_offer_original{},snagglebeast_original{};
-Update acquisition_pose_original{};
+#ifdef _WIN32
+Update acquisition_pose_original{},preview_pose_original{};
+#else
+MenuCall equipped_preview_original{};
+#endif
 Advance motion_input_original{};void(*planar_velocity_original)(float){};
 GetHit hit_original{};Death death_original{};Advance animation_original{};
 BuildVendor vendor_original{};
 Give give_original{};Advance vendor_update_original{},vendor_selected_original{},vendor_icons_original{},save_io_original{},new_game_original{};
-ChooseAmmo choose_original{};SpawnAmmo spawn_original{};Update quick_init_original{},quick_update_original{},preview_pose_original{},serialize_original{};
+ChooseAmmo choose_original{};SpawnAmmo spawn_original{};Update quick_init_original{},quick_update_original{},serialize_original{};
 Restore restore_original{};
 MenuCall quick_draw_original{};PrepareSave prepare_original{};AutoSave autosave_original{};RestoreData restore_data_original{};void(*new_game_plus_original)(int){};
 MenuCall item_ammo_original{};
@@ -451,8 +455,7 @@ unsigned spawn_ammo(unsigned position,int item,int amount,int flags){
  {ArsenalScope view(s.arsenal,arsenal::RevolveratorKey);result=spawn_original(position,item,amount,flags);}
  s.restore_context();return result;
 }
-void preview_pose(unsigned moby){
- canonicalize_weapon(moby);preview_pose_original(moby);
+void publish_equipped_preview(unsigned moby){
  if(session){
   const bool custom=session->arsenal.projected()==arsenal::RevolveratorKey;
   const bool applied=session->visuals.publish_preview(NativeWeaponVisual::Preview::Equipped,moby,custom,session->golden());
@@ -461,6 +464,10 @@ void preview_pose(unsigned moby){
   }
  }
 }
+#ifdef _WIN32
+void preview_pose(unsigned moby){
+ canonicalize_weapon(moby);preview_pose_original(moby);publish_equipped_preview(moby);
+}
 void acquisition_pose(unsigned moby){
  acquisition_pose_original(moby);
  if(!session)return;
@@ -468,6 +475,25 @@ void acquisition_pose(unsigned moby){
  const auto actor=s.acquisition.presenting()?s.acquisition.scene_body():s.vendor.purchase_scene_body();
  if(actor&&moby==actor)s.acquisition_hand.publish(actor);
 }
+#else
+int draw_equipped_preview(unsigned screen){
+ constexpr unsigned hand_item=0x54,actor_variables=0x78;
+ if(session&&Memory::valid(screen,hand_item+sizeof(unsigned))){
+  const auto actor=session->world.read<unsigned>(screen+hand_item);
+  if(Memory::valid(actor,256)){
+   const auto data=session->world.read<unsigned>(actor+actor_variables);
+   if(Memory::valid(data,4)&&session->world.read<unsigned>(data)==screen)
+    publish_equipped_preview(actor);
+  }
+ }
+ // The frontend takes its pose snapshot after the draw callback returns.
+ // The regular frame callback restores the render-only alias afterward.
+ return equipped_preview_original(screen);
+}
+int equipped_preview(unsigned screen){
+ return session?session->menu.equipped_call(screen,draw_equipped_preview):draw_equipped_preview(screen);
+}
+#endif
 template<MenuCall* Original>int draw_selected_preview(unsigned screen){
  if(!session)return (*Original)(screen);
  auto& s=*session;const auto key=s.menu.selected_key();
@@ -697,12 +723,18 @@ extern "C" OPENRAC_MOD_EXPORT const revolverator_api_v1* openrac_revolverator_qu
 extern "C" OPENRAC_MOD_EXPORT int openrac_mod_load(const openrac_api* api,openrac_mod* mod){
  try{
   if(!api||!api->memory||!api->game||std::strcmp(api->game,"rac1")||!RegionBindings::for_version(api->version))throw std::runtime_error("Revolverator requires Ratchet & Clank PAL Europe v2.00 or NTSC-U and matching Arsenal Compatibility");
+#ifndef _WIN32
+  if(api->api_major!=1||api->api_minor<20)
+   throw std::runtime_error("Revolverator requires OpenRAC mod interface 1.20 or newer on this platform for the native vendor icon strip.");
+#endif
   // Move legacy save companions before preparing graphics: a failed graphics
   // setup should not leave the game's native card unreadable.
   session=std::make_unique<Session>(api,mod);
   weapon_assets=std::make_unique<NativeAssetBundle>(api->api_minor>=10?4u:3u,api->version);
   session->visuals.set_glow_root(weapon_assets->glow_root());
+#ifdef _WIN32
   compatibility_modules=std::make_unique<NativeCompatibilityModules>(api,mod,weapon_assets->configuration());
+#endif
   runtime_hooks=std::make_unique<NativeRuntimeHooks>(api,mod);
   hook("rac1.level.load_gameplay","u32(i32)",reinterpret_cast<void*>(load),reinterpret_cast<void**>(&load_original));
   hook("rac1.pad.process_report","void(u32,u32,i32)",reinterpret_cast<void*>(pad),reinterpret_cast<void**>(&pad_original));
@@ -731,11 +763,16 @@ extern "C" OPENRAC_MOD_EXPORT int openrac_mod_load(const openrac_api* api,openra
   hook("rac1.menu.preview.draw_available","i32(u32)",reinterpret_cast<void*>(&draw_selected_preview<&available_draw_original>),reinterpret_cast<void**>(&available_draw_original));
   hook("rac1.menu.preview.draw_selected","i32(u32)",reinterpret_cast<void*>(&draw_selected_preview<&selected_draw_original>),reinterpret_cast<void**>(&selected_draw_original));
   MenuHook<11,&NativeWeaponMenu::equipped_call>::install("rac1.menu.equipped_preview.update");
+#ifdef _WIN32
   MenuHook<12,&NativeWeaponMenu::equipped_call>::install("rac1.menu.equipped_preview.draw");
   hook("rac1.menu.preview.pose","void(u32)",reinterpret_cast<void*>(preview_pose),reinterpret_cast<void**>(&preview_pose_original));
   if(runtime_hooks->bind_acquisition_pose(reinterpret_cast<void*>(acquisition_pose),
       reinterpret_cast<void**>(&acquisition_pose_original))!=OPENRAC_HOOK_OK&&api->setting_bool(mod,"trace"))
    api->log(mod,OPENRAC_LOG_WARN,"Rotatore acquisition hand pose unavailable on this game build");
+#else
+  hook("rac1.menu.equipped_preview.draw","i32(u32)",reinterpret_cast<void*>(equipped_preview),
+   reinterpret_cast<void**>(&equipped_preview_original));
+#endif
   hook("rac1.hud.quick_select.init","void(u32)",reinterpret_cast<void*>(quick_init),reinterpret_cast<void**>(&quick_init_original));
   hook("rac1.hud.quick_select.update","void(u32)",reinterpret_cast<void*>(quick_update),reinterpret_cast<void**>(&quick_update_original));
   hook("rac1.hud.quick_select.draw","i32(u32)",reinterpret_cast<void*>(quick_draw),reinterpret_cast<void**>(&quick_draw_original));
