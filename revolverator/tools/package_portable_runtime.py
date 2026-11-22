@@ -64,14 +64,18 @@ def collect(module: Path, source: Path) -> tuple[str, str, dict[str, bytes]]:
     manifest_bytes = read(module, 'openrac-mod.json')
     manifest = json.loads(manifest_bytes)
     original = document(source / 'openrac-mod.json')
-    for key in ('format', 'id', 'version', 'author', 'license', 'api', 'games'):
+    for key in ('format', 'id', 'version', 'author', 'license', 'games'):
         if manifest.get(key) != original.get(key):
             raise ValueError(f'Generated/source manifest mismatch: {key}')
     if manifest['format'] != 2 or manifest['id'] != 'revolverator':
         raise ValueError('Expected a generated format-2 Revolverator manifest')
-    if (manifest.get('assets') != 'generated-levels'
-            or 'bundledUtilities' in manifest['extensions']['noire342.arsenal']):
+    if manifest.get('api') != '1.20':
+        raise ValueError('The portable manifest must declare OpenRAC mod interface 1.20')
+    arsenal = manifest['extensions']['noire342.arsenal']
+    if manifest.get('assets') != 'generated-levels' or 'bundledUtilities' in arsenal:
         raise ValueError('Expected the official loader asset path in the portable manifest')
+    if 'rac1.vendor.icon_strip.draw' not in arsenal.get('compatibilityHooks', []):
+        raise ValueError('The portable manifest must declare the official Gadgetron icon-strip hook')
 
     plugins = manifest.get('plugin', {})
     if not isinstance(plugins, dict) or len(plugins) != 1 or next(iter(plugins)) not in PLATFORMS:
