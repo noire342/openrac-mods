@@ -19,7 +19,7 @@ bool same(const EquipAssemblyPose& a,const EquipAssemblyPose& b){
 }
 }
 int main(){
-    for(float dt:{1.f/30.f,1.f/50.f,1.f/60.f,1.f/120.f}){
+    for(float dt:{1.f/30.f,1.f/50.f,1.f/60.f,1.f/120.f,1.f/1000.f}){
         EquipAssembly assembly;
         require(!assembly.active()&&same(assembly.pose(),{}),"untriggered presentation is exactly neutral");
         assembly.begin(true);

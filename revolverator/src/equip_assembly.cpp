@@ -8,8 +8,12 @@ namespace revolverator {
 namespace {
 constexpr float screw_turns=12.56637061435917295385f;
 float smooth(float value){
-    const float x=std::clamp(value,0.f,1.f);
-    return x*x*x*(x*(x*6.f-15.f)+10.f);
+    // Near full extension the polynomial subtracts terms of similar size.
+    // Evaluate before rounding to float so ARM fused arithmetic and x86
+    // builds settle at the same bounded endpoint.
+    const double x=std::clamp(double(value),0.0,1.0);
+    const double eased=x*x*x*(x*(x*6.0-15.0)+10.0);
+    return float(std::clamp(eased,0.0,1.0));
 }
 }
 void EquipAssembly::begin(bool has_ammunition){
