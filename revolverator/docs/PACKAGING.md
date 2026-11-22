@@ -1,18 +1,18 @@
 # Release packaging and provenance
 
-The Windows archive is revolverator-0.4.9-windows-x86_64.zip with
-openrac-mod.json at its root. The manifest names author **noire342**,
-version 0.4.9, GPL-3.0-or-later and minimum mod interface 1.12. Use
-`revolverator-v0.4.9` as the release tag. The receipt identifies the exact
-binaries and records the Gadgetron ammo purchase and native audio checks.
+Release 0.5.0 uses the tag `revolverator-v0.5.0` and one
+`revolverator-0.5.0-<platform>.zip` per platform. Each ZIP has
+`openrac-mod.json` at its root and declares author **noire342** and
+GPL-3.0-or-later. The minimum mod interface is **1.12 or newer** on Windows
+and **1.20 or newer** on Linux, macOS and Android. The release receipt
+identifies the exact binaries and the checks run on each platform.
 
 ## Installable files
 
-Include the weapon DLL, its asset-mount adapter and license notices, original
-authored ammunition model/texture, and the runtime preparation scripts in
-[BUILD_AND_ASSETS.md](BUILD_AND_ASSETS.md). Dependency metadata must match the
-DLLs actually included. Players install one weapon card, without manual
-support-card or graphics-pack installation.
+Include the native weapon library, its license notices, the authored
+ammunition model and texture, and the runtime preparation scripts listed in
+[BUILD_AND_ASSETS.md](BUILD_AND_ASSETS.md). Windows ships its asset-mount
+adapter. Portable packages use the OpenRAC loader's class asset mount.
 
 The current installable package contains no assets/audio files. The weapon uses
 the original native sounds, with no custom sound adapter connected. Never glob

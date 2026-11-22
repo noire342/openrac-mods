@@ -7,26 +7,20 @@ catch, spin and throw enemies. It uses the game's weapon menus, ammunition
 HUD, acquisition presentation and save flow. The original Walloper remains a
 separate weapon.
 
-Version 0.3.5 uses OpenRAC's official Gadgetron icon-strip hook from interface
+Revolverator uses OpenRAC's official Gadgetron icon-strip hook from interface
 1.20 onward and keeps the adapter for earlier supported interfaces. It also
 scopes equipment changes during acquisition scenes and save operations to
 the mod's own state. Challenge Mode carries over the Rotatore's Golden upgrade,
 ammunition, XP and favourite when the slot is available.
 
-The [0.4.9 release page](https://github.com/noire342/openrac-mods/releases/tag/revolverator-v0.4.9)
-includes the installable Windows package, corresponding source and validation
-receipt. The Gadgetron shows the Revolverator's 20-round capacity during ammo
+The [0.5.0 release page](https://github.com/noire342/openrac-mods/releases/tag/revolverator-v0.5.0)
+includes packages for Windows x86-64, Linux x86-64, Apple silicon macOS and
+Android Arm64 alongside corresponding source, validation and checksums.
+The Gadgetron shows the Revolverator's 20-round capacity during ammo
 purchases. Attempting an attack at zero rounds plays the game's original click.
 Revolverator integrates with [Weapon Experience 0.7.0](https://github.com/noire342/openrac-mods/releases/tag/weapon-xp-v0.7.0)
 through API v5 for shared XP rules and localized level names. Existing API v4
 providers are supported.
-
-The [0.5.0-preview.1 release](https://github.com/noire342/openrac-mods/releases/tag/revolverator-v0.5.0-preview.1)
-offers test builds for Linux x86-64, Apple silicon macOS and Android Arm64.
-These builds use the official OpenRAC mod interface 1.20 or newer. Download
-the ZIP for your platform and import it under **Mods → Add a mod → File**.
-The release notes list the checks run on each platform and what still needs
-in-game testing.
 
 Version 0.4.7 fixed the ammunition HUD when Ratchet switches to his wrench
 or dies. Regular enemies such as the Hoven Anklebiter can be caught, and Hoven
@@ -50,11 +44,12 @@ contains no copied game models, textures or HUD artwork.
 
 ## Install
 
-1. Use the official OpenRAC launcher on Windows x64, with **mod interface 1.12
-   or newer** and your own extracted PAL or NTSC-U copy of Ratchet & Clank.
-2. Download `revolverator-0.4.9-windows-x86_64.zip` from that release and import
-   it with **Mods → Add a mod → File**. If the catalog already shows 0.4.9,
-   you can install or update from there.
+1. Use the official OpenRAC launcher with your own extracted PAL Europe v2.00
+   or NTSC-U copy of Ratchet & Clank. Windows requires **mod interface 1.12
+   or newer**. Linux, macOS and Android require **mod interface 1.20 or newer**.
+2. Download the ZIP for your platform from the release and import it with
+   **Mods → Add a mod → File**. If the catalog already shows 0.5.0, you can
+   install or update from there.
 3. Enable the mod and start the game. The first start prepares its local
    graphics cache automatically. No separate Python installation, graphics
    pack, utility mod card or replacement client is required.
