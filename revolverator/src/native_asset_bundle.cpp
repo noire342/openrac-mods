@@ -34,7 +34,11 @@
 #include <sys/wait.h>
 #include <thread>
 #include <unistd.h>
+#ifdef __APPLE__
+#include "darwin_process_paths.hpp"
+#else
 extern char** environ;
+#endif
 #endif
 
 namespace revolverator {
@@ -272,17 +276,19 @@ Path module_root(){
     }
     throw std::runtime_error("asset bundle: own plugin assets directory was not found");
 }
-#if defined(__linux__) && !defined(__ANDROID__)
+#if defined(__APPLE__) || (defined(__linux__) && !defined(__ANDROID__))
 Path find_python(Path executable){
-    auto parent=executable.parent_path();
-    for(unsigned depth=0;depth<9&&!parent.empty();++depth){
+    for(auto parent=executable.parent_path();!parent.empty();parent=parent.parent_path()){
         const auto candidate=parent/"python/bin/python3";
-        if(access(candidate.c_str(),X_OK)==0&&fs::is_regular_file(candidate))return candidate;
-        const auto next=parent.parent_path();if(next==parent)break;parent=next;
+        if(access(candidate.c_str(),X_OK)==0&&fs::is_regular_file(candidate)&&fs::is_regular_file(parent/"tools/openrac.py"))
+            return candidate;
+        if(parent==parent.parent_path())break;
     }
+#ifndef __APPLE__
     const Path system_python="/usr/bin/python3";
     if(access(system_python.c_str(),X_OK)==0&&fs::is_regular_file(system_python))return system_python;
-    throw std::runtime_error("Revolverator: Python 3.10 or newer is required to derive art from your disc.");
+#endif
+    throw std::runtime_error("Revolverator: the OpenRAC launcher's Python is required to derive art from your disc.");
 }
 #endif
 NativeAssetBundle::Paths process_paths(const char* version){
@@ -309,6 +315,11 @@ NativeAssetBundle::Paths process_paths(const char* version){
     }
     return {asset_bundle::levels_from_arguments(args,environment_path("OPENRAC_DATA"),version),module_root(),
         cache/"openrac/revolverator/assets",find_python(fs::read_symlink("/proc/self/exe")),true};
+#elif defined(__APPLE__)
+    const auto home=environment_path("HOME");
+    if(!home.is_absolute())throw std::runtime_error("asset bundle: no usable macOS home path");
+    return {asset_bundle::levels_from_arguments(darwin_process_arguments(),environment_path("OPENRAC_DATA"),version),
+        module_root(),home/"Library/Caches/OpenRAC/revolverator/assets",find_python(darwin_executable_path()),true};
 #else
     throw std::runtime_error("asset bundle: native module discovery is unavailable on this platform");
 #endif
@@ -401,7 +412,12 @@ Path prepared_graphics(const Path& levels,const Path& mod,const Path& cache,cons
        posix_spawn_file_actions_adddup2(&actions,STDOUT_FILENO,STDERR_FILENO)!=0)
         throw std::runtime_error("asset bundle: cannot set up local preparation diagnostics");
     pid_t process{};
-    if(posix_spawn(&process,python.c_str(),&actions,nullptr,argv.data(),environ)!=0)
+#ifdef __APPLE__
+    auto** environment=*_NSGetEnviron();
+#else
+    auto** environment=environ;
+#endif
+    if(posix_spawn(&process,python.c_str(),&actions,nullptr,argv.data(),environment)!=0)
         throw std::runtime_error("Revolverator: could not start local asset preparation. Diagnostics: "+utf8(log));
     int status{};
     pid_t waited{};
