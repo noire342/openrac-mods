@@ -40,7 +40,8 @@ public:
  bool can_launch()const override;
  bool throw_strike_active()const override;
  bool throw_contact_reached()const override;
- void launched(Target target,float throw_charge,float blast_charge)override;
+ std::optional<Vec3> aimed_throw_velocity(Target projectile,Vec3 origin,Vec3 forward,float lifetime)const override;
+ void launched(Target target,float throw_charge,float blast_charge,float yaw)override;
  void drill_overheat()override;
  void impact_result(Target target,const ImpactContext& result)override;
  void cancelled()override;
@@ -139,7 +140,7 @@ private:
  struct Site {Target target{};Vec3 point{},approach{};} site_;
  Target trooper_gun(Target trooper)const;
  bool capturable_enemy(Target target)const;
- bool enemy_can_be_latched(Target target)const;
+ bool has_visible_collision(Target target)const;
  bool golden_damage_target(Target target)const;
  void move_origin(const Lease& lease,Vec3 position,Vec3 angles);
  void restore_lease(Lease& lease,bool cancelled);
@@ -156,6 +157,8 @@ private:
  void each_enemy(const void* context,void(*fn)(const void*,Target),bool include_crates=false)const;
  void each_damageable(const void* context,void(*fn)(const void*,Target))const;
  Vec3 damage_centre(Target target)const;
+ Vec3 flight_contact_centre(Target target,bool golden)const;
+ bool in_camera_view(Vec3 centre,float radius,float distance)const;
  float collision_radius(Target target)const;
  bool visible_from(Vec3 origin,Target target,unsigned ignore)const;
  bool clear_path(Vec3 from,Vec3 to,unsigned accepted_target,unsigned ignore)const;

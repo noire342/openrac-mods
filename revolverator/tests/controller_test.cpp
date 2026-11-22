@@ -38,7 +38,7 @@ struct DropFake:Fake {
   pose_progress=progress;
   return Vec3{progress,0,3};
  }
- void launched(Target,float,float)override{++launches;}
+ void launched(Target,float,float,float)override{++launches;}
  bool can_launch()const override{return launchable;}
 };
 Frame frame(){Frame f;f.epoch=1;f.equipped=f.playing=f.alive=f.grounded=true;return f;}
@@ -76,7 +76,7 @@ struct MultiFake:World {
  void release(Target target,bool)override{auto* a=actor(target);CHECK(a&&a->leased);a->leased=a->flying=false;++restores;}
  void drop(Target target)override{++drops;release(target,false);}
  std::optional<Contact> sweep(Target target,Vec3,Vec3 to)override{const auto* a=actor(target);return a&&a->collision?std::optional<Contact>{{to,{},{0,0,1}}}:std::nullopt;}
- void launched(Target target,float q,float b)override{auto* a=actor(target);CHECK(a&&a->leased);a->flying=true;const auto i=std::size_t(a-actors.data());charge[i]=q;blast[i]=b;}
+ void launched(Target target,float q,float b,float)override{auto* a=actor(target);CHECK(a&&a->leased);a->flying=true;const auto i=std::size_t(a-actors.data());charge[i]=q;blast[i]=b;}
  void impact(Target,std::optional<Target>,float)override{}
  void impact_result(Target target,const ImpactContext& result)override{const auto* a=actor(target);CHECK(a&&!a->leased);const auto i=std::size_t(a-actors.data());impacts.push_back({target,result.charge,blast[i],result.reason});if(on_impact)on_impact();}
  void discarded(Target target)override{if(auto* a=actor(target))a->leased=a->flying=false;}

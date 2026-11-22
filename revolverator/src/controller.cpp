@@ -94,7 +94,7 @@ void Controller::advance_flights(const Frame& f){
  for(auto& slot:flights_){
   if(!slot.target)continue;
   if(!world_.valid(slot.target)){const auto stale=slot.target;slot={};world_.discarded(stale);finished=true;continue;}
-  slot.elapsed+=f.seconds;slot.velocity.z-=12.f*f.seconds;
+  slot.elapsed+=f.seconds;slot.velocity.z-=flight_gravity*f.seconds;
   const Vec3 next=slot.point+slot.velocity*f.seconds;
   const auto hit=world_.sweep(slot.target,slot.point,next);
   if(hit||slot.elapsed>=world_.flight_duration(slot.target,settings_.flight_seconds)){
@@ -118,11 +118,17 @@ void Controller::launch(const Frame& f){
  auto* flight=free_flight();
  if(!flight||!world_.can_launch()){cancel_attack();return;}
  const float power=charge(),blast=blast_charge(),speed=13.f+power*9.f;
- *flight={target_,point_,{std::cos(f.yaw)*speed,std::sin(f.yaw)*speed,2.f+power*1.5f},0,power,blast,f.yaw,++sequence_};
+ Vec3 velocity{std::cos(f.yaw)*speed,std::sin(f.yaw)*speed,2.f+power*1.5f};
+ float yaw=f.yaw;
+ if(const auto aim=world_.aimed_throw_velocity(target_,point_,velocity,settings_.flight_seconds);aim&&finite(*aim)){
+  velocity=*aim;
+  yaw=std::atan2(velocity.y,velocity.x);
+ }
+ *flight={target_,point_,velocity,0,power,blast,yaw,++sequence_};
  const auto victim=target_;target_={};phase_=Phase::Recovery;timer_=0;release_recovery_=true;
  const bool overheated=!capturable_crate_class(victim.klass)&&temperature_.thrown();
  const auto generation=reset_generation_;
- ++counters_.throws;world_.launched(victim,power,blast);world_.animate(Motion::Release);
+ ++counters_.throws;world_.launched(victim,power,blast,yaw);world_.animate(Motion::Release);
  if(overheated&&generation==reset_generation_)world_.drill_overheat();
 }
 void Controller::advance_throw(const Frame& f){

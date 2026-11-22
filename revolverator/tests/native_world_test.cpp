@@ -45,6 +45,7 @@ struct Fixture {
  std::vector<float> burst_sizes;
  unsigned stack_cursor=stack_base,stack_fail_size{},burst_calls{},allocations{},ray_calls{},crate_breaks{},crate_drops{};
  float burst_scale{},burst_flash{},wall_x=10000;
+ bool camera_visible=true;
  std::optional<float> floor_z;
  Vec3 floor_normal{0,0,1};
  int current_level=1;Vec3 burst_position{};
@@ -101,6 +102,10 @@ struct Fixture {
   }
   return 0;
  }
+ static int sphere_visible(unsigned sphere,float limit){
+  require(live->get<float>(sphere+12)>0&&limit>0,"aim asks the native frustum about a bounded sphere");
+  return live->camera_visible?0:-1;
+ }
  static void post_hit(unsigned target,unsigned payload){
   require((payload&15u)==0,"native damage payload is guest-aligned16");
   Packet packet{target,{}};std::memcpy(packet.payload.data(),live->ram.data()+payload,48);live->packets.push_back(packet);
@@ -121,6 +126,7 @@ struct Fixture {
   if(std::strcmp(name,"FUN_001efa68")==0)return reinterpret_cast<void*>(&ray);
   if(std::strcmp(name,"FUN_L00_002223f8")==0)return reinterpret_cast<void*>(&set_state);
   if(std::strcmp(name,"FUN_L00_0025f090")==0)return reinterpret_cast<void*>(&burst);
+  if(std::strcmp(name,"FUN_001fa728")==0)return reinterpret_cast<void*>(&sphere_visible);
   if(std::strcmp(name,"FUN_L00_0028dc90")==0)return reinterpret_cast<void*>(&play_class_sound);
   if(std::strcmp(name,"FUN_0012e308")==0)return reinterpret_cast<void*>(&play_bank_sound);
   if(std::strcmp(name,"FUN_L00_002d09b8")==0)return reinterpret_cast<void*>(&break_crate);
@@ -162,7 +168,7 @@ struct Fixture {
  Frame frame()const{Frame f;f.epoch=1;f.equipped=f.alive=f.playing=f.grounded=true;return f;}
  void launch(Target projectile,bool golden=true,float charge=1,float multiplier=1){
   if(world.flying(projectile))world.discarded(projectile); // Explicitly end a prior synthetic fixture shot.
-  world.observe_frame(frame());world.set_golden(golden);world.set_damage_multiplier(multiplier);world.launched(projectile,1,charge);
+  world.observe_frame(frame());world.set_golden(golden);world.set_damage_multiplier(multiplier);world.launched(projectile,1,charge,0);
  }
  ImpactContext impact(Vec3 point={0,0,0})const{return {ImpactReason::Collision,point,{},std::nullopt,1};}
  const Packet* packet(unsigned target)const{for(const auto& p:packets)if(p.target==target)return &p;return nullptr;}
@@ -412,7 +418,7 @@ int main(){
    require(f.world.blocks_native_hit(crate,hit),"throw suppresses its redundant melee contact even through the render alias");
    f.put(hit+0x2c,8.f);
    require(!f.world.blocks_native_hit(crate,hit),"projectile damage survives any original-body fallback");
-   f.world.launched(enemy,1.f,.6f);f.world.animate(Motion::Release);
+   f.world.launched(enemy,1.f,.6f,0);f.world.animate(Motion::Release);
    require(f.world.flying(enemy)&&!f.world.release_recoil_active()&&f.world.throw_strike_active(),
            "detachment leaves the native lunge free to complete");
    for(int i=0;i<12;++i)f.world.observe_frame(f.frame());
@@ -583,6 +589,59 @@ int main(){
   hit=f.world.sweep(projectile,{0,0,.5f},{5,0,.5f});
   require(hit&&!hit->other&&near(hit->point.x,1.5f),"Base flight cannot damage an enemy through terrain");
  }
+ for(bool golden:{false,true}){
+  Fixture f;
+  const auto projectile=f.enemy(0,459,{1,0,0});
+  const auto side_enemy=f.enemy(1,573,{8,3.6f,0});
+  const auto centred=f.enemy(2,573,{10,2,0});
+  const auto crate=f.crate(3,500,{5,0,0});
+  const auto hidden=f.enemy(4,573,{6,0,0});
+  f.put<std::uint8_t>(hidden.address+0x23,0);
+  const Vec3 tip{1,0,1},straight{22,0,3.5f};
+  const auto frame=f.frame();
+  f.world.observe_frame(frame);
+  f.world.set_golden(golden);
+  const auto aim=f.world.aimed_throw_velocity(projectile,tip,straight,1.4f);
+  require(aim&&aim->y>0&&near(aim->y/aim->x,2.f/9.f)&&near(std::hypot(aim->x,aim->y),22.f),
+          "assisted throws preserve speed and prefer the most centred visible enemy over hidden actors or crates");
+  require(!f.world.aimed_throw_velocity(crate,tip,straight,1.4f),"crates keep their original trajectory");
+  require(!f.world.aimed_throw_velocity(projectile,tip,straight,.1f),"aim respects flight lifetime");
+  f.camera_visible=false;
+  require(!f.world.aimed_throw_velocity(projectile,tip,straight,1.4f),"enemies outside the camera frustum are ignored");
+  f.camera_visible=true;
+  f.wall_x=2.f;
+  require(!f.world.aimed_throw_velocity(projectile,tip,straight,1.4f),"terrain blocks assisted targeting");
+  f.wall_x=10000.f;
+  // Move the crate aside and leave the chosen opponent in the assisted path.
+  f.put(crate.address+0x94,0u);
+  f.put(crate.address+0x10,Vec3{5,-10,0});
+  f.put(crate.address,Vec3{5,-10,0}*1024.f);
+  f.put(hidden.address+0x10,Vec3{6,-10,0});
+  f.put(hidden.address,Vec3{6,-10,0}*1024.f);
+  f.world.launched(projectile,1,1,std::atan2(aim->y,aim->x));
+  Vec3 position=tip,velocity=*aim;
+  std::optional<Contact> contact;
+  for(float elapsed=0;elapsed<1.4f&&!contact;elapsed+=frame.seconds){
+   velocity.z-=flight_gravity*frame.seconds;
+   const auto next=position+velocity*frame.seconds;
+   contact=f.world.sweep(projectile,position,next);
+   position=next;
+  }
+  require(contact&&contact->other==centred,"the normal ballistic collision reaches the selected enemy");
+  f.world.impact_result(projectile,{ImpactReason::Collision,contact->point,contact->normal,contact->other,1});
+  require(f.packet(projectile.address)&&f.packet(centred.address),"native impact routes damage to both actors");
+  if(!golden)require(!f.packet(side_enemy.address),"the ordinary throw damages only the actors it hits");
+  require(f.stack_cursor==stack_base,"targeting and impact restore SDK stack temporaries");
+ }
+ {
+  Fixture f;
+  const auto projectile=f.enemy(0,459,{1,0,0});
+  f.enemy(1,573,{4,5,0});
+  f.enemy(2,573,{-3,0,0});
+  f.world.observe_frame(f.frame());
+  require(!f.world.aimed_throw_velocity(projectile,{1,0,1},{22,0,3.5f},1.4f),
+          "off-axis or rear enemies leave the forward throw intact");
+ }
  {
   Fixture f;const auto projectile=f.enemy(0,459,{1,0,.6f});
   const auto found=f.world.find_target({0,0,0},0,2.8f);require(found&&*found==projectile&&f.world.capture(projectile),"native lease fixture captures ordinary actor");
@@ -707,10 +766,10 @@ int main(){
   for(unsigned i=0;i<targets.size();++i)targets[i]=f.enemy(i,459,{float(i)*10,0,0});
   for(unsigned i=0;i<maximum_flights;++i)f.launch(targets[i],i%2==0,.1f*float(i),1);
   require(f.world.flight_count()==maximum_flights&&!f.world.can_launch(),"native pool admits eight independent shots");
-  f.world.launched(targets.back(),1,1);f.world.launched(targets[0],1,1);
+  f.world.launched(targets.back(),1,1,0);f.world.launched(targets[0],1,1,0);
   require(f.world.flight_count()==maximum_flights,"full or duplicate launch cannot overwrite an older shot");
   f.world.discarded(targets[2]);require(f.world.flight_count()==maximum_flights-1&&f.world.can_launch(),"one discarded flight frees one slot");
-  f.world.launched(targets.back(),1,1);require(f.world.flight_count()==maximum_flights&&f.world.flying(targets.back())&&f.world.flying(targets[0]),"freed slot reused without replacing another shot");
+  f.world.launched(targets.back(),1,1,0);require(f.world.flight_count()==maximum_flights&&f.world.flying(targets.back())&&f.world.flying(targets[0]),"freed slot reused without replacing another shot");
   f.world.cancelled();require(f.world.flight_count()==0&&f.packets.empty()&&f.burst_calls==0,"full teardown consumes every pending variant without detonation");
  }
  {

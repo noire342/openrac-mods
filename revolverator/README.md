@@ -72,6 +72,10 @@ Tap **Circle** for a melee strike. Hold it continuously for at least 0.18 second
 to catch an eligible enemy. Once captured, keep holding until the existing
 charge bar is full, then release to throw. The bar fills over 1.6 seconds of
 spinning. Releasing at full charge starts the native Walloper strike immediately.
+When the enemy leaves the drill, the Revolverator aims towards the most centred
+visible opponent in front of Ratchet and within throwing range. Terrain can
+block the assist. With no eligible opponent, the throw continues straight ahead.
+The trajectory is set at release. Crates always use the standard forward throw.
 The enemy detaches from the drill tip at the end of Ratchet's forward drive.
 An uninterrupted hold starts the same strike automatically after three seconds.
 A new press is accepted after the native attack has recovered.

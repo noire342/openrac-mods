@@ -83,7 +83,7 @@ bool NativeWorld::capturable_enemy(Target t)const{
  return std::isfinite(hp)&&hp>0.f;
 }
 bool NativeWorld::valid(Target t)const{return identity_valid(t)&&(capturable_enemy(t)||crates_.live_crate(t));}
-bool NativeWorld::enemy_can_be_latched(Target t)const{
+bool NativeWorld::has_visible_collision(Target t)const{
  return read<unsigned>(t.address+moby_collision_offset)&&!read<unsigned>(t.address+moby_collision_disable_offset)&&
         read<std::uint8_t>(t.address+moby_alpha_offset)&&
         !(read<std::uint16_t>(t.address+moby_flags_offset)&hidden_moby_flags);
@@ -154,7 +154,7 @@ std::optional<Target> NativeWorld::find_target(Vec3 origin,float yaw,float reach
  each_enemy(&search,+[](const void* ctx,Target target){
   auto& s=*const_cast<Search*>(static_cast<const Search*>(ctx));auto& w=*s.self;
   if(w.flying(target))return;
-  if(destructible_crate_class(int(target.klass))?!w.crates_.can_carry(target):!w.enemy_can_be_latched(target))return;
+  if(destructible_crate_class(int(target.klass))?!w.crates_.can_carry(target):!w.has_visible_collision(target))return;
   const auto pos=w.read<Vec3>(target.address+0x10);const auto delta=pos-s.origin;
   const float distance=delta.x*delta.x+delta.y*delta.y;
   if(!finite(pos)||std::abs(delta.z)>2.f||distance>s.reach*s.reach)return;
@@ -189,7 +189,7 @@ bool NativeWorld::capture(Target t){
  if(lease_.target||!valid(t)||flying(t)||!can_launch())return false;
  if(!(site_.target==t)||!finite(site_.point))return false;
  const bool crate=capturable_crate_class(t.klass);
- if(crate?!crates_.detach(t):!enemy_can_be_latched(t))return false;
+ if(crate?!crates_.detach(t):!has_visible_collision(t))return false;
  lease_={};lease_.target=t;lease_.collision=read<unsigned>(t.address+moby_collision_offset);
  // The native dispatcher accepts a null per-instance callback, while
  // animation still runs. This lease follows the actor token, not its pool slot.
@@ -413,6 +413,73 @@ float NativeWorld::flight_duration(Target t,float normal_duration)const{
  // watchdog only covers malformed terrain or out-of-world spawn coordinates.
  return capturable_crate_class(t.klass)?16.f:normal_duration;
 }
+Vec3 NativeWorld::flight_contact_centre(Target target,bool golden)const{
+ constexpr float standard_contact_height=.5f;
+ return golden?damage_centre(target):read<Vec3>(target.address+0x10)+Vec3{0,0,standard_contact_height};
+}
+bool NativeWorld::in_camera_view(Vec3 centre,float radius,float distance)const{
+ if(!sphere_visible_)return true;
+ Stack sphere(api_,sizeof(std::array<float,4>));
+ if(!sphere.at)return false;
+ sphere.put(0,std::array<float,4>{centre.x,centre.y,centre.z,radius});
+ return sphere_visible_(sphere.at,distance)!=-1;
+}
+std::optional<Vec3> NativeWorld::aimed_throw_velocity(Target projectile,Vec3 origin,Vec3 forward,float lifetime)const{
+ constexpr float eye_height=.9f;
+ constexpr float cone_cosine=.81915204f; // 35 degrees to either side of Ratchet's facing.
+ static constexpr float minimum_range=.25f;
+ static constexpr float camera_distance_margin=12.f;
+ static constexpr float max_vertical_speed_ratio=.5f;
+ const float speed=std::hypot(forward.x,forward.y);
+ if(capturable_crate_class(projectile.klass)||!valid(projectile)||!finite(origin)||
+    !finite(last_frame_.position)||!std::isfinite(speed)||speed<=0.f||
+    !std::isfinite(lifetime)||lifetime<=0.f)return {};
+ struct Search {
+  const NativeWorld& world;
+  Target projectile;
+  Vec3 origin,eye,axis;
+  float speed,lifetime;
+  Target target{};
+  float alignment=cone_cosine,distance=std::numeric_limits<float>::infinity();
+  std::optional<Vec3> velocity{};
+ } search{*this,projectile,origin,last_frame_.position+Vec3{0,0,eye_height},
+          {forward.x/speed,forward.y/speed,0},speed,lifetime};
+ const auto visit=+[](const void* context,Target candidate){
+  auto& s=*const_cast<Search*>(static_cast<const Search*>(context));
+  const auto& w=s.world;
+  if(candidate==s.projectile||destructible_crate_class(int(candidate.klass))||
+     w.flying(candidate)||w.frozen(candidate.address)||!w.has_visible_collision(candidate))return;
+  const Vec3 centre=w.flight_contact_centre(candidate,w.golden_);
+  const Vec3 sight=centre-s.eye,delta=centre-s.origin;
+  const float distance=std::hypot(delta.x,delta.y);
+  const float sight_length=std::sqrt(length_squared(sight));
+  if(!std::isfinite(sight_length)||sight_length<=0.f||!std::isfinite(distance)||distance<minimum_range)return;
+  const float alignment=dot(sight,s.axis)/sight_length;
+  if(alignment<s.alignment||(alignment==s.alignment&&distance>=s.distance))return;
+  const float travel_time=distance/s.speed;
+  if(travel_time>s.lifetime||dot(delta,s.axis)<=0.f)return;
+  const float step=w.last_frame_.seconds;
+  // Match the semi-implicit gravity step used by the projectile controller.
+  const float lift=delta.z/travel_time+flight_gravity*(travel_time+step)*.5f;
+  if(std::abs(lift)>s.speed*max_vertical_speed_ratio||
+     !w.in_camera_view(centre,w.collision_radius(candidate),s.speed*s.lifetime+camera_distance_margin)||
+     !w.clear_path(s.eye,centre,candidate.address,w.body())||
+     !w.clear_path(s.origin,centre,candidate.address,s.projectile.address))return;
+  s.target=candidate;
+  s.alignment=alignment;
+  s.distance=distance;
+  s.velocity=Vec3{delta.x/travel_time,delta.y/travel_time,lift};
+ };
+ if(golden_)each_damageable(&search,visit);
+ else each_enemy(&search,visit);
+ if(trace_&&search.target){
+  char message[100];
+  std::snprintf(message,sizeof message,"throw aim: projectile=%08x target=%08x class=%u",
+                projectile.address,search.target.address,search.target.klass);
+  log(message);
+ }
+ return search.velocity;
+}
 std::optional<Contact> NativeWorld::sweep_impact(Target t,Vec3 from,Vec3 to){
  const auto* active_flight=flight(t);
  const bool golden=active_flight&&active_flight->impact.golden_flight(t);
@@ -433,7 +500,7 @@ std::optional<Contact> NativeWorld::sweep_impact(Target t,Vec3 from,Vec3 to){
  const auto visit=+[](const void* ctx,Target candidate){
   auto& s=*const_cast<Search*>(static_cast<const Search*>(ctx));auto& w=s.world;
   if(candidate==s.target||w.flying(candidate)||w.frozen(candidate.address))return;
-  const Vec3 point=s.golden?w.damage_centre(candidate):w.read<Vec3>(candidate.address+0x10)+Vec3{0,0,.5f};
+  const Vec3 point=w.flight_contact_centre(candidate,s.golden);
   const float radius=s.golden?w.collision_radius(candidate)+.4f:1.1f;
   const Vec3 offset=s.from-point;
   const float c=length_squared(offset)-radius*radius;
@@ -506,11 +573,11 @@ void NativeWorld::drain_hits(){
   }
  }
 }
-void NativeWorld::launched(Target target,float,float blast_charge){
- if(!valid(target)||flying(target)||!std::isfinite(blast_charge))return;
+void NativeWorld::launched(Target target,float,float blast_charge,float yaw){
+ if(!valid(target)||flying(target)||!std::isfinite(blast_charge)||!std::isfinite(yaw))return;
  Flight* entry=nullptr;for(auto& item:flights_)if(!item.target){entry=&item;break;}
  if(!entry)return; // Controller preflights capacity before spending attack ammo.
- const Shot shot{token(weapon()),token(body()),damage_multiplier_,last_frame_.yaw};
+ const Shot shot{token(weapon()),token(body()),damage_multiplier_,yaw};
  *entry={};entry->target=target;entry->shot=shot;
  entry->impact.launch(target,golden_,blast_charge,damage_multiplier_);
  if(lease_.target&&lease_.target==target){entry->lease=lease_;entry->lease.flying=true;lease_={};}
@@ -714,7 +781,7 @@ bool NativeWorld::blocks_native_hit(Target victim,unsigned hit)const{
  const auto origin=read<unsigned short>(hit+0x2a);
  if(throw_strike_active()&&flags==0x30000&&read<unsigned char>(hit+0x29)==3&&
     (origin==180||origin==2017||origin==2018)&&read<float>(hit+0x2c)==3.f)return identity_valid(victim);
- return identity_valid(victim)&&capturable_enemy(victim)&&enemy_can_be_latched(victim)&&
+ return identity_valid(victim)&&capturable_enemy(victim)&&has_visible_collision(victim)&&
         origin!=2017&&(flags&0x30000)!=0;
 }
 Frame NativeWorld::snapshot(bool primary,unsigned epoch)const{

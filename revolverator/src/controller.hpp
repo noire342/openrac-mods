@@ -19,6 +19,7 @@ struct Target {
  explicit operator bool()const{return address!=0;}
 };
 inline constexpr std::size_t maximum_flights=8;
+inline constexpr float flight_gravity=12.f;
 enum class Phase { Idle,Windup,Spinning,Flying,Recovery,ThrowStrike };
 enum class Motion { Strike,Raise,Release,Recover,DryFire,ThrowStrike };
 constexpr bool holding_enemy(Phase phase) {
@@ -70,7 +71,8 @@ public:
  virtual bool can_launch()const{return true;}
  virtual bool throw_strike_active()const{return true;}
  virtual bool throw_contact_reached()const{return true;}
- virtual void launched(Target,float /* throw_charge */,float /* blast_charge */){}
+ virtual std::optional<Vec3> aimed_throw_velocity(Target,Vec3,Vec3,float)const{return {};}
+ virtual void launched(Target,float /* throw_charge */,float /* blast_charge */,float /* yaw */){}
  virtual void drill_overheat(){}
  virtual void impact_result(Target target,const ImpactContext& result){impact(target,result.other,result.charge);}
  virtual void cancelled(){}

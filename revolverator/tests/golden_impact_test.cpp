@@ -28,7 +28,7 @@ struct WorldFake final:World {
  std::optional<Contact> sweep(Target,Vec3,Vec3 to)override{return collision?std::optional<Contact>{{to,{},{0,0,1}}}:std::nullopt;}
  void impact(Target,std::optional<Target>,float)override{}
  void impact_result(Target,const ImpactContext& hit)override{require(!leased,"lease restored before impact dispatch");++impacts;result=hit;}
- void launched(Target,float charge,float blast)override{++throws;release_charge=charge;blast_charge=blast;release_point=point;}
+ void launched(Target,float charge,float blast,float)override{++throws;release_charge=charge;blast_charge=blast;release_point=point;}
  void animate(Motion)override{}
 };
 Frame frame(){Frame f;f.equipped=f.alive=f.playing=f.grounded=true;f.epoch=1;return f;}
